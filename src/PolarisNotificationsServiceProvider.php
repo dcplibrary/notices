@@ -18,8 +18,8 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
     {
         // Merge package config with application config
         $this->mergeConfigFrom(
-            __DIR__.'/../config/polaris-notifications.php',
-            'polaris-notifications'
+            __DIR__.'/../config/notifications.php',
+            'notifications'
         );
 
         // Register the Polaris database connection
@@ -34,18 +34,18 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
         // Publish configuration file
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/polaris-notifications.php' => config_path('polaris-notifications.php'),
-            ], 'polaris-notifications-config');
+                __DIR__.'/../config/notifications.php' => config_path('notifications.php'),
+            ], 'notifications-config');
 
             // Publish migrations
             $this->publishes([
                 __DIR__.'/../database/migrations' => database_path('migrations'),
-            ], 'polaris-notifications-migrations');
+            ], 'notifications-migrations');
 
             // Publish views (if you create them later)
             $this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/polaris-notifications'),
-            ], 'polaris-notifications-views');
+                __DIR__.'/../resources/views' => resource_path('views/vendor/notifications'),
+            ], 'notifications-views');
 
             // Register commands
             $this->commands([
@@ -63,7 +63,7 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
         // $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
         // Load views (if you create them)
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'polaris-notifications');
+        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'notifications');
     }
 
     /**
@@ -71,7 +71,7 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
      */
     protected function registerPolarisConnection(): void
     {
-        $config = config('polaris-notifications.polaris_connection');
+        $config = config('notifications.polaris_connection');
 
         if ($config) {
             Config::set('database.connections.polaris', $config);
@@ -84,7 +84,7 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
     public function provides(): array
     {
         return [
-            'polaris-notifications',
+            'notifications',
         ];
     }
 }

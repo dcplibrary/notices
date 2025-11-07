@@ -64,7 +64,7 @@ class DailyNotificationSummary extends Model
      */
     public function getNotificationTypeNameAttribute(): string
     {
-        return config("polaris-notifications.notification_types.{$this->notification_type_id}", 'Unknown');
+        return config("notifications.notification_types.{$this->notification_type_id}", 'Unknown');
     }
 
     /**
@@ -72,7 +72,7 @@ class DailyNotificationSummary extends Model
      */
     public function getDeliveryMethodNameAttribute(): string
     {
-        return config("polaris-notifications.delivery_options.{$this->delivery_option_id}", 'Unknown');
+        return config("notifications.delivery_options.{$this->delivery_option_id}", 'Unknown');
     }
 
     /**

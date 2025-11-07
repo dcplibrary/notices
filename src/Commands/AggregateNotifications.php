@@ -11,7 +11,7 @@ class AggregateNotifications extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'polaris:aggregate-notifications
+    protected $signature = 'notifications:aggregate-notifications
                             {--date= : Specific date to aggregate (Y-m-d format)}
                             {--start-date= : Start date for range aggregation (Y-m-d format)}
                             {--end-date= : End date for range aggregation (Y-m-d format)}
