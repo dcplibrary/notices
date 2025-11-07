@@ -1,13 +1,36 @@
 {
-  "name": "dcplibrary/notifications",
+  "name": "notifications",
   "version": "1.0.0",
   "description": "Notication Monitor and Logger for Polaris ILS",
-  "type": "module",
-  "scripts": {},
-  "keywords": [],
+  "private": true,
   "author": "Brian Lashbrook",
   "license": "MIT",
-  "devDependencies": {
-    "semantic-release": "^24.2.9"
-  }
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dcplibrary/notifications.git"
+    },
+    "keywords": [
+        "Library",
+        "Laravel",
+        "DCPL"
+    ],
+    "author": "Brian Lashbrook",
+    "license": "MIT",
+    "homepage": "https://github.com/dcplibrary",
+    "devDependencies": {
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/commit-analyzer": "^13.0.0",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/github": "^12.0.1",
+        "@semantic-release/npm": "^13.1.1",
+        "@semantic-release/release-notes-generator": "^14.0.1",
+        "semantic-release": "^25.0.1"
+    },
+    "dependencies": {
+        "marked": "^16.4.0",
+        "npm": "^11.6.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
 }
