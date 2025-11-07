@@ -1,0 +1,152 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Polaris Database Connection
+    |--------------------------------------------------------------------------
+    |
+    | Configure the MSSQL connection to your Polaris ILS database.
+    | This connection is used to import notification logs and related data.
+    |
+    */
+
+    'polaris_connection' => [
+        'driver' => 'sqlsrv',
+        'host' => env('POLARIS_DB_HOST', 'localhost'),
+        'port' => env('POLARIS_DB_PORT', '1433'),
+        'database' => env('POLARIS_DB_DATABASE', 'Polaris'),
+        'username' => env('POLARIS_DB_USERNAME', ''),
+        'password' => env('POLARIS_DB_PASSWORD', ''),
+        'charset' => 'utf8',
+        'prefix' => '',
+        'prefix_indexes' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Import Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure how notifications are imported from Polaris.
+    |
+    */
+
+    'import' => [
+        // Number of days to import by default
+        'default_days' => 1,
+
+        // Batch size for inserting records
+        'batch_size' => 500,
+
+        // Whether to skip duplicate records
+        'skip_duplicates' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shoutbomb FTP Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure FTP connection details for importing Shoutbomb reports.
+    |
+    */
+
+    'shoutbomb' => [
+        'enabled' => env('SHOUTBOMB_ENABLED', true),
+
+        'ftp' => [
+            'host' => env('SHOUTBOMB_FTP_HOST', ''),
+            'port' => env('SHOUTBOMB_FTP_PORT', 21),
+            'username' => env('SHOUTBOMB_FTP_USERNAME', ''),
+            'password' => env('SHOUTBOMB_FTP_PASSWORD', ''),
+            'passive' => env('SHOUTBOMB_FTP_PASSIVE', true),
+            'ssl' => env('SHOUTBOMB_FTP_SSL', false),
+            'timeout' => env('SHOUTBOMB_FTP_TIMEOUT', 30),
+        ],
+
+        // Directory paths on FTP server
+        'paths' => [
+            'monthly_reports' => env('SHOUTBOMB_PATH_MONTHLY', '/reports/monthly'),
+            'weekly_reports' => env('SHOUTBOMB_PATH_WEEKLY', '/reports/weekly'),
+            'daily_invalid' => env('SHOUTBOMB_PATH_DAILY_INVALID', '/reports/daily/invalid'),
+            'daily_undelivered' => env('SHOUTBOMB_PATH_DAILY_UNDELIVERED', '/reports/daily/undelivered'),
+        ],
+
+        // Local storage path for downloaded reports
+        'local_storage_path' => storage_path('app/shoutbomb'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reporting Organization
+    |--------------------------------------------------------------------------
+    |
+    | Default organization ID for filtering notifications.
+    | Set to your library's ReportingOrgID (e.g., 3 for DCPL).
+    |
+    */
+
+    'reporting_org_id' => env('POLARIS_REPORTING_ORG_ID', 3),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure dashboard display preferences.
+    |
+    */
+
+    'dashboard' => [
+        // Default date range for dashboard (days)
+        'default_date_range' => 30,
+
+        // Notification types to display (null = all)
+        'visible_notification_types' => null,
+
+        // Delivery methods to display (null = all)
+        'visible_delivery_methods' => null,
+
+        // Enable real-time refresh
+        'enable_realtime' => false,
+
+        // Refresh interval in seconds
+        'refresh_interval' => 300,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lookup Tables
+    |--------------------------------------------------------------------------
+    |
+    | Static reference data for notification types, delivery options, etc.
+    | These rarely change, so they're defined here instead of in the database.
+    |
+    */
+
+    'notification_types' => [
+        1 => '1st Overdue',
+        2 => 'Hold Ready',
+        3 => 'Hold Cancel',
+        7 => 'Almost Overdue',
+        8 => 'Fine Notice',
+        12 => '2nd Overdue',
+        13 => '3rd Overdue',
+    ],
+
+    'delivery_options' => [
+        1 => 'Mail',
+        2 => 'Email',
+        3 => 'Voice',
+        8 => 'SMS',
+    ],
+
+    'notification_statuses' => [
+        12 => 'Success',
+        14 => 'Failed',
+        15 => 'Pending',
+    ],
+
+];
