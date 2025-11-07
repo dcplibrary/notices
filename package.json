@@ -1,5 +1,13 @@
 {
-  "dependencies": {
-    "semantic-release": "^25.0.2"
+  "name": "dcplibrary/notifications",
+  "version": "1.0.0",
+  "description": "Notication Monitor and Logger for Polaris ILS",
+  "type": "module",
+  "scripts": {},
+  "keywords": [],
+  "author": "Brian Lashbrook",
+  "license": "MIT",
+  "devDependencies": {
+    "semantic-release": "^24.2.9"
   }
 }
