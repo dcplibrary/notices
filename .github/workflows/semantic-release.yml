@@ -1,0 +1,18 @@
+# Run the workflow when a Pull Request is opened or when changes are pushed to main
+name: Semantic-Release
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+      - run: npm ci
+#      - run: npm test
+      - name: Release
+        env:
+          NPM_TOKEN: ${{ secrets.npm_token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
