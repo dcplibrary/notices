@@ -1,4 +1,4 @@
-[![PHP Composer](https://github.com/dcplibrary/notifications/actions/workflows/php.yml/badge.svg)](https://github.com/dcplibrary/notifications/actions/workflows/php.yml)
+[![PHP Composer](https://github.com/dcplibrary/notifications/actions/workflows/php.yml/badge.svg)](https://github.com/dcplibrary/notifications/actions/workflows/php.yml) [![Semantic-Release](https://github.com/dcplibrary/notifications/actions/workflows/semantic-release.yml/badge.svg)](https://github.com/dcplibrary/notifications/actions/workflows/semantic-release.yml)
 
 # Polaris Notifications Package
 
