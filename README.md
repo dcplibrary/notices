@@ -20,7 +20,7 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 ### 1. Install the package via Composer
 
 ```bash
-composer require dcplibrary/polaris-notifications
+composer require dcplibrary/notifications
 ```
 
 ### 2. Publish configuration file
