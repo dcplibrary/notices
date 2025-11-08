@@ -378,7 +378,7 @@ Check that `composer.json` autoload-dev includes:
 ```json
 "autoload-dev": {
     "psr-4": {
-        "Dcplibrary\\PolarisNotifications\\Tests\\": "tests/"
+        "Dcplibrary\\Notifications\\Tests\\": "tests/"
     }
 }
 ```
