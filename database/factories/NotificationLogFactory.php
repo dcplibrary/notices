@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Dcplibrary\Notifications\Database\Factories;
 
 use Dcplibrary\Notifications\Models\NotificationLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -67,7 +67,8 @@ class NotificationLogFactory extends Factory
         };
 
         return [
-            'polaris_log_id' => $this->faker->unique()->numberBetween(100000, 999999),
+            // Ensure uniqueness against existing DB rows as well as within this run
+            'polaris_log_id' => $this->generateUniquePolarisLogId(),
             'patron_id' => $this->faker->numberBetween(10000, 20000),
             'patron_barcode' => '23307' . $this->faker->numerify('########'),
             'notification_date' => $this->faker->dateTimeBetween('-30 days', 'now'),
@@ -94,9 +95,21 @@ class NotificationLogFactory extends Factory
     }
 
     /**
+     * Generate a polaris_log_id that is unique across the database.
+     */
+    protected function generateUniquePolarisLogId(): int
+    {
+        do {
+            $id = $this->faker->numberBetween(100000, 999999);
+        } while (NotificationLog::where('polaris_log_id', $id)->exists());
+
+        return $id;
+    }
+
+    /**
      * Indicate that the notification is for holds.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function holds()
     {
@@ -115,7 +128,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for overdues.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function overdues()
     {
@@ -134,7 +147,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for almost overdue items.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function almostOverdue()
     {
@@ -153,7 +166,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via email.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function email()
     {
@@ -169,7 +182,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via SMS.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function sms()
     {
@@ -185,7 +198,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via voice call.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function voice()
     {
@@ -201,7 +214,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via mail.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function mail()
     {
@@ -217,7 +230,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is successful.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function successful()
     {
@@ -231,7 +244,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification failed.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function failed()
     {
@@ -245,7 +258,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is unreported.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function unreported()
     {

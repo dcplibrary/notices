@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Dcplibrary\Notifications\Database\Factories;
 
 use Dcplibrary\Notifications\Models\PolarisNotificationLog;
 use Illuminate\Database\Eloquent\Factories\Factory;

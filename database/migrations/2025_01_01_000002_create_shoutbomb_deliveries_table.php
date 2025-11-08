@@ -28,7 +28,7 @@ return new class extends Migration
 
             // Source information
             $table->string('report_file')->nullable()->comment('Source report filename');
-            $table->enum('report_type', ['Daily', 'Weekly', 'Monthly'])->nullable();
+            $table->enum('report_type', ['Daily', 'Weekly', 'Monthly', 'text_delivery', 'voice_delivery'])->nullable();
 
             // Import tracking
             $table->timestamp('imported_at')->useCurrent();

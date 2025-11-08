@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Dcplibrary\Notifications\Database\Factories;
 
 use Dcplibrary\Notifications\Models\ShoutbombRegistration;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -56,7 +56,7 @@ class ShoutbombRegistrationFactory extends Factory
             'unsubscribes' => $unsubscribes,
             'invalid_numbers' => $invalidNumbers,
             'report_file' => 'shoutbomb_registration_' . $this->faker->date('Y-m-d') . '.csv',
-            'report_type' => 'registration_snapshot',
+            'report_type' => 'Weekly',
             'imported_at' => now(),
         ];
     }

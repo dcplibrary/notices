@@ -4,10 +4,12 @@ namespace Dcplibrary\Notifications\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class PolarisNotificationLog extends Model
 {
+    use HasFactory;
     /**
      * The connection name for the model.
      * This should point to the Polaris MSSQL database.
@@ -139,5 +141,13 @@ class PolarisNotificationLog extends Model
                 ->pluck('count', 'DeliveryOptionID')
                 ->toArray(),
         ];
+    }
+
+    /**
+     * Provide the model factory for package context.
+     */
+    protected static function newFactory()
+    {
+        return \Dcplibrary\Notifications\Database\Factories\PolarisNotificationLogFactory::new();
     }
 }

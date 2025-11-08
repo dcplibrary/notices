@@ -4,10 +4,12 @@ namespace Dcplibrary\Notifications\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class ShoutbombDelivery extends Model
 {
+    use HasFactory;
     /**
      * The table associated with the model.
      */
@@ -132,5 +134,13 @@ class ShoutbombDelivery extends Model
     public function hasFailed(): bool
     {
         return $this->status === 'Failed';
+    }
+
+    /**
+     * Provide the model factory for package context.
+     */
+    protected static function newFactory()
+    {
+        return \Dcplibrary\Notifications\Database\Factories\ShoutbombDeliveryFactory::new();
     }
 }

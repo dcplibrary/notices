@@ -4,10 +4,12 @@ namespace Dcplibrary\Notifications\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class ShoutbombKeywordUsage extends Model
 {
+    use HasFactory;
     /**
      * The table associated with the model.
      */
@@ -100,5 +102,13 @@ class ShoutbombKeywordUsage extends Model
             ->orderByDesc('total_usage')
             ->get()
             ->toArray();
+    }
+
+    /**
+     * Provide the model factory for package context.
+     */
+    protected static function newFactory()
+    {
+        return \Dcplibrary\Notifications\Database\Factories\ShoutbombKeywordUsageFactory::new();
     }
 }

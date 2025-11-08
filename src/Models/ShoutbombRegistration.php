@@ -4,10 +4,12 @@ namespace Dcplibrary\Notifications\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
 class ShoutbombRegistration extends Model
 {
+    use HasFactory;
     /**
      * The table associated with the model.
      */
@@ -101,5 +103,13 @@ class ShoutbombRegistration extends Model
         }
 
         return (($this->total_subscribers - $previous->total_subscribers) / $previous->total_subscribers) * 100;
+    }
+
+    /**
+     * Provide the model factory for package context.
+     */
+    protected static function newFactory()
+    {
+        return \Dcplibrary\Notifications\Database\Factories\ShoutbombRegistrationFactory::new();
     }
 }

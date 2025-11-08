@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace Dcplibrary\Notifications\Database\Factories;
 
 use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -44,7 +44,7 @@ class ShoutbombKeywordUsageFactory extends Factory
             'keyword_description' => $description,
             'usage_count' => $this->faker->numberBetween(1, 10),
             'report_file' => 'shoutbomb_keyword_' . $this->faker->date('Y-m-d') . '.csv',
-            'report_period' => $this->faker->date('Y-m'),
+            'report_period' => $this->faker->randomElement(['Weekly', 'Monthly']),
             'imported_at' => now(),
         ];
     }
