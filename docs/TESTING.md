@@ -2,6 +2,23 @@
 
 This document explains how to test the Polaris Notifications package.
 
+## Quick Start
+
+**Prerequisites:** SQLite or MySQL database must be available.
+
+```bash
+# 1. Install dependencies
+composer install
+
+# 2. Install SQLite (recommended)
+sudo apt-get install php-sqlite3
+
+# 3. Run tests
+vendor/bin/phpunit
+```
+
+**Note:** If tests fail with "Connection refused", see [Troubleshooting](#troubleshooting) section below.
+
 ## Test Infrastructure
 
 This package uses:
@@ -290,6 +307,59 @@ To enable tests in CI, uncomment the test section in the workflow file.
    ```
 
 ## Troubleshooting
+
+### Tests fail with "Connection refused" or database errors
+
+**Error:** `SQLSTATE[HY000] [2002] Connection refused`
+
+This means neither SQLite nor MySQL is available for testing.
+
+**Solution 1: Install SQLite (Recommended)**
+```bash
+# Ubuntu/Debian
+sudo apt-get install php-sqlite3 php8.4-sqlite3
+
+# Verify installation
+php -m | grep sqlite
+```
+
+**Solution 2: Use MySQL**
+```bash
+# Start MySQL service
+sudo service mysql start
+
+# Create test database
+mysql -u root -e "CREATE DATABASE notifications_test;"
+
+# Run tests
+vendor/bin/phpunit
+```
+
+**Solution 3: Skip database tests**
+
+If you only need to test logic without database:
+```php
+// Mark tests as incomplete
+$this->markTestSkipped('Database not available');
+```
+
+### Tests fail with "could not find driver"
+
+**Error:** `could not find driver (Connection: testing, SQL: ...)`
+
+SQLite PDO extension is not installed.
+
+**Solution:**
+```bash
+# Check which PDO drivers are available
+php -m | grep pdo
+
+# Install SQLite PDO
+sudo apt-get install php-sqlite3 php8.4-sqlite3
+
+# Restart PHP-FPM if using it
+sudo service php8.4-fpm restart
+```
 
 ### Tests fail with database errors
 
