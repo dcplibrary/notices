@@ -6,6 +6,7 @@ use Dcplibrary\PolarisNotifications\Commands\ImportPolarisNotifications;
 use Dcplibrary\PolarisNotifications\Commands\ImportShoutbombReports;
 use Dcplibrary\PolarisNotifications\Commands\AggregateNotifications;
 use Dcplibrary\PolarisNotifications\Commands\TestConnections;
+use Dcplibrary\PolarisNotifications\Commands\SeedDemoDataCommand;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 
@@ -53,6 +54,7 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
                 ImportShoutbombReports::class,
                 AggregateNotifications::class,
                 TestConnections::class,
+                SeedDemoDataCommand::class,
             ]);
         }
 
