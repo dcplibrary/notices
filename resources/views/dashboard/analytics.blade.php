@@ -23,7 +23,7 @@
         <!-- Type Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Notification Type Distribution</h3>
-            <canvas id="typeDistChart" height="250"></canvas>
+            <canvas id="typeDistChart" height="200"></canvas>
             <div class="mt-4 space-y-2">
                 @foreach($typeDistribution as $type)
                 <div class="flex justify-between text-sm">
@@ -41,7 +41,7 @@
         <!-- Delivery Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Delivery Method Distribution</h3>
-            <canvas id="deliveryDistChart" height="250"></canvas>
+            <canvas id="deliveryDistChart" height="200"></canvas>
             <div class="mt-4 space-y-2">
                 @foreach($deliveryDistribution as $delivery)
                 <div class="flex justify-between text-sm">
