@@ -41,7 +41,7 @@ This Laravel package provides a complete solution for tracking library notificat
 5. `daily_notification_summary` - Aggregated daily summaries for dashboards
 
 ### Architecture
-- **ServiceProvider**: `PolarisNotificationsServiceProvider` - Auto-loads everything
+- **ServiceProvider**: `NotificationsServiceProvider` - Auto-loads everything
 - **Commands**: 4 Artisan commands in `src/Commands/`
 - **Models**: 6 Eloquent models in `src/Models/`
 - **Services**: 4 service classes for import/aggregation logic
@@ -72,7 +72,7 @@ This is a feature branch for Claude-assisted development. All work should be com
 - Config key changed from `polaris-notifications` to `notifications`
 
 ### ServiceProvider Auto-Loading
-The ServiceProvider (`PolarisNotificationsServiceProvider`) is configured to auto-load:
+The ServiceProvider (`NotificationsServiceProvider`) is configured to auto-load:
 - **Migrations**: `loadMigrationsFrom()` on line 60
 - **Commands**: `commands()` on lines 51-56
 - **Config**: `mergeConfigFrom()` on lines 20-23
@@ -120,7 +120,7 @@ dcplibrary/notifications/
 │   ├── Commands/              # 4 Artisan commands
 │   ├── Models/                # 6 Eloquent models
 │   ├── Services/              # 4 service classes
-│   └── PolarisNotificationsServiceProvider.php
+│   └── NotificationsServiceProvider.php
 ├── composer.json
 ├── README.md                  # User-facing documentation
 └── LICENSE
@@ -131,7 +131,7 @@ dcplibrary/notifications/
 ### Adding a New Command
 1. Create command class in `src/Commands/`
 2. Use signature `notifications:command-name`
-3. Register in `PolarisNotificationsServiceProvider::boot()` line 51-56
+3. Register in `NotificationsServiceProvider::boot()` line 51-56
 4. Update README.md with usage example
 
 ### Adding a New Migration

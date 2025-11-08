@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Models;
+namespace Dcplibrary\Notifications\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;

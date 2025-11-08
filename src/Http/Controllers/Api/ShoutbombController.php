@@ -1,13 +1,13 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Http\Controllers\Api;
+namespace Dcplibrary\Notifications\Http\Controllers\Api;
 
-use Dcplibrary\PolarisNotifications\Http\Resources\ShoutbombDeliveryResource;
-use Dcplibrary\PolarisNotifications\Http\Resources\ShoutbombKeywordUsageResource;
-use Dcplibrary\PolarisNotifications\Http\Resources\ShoutbombRegistrationResource;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombDelivery;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notifications\Http\Resources\ShoutbombDeliveryResource;
+use Dcplibrary\Notifications\Http\Resources\ShoutbombKeywordUsageResource;
+use Dcplibrary\Notifications\Http\Resources\ShoutbombRegistrationResource;
+use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notifications\Models\ShoutbombRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;

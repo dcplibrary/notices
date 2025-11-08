@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Tests\Unit\Models;
+namespace Dcplibrary\Notifications\Tests\Unit\Models;
 
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
-use Dcplibrary\PolarisNotifications\Tests\TestCase;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 

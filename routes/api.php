@@ -1,9 +1,9 @@
 <?php
 
-use Dcplibrary\PolarisNotifications\Http\Controllers\Api\NotificationController;
-use Dcplibrary\PolarisNotifications\Http\Controllers\Api\SummaryController;
-use Dcplibrary\PolarisNotifications\Http\Controllers\Api\AnalyticsController;
-use Dcplibrary\PolarisNotifications\Http\Controllers\Api\ShoutbombController;
+use Dcplibrary\Notifications\Http\Controllers\Api\NotificationController;
+use Dcplibrary\Notifications\Http\Controllers\Api\SummaryController;
+use Dcplibrary\Notifications\Http\Controllers\Api\AnalyticsController;
+use Dcplibrary\Notifications\Http\Controllers\Api\ShoutbombController;
 use Illuminate\Support\Facades\Route;
 
 /*

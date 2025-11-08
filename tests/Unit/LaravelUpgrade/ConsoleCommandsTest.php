@@ -3,7 +3,7 @@
 namespace Dcplibrary\Notifications\Tests\Unit\LaravelUpgrade;
 
 use Dcplibrary\Notifications\Commands\TestConnections;
-use Dcplibrary\Notifications\Commands\ImportPolarisNotifications;
+use Dcplibrary\Notifications\Commands\ImportNotifications;
 use Dcplibrary\Notifications\Commands\ImportShoutbombReports;
 use Dcplibrary\Notifications\Commands\AggregateNotifications;
 use Dcplibrary\Notifications\Models\NotificationLog;
@@ -41,7 +41,7 @@ class ConsoleCommandsTest extends TestCase
         $commands = Artisan::all();
 
         $this->assertArrayHasKey('notifications:import-polaris', $commands);
-        $this->assertInstanceOf(ImportPolarisNotifications::class, $commands['notifications:import-polaris']);
+        $this->assertInstanceOf(ImportNotifications::class, $commands['notifications:import-polaris']);
     }
 
     /** @test */

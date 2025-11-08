@@ -1,12 +1,12 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
-use Dcplibrary\PolarisNotifications\Services\PolarisImportService;
+use Dcplibrary\Notifications\Services\PolarisImportService;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
-class ImportPolarisNotifications extends Command
+class ImportNotifications extends Command
 {
     /**
      * The name and signature of the console command.

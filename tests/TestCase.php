@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Tests;
+namespace Dcplibrary\Notifications\Tests;
 
-use Dcplibrary\PolarisNotifications\PolarisNotificationsServiceProvider;
+use Dcplibrary\Notifications\NotificationsServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -17,7 +17,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            PolarisNotificationsServiceProvider::class,
+            NotificationsServiceProvider::class,
         ];
     }
 

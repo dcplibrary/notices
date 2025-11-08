@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
-use Dcplibrary\PolarisNotifications\Services\PolarisImportService;
-use Dcplibrary\PolarisNotifications\Services\ShoutbombFTPService;
+use Dcplibrary\Notifications\Services\PolarisImportService;
+use Dcplibrary\Notifications\Services\ShoutbombFTPService;
 use Illuminate\Console\Command;
 
 class TestConnections extends Command

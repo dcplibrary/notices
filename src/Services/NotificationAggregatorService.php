@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Services;
+namespace Dcplibrary\Notifications\Services;
 
-use Dcplibrary\PolarisNotifications\Models\NotificationLog;
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

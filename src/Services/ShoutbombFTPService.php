@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Services;
+namespace Dcplibrary\Notifications\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
-use Dcplibrary\PolarisNotifications\Services\NotificationAggregatorService;
+use Dcplibrary\Notifications\Services\NotificationAggregatorService;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 

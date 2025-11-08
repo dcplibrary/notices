@@ -133,6 +133,6 @@ git diff
 **Branch**: claude/composer-package-refactor-011CUuQNMm5JBJfjP7hfrTc3
 **Commands**: notifications:*
 **Config**: config/notifications.php
-**Key File**: src/PolarisNotificationsServiceProvider.php
+**Key File**: src/NotificationsServiceProvider.php
 
 See SESSION_CONTEXT.md for complete details.

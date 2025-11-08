@@ -438,7 +438,7 @@ dcplibrary/notifications/
 │   │   │   └── ReportsController.php
 │   │   └── Middleware/
 │   │       └── EntraSSOAuth.php
-│   └── PolarisNotificationsServiceProvider.php
+│   └── NotificationsServiceProvider.php
 ├── routes/
 │   └── web.php
 ├── resources/
@@ -907,7 +907,7 @@ packages/dcplibrary/notifications/
 │
 ├── src/
 │   ├── Commands/
-│   │   ├── ImportPolarisNotifications.php    # Import from MSSQL
+│   │   ├── ImportNotifications.php    # Import from MSSQL
 │   │   └── ImportShoutbombReports.php        # Import from FTP files
 │   │
 │   ├── Models/
@@ -938,7 +938,7 @@ packages/dcplibrary/notifications/
 │   │   └── Middleware/
 │   │       └── RequireEntraAuth.php
 │   │
-│   └── PolarisNotificationsServiceProvider.php
+│   └── NotificationsServiceProvider.php
 │
 ├── routes/
 │   └── web.php
@@ -993,15 +993,15 @@ protected function schedule(Schedule $schedule)
 ### Polaris MSSQL Import (Artisan Command)
 
 ```php
-// src/Commands/ImportPolarisNotifications.php
+// src/Commands/ImportNotifications.php
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
 use Illuminate\Console\Command;
-use Dcplibrary\PolarisNotifications\Services\PolarisImportService;
+use Dcplibrary\Notifications\Services\PolarisImportService;
 
-class ImportPolarisNotifications extends Command
+class ImportNotifications extends Command
 {
     protected $signature = 'notifications:import-notifications
                             {--days=1 : Number of days to import}
@@ -1034,10 +1034,10 @@ class ImportPolarisNotifications extends Command
 // src/Commands/ImportShoutbombReports.php
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
 use Illuminate\Console\Command;
-use Dcplibrary\PolarisNotifications\Services\ShoutbombFileParser;
+use Dcplibrary\Notifications\Services\ShoutbombFileParser;
 
 class ImportShoutbombReports extends Command
 {

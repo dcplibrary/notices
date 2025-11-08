@@ -1,6 +1,6 @@
 <?php
 
-use Dcplibrary\PolarisNotifications\Http\Controllers\DashboardController;
+use Dcplibrary\Notifications\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*

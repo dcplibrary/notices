@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Commands;
+namespace Dcplibrary\Notifications\Commands;
 
-use Dcplibrary\PolarisNotifications\Services\ShoutbombFTPService;
+use Dcplibrary\Notifications\Services\ShoutbombFTPService;
 use Illuminate\Console\Command;
 
 class ImportShoutbombReports extends Command

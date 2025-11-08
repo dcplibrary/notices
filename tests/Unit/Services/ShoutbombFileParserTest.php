@@ -1,12 +1,12 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Tests\Unit\Services;
+namespace Dcplibrary\Notifications\Tests\Unit\Services;
 
-use Dcplibrary\PolarisNotifications\Services\ShoutbombFileParser;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombRegistration;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombDelivery;
-use Dcplibrary\PolarisNotifications\Tests\TestCase;
+use Dcplibrary\Notifications\Services\ShoutbombFileParser;
+use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notifications\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;

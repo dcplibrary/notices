@@ -286,7 +286,7 @@ This creates sample notifications, summaries, Shoutbomb deliveries, keyword usag
 Main notification tracking model with scopes for common queries:
 
 ```php
-use Dcplibrary\PolarisNotifications\Models\NotificationLog;
+use Dcplibrary\Notifications\Models\NotificationLog;
 
 // Get recent notifications
 $recent = NotificationLog::recent(7)->get();
@@ -308,7 +308,7 @@ $holds = NotificationLog::ofType(2)->get(); // 2 = Hold Ready
 Aggregated data for dashboard queries:
 
 ```php
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
 use Carbon\Carbon;
 
 // Get summary for date range
@@ -335,7 +335,7 @@ $deliveryBreakdown = DailyNotificationSummary::getBreakdownByDelivery(
 SMS/Voice delivery tracking:
 
 ```php
-use Dcplibrary\PolarisNotifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notifications\Models\ShoutbombDelivery;
 
 // Get failed SMS deliveries
 $failed = ShoutbombDelivery::sms()->failed()->get();
@@ -352,7 +352,7 @@ $voice = ShoutbombDelivery::voice()->recent(7)->get();
 Track patron keyword interactions (RHL, RA, OI, etc.):
 
 ```php
-use Dcplibrary\PolarisNotifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
 
 // Get keyword statistics
 $stats = ShoutbombKeywordUsage::getKeywordStats($startDate, $endDate);

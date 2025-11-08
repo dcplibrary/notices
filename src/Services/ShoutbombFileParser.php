@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Services;
+namespace Dcplibrary\Notifications\Services;
 
-use Dcplibrary\PolarisNotifications\Models\ShoutbombDelivery;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notifications\Models\ShoutbombRegistration;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;

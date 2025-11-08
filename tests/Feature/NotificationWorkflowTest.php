@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Tests\Feature;
+namespace Dcplibrary\Notifications\Tests\Feature;
 
-use Dcplibrary\PolarisNotifications\Models\NotificationLog;
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
-use Dcplibrary\PolarisNotifications\Tests\TestCase;
+use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 

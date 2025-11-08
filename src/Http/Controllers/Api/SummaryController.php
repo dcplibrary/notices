@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Http\Controllers\Api;
+namespace Dcplibrary\Notifications\Http\Controllers\Api;
 
-use Dcplibrary\PolarisNotifications\Http\Resources\DailyNotificationSummaryResource;
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Http\Resources\DailyNotificationSummaryResource;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;

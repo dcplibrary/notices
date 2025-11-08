@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\PolarisNotifications\Http\Controllers;
+namespace Dcplibrary\Notifications\Http\Controllers;
 
-use Dcplibrary\PolarisNotifications\Models\NotificationLog;
-use Dcplibrary\PolarisNotifications\Models\DailyNotificationSummary;
-use Dcplibrary\PolarisNotifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notifications\Models\ShoutbombRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;

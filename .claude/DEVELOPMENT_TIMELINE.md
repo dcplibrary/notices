@@ -36,7 +36,7 @@ Created 4 service classes:
 
 #### Command Development
 Created 4 Artisan commands:
-- `ImportPolarisNotifications` - Import notification logs
+- `ImportNotifications` - Import notification logs
 - `ImportShoutbombReports` - Import delivery reports
 - `AggregateNotifications` - Aggregate into summaries
 - `TestConnections` - Validate connectivity
@@ -76,7 +76,7 @@ Created 4 Artisan commands:
    - `config/polaris-notifications.php` → `config/notifications.php`
    - `README.md` (all examples updated)
    - `docs/COMBINED_DOCUMENTATION.md` (all examples updated)
-   - `src/PolarisNotificationsServiceProvider.php`
+   - `src/NotificationsServiceProvider.php`
    - All 4 Command classes
    - Both Service classes (PolarisImportService, ShoutbombFTPService)
    - 2 Model classes (NotificationLog, DailyNotificationSummary)
@@ -252,7 +252,7 @@ config('notifications.import.batch_size')
 
 ### Model Usage
 ```php
-use Dcplibrary\PolarisNotifications\Models\NotificationLog;
+use Dcplibrary\Notifications\Models\NotificationLog;
 
 // Get recent notifications
 NotificationLog::recent(7)->get();
