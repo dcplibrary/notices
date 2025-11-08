@@ -283,7 +283,7 @@ To add custom pages, extend the `DashboardController`:
 ```php
 namespace App\Http\Controllers;
 
-use Dcplibrary\PolarisNotifications\Http\Controllers\DashboardController as BaseDashboardController;
+use Dcplibrary\Notifications\Http\Controllers\DashboardController as BaseDashboardController;
 
 class CustomDashboardController extends BaseDashboardController
 {

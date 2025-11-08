@@ -259,7 +259,7 @@ Create multiple route configurations:
 
 ```php
 // routes/web.php (in your application)
-use Dcplibrary\PolarisNotifications\Http\Controllers\DashboardController;
+use Dcplibrary\Notifications\Http\Controllers\DashboardController;
 
 // Admin dashboard
 Route::middleware(['web', 'auth', 'role:admin'])
