@@ -180,6 +180,10 @@ https://yourapp.com/notifications
 
 **Note:** Dashboard requires authentication by default (configure in `config/notifications.php`).
 
+![Dashboard Overview](docs/images/dashboard-overview.png)
+
+> See [DASHBOARD.md](DASHBOARD.md) for detailed documentation and [SCREENSHOTS.md](SCREENSHOTS.md) for adding images.
+
 ### Dashboard Features
 
 - **Overview**: Key metrics, trends, type/delivery distribution
