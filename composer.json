@@ -22,7 +22,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Dcplibrary\\Notifications\\": "src/"
+            "Dcplibrary\\Notifications\\": "src/",
+            "Dcplibrary\\PolarisNotifications\\": "src/"
         }
     },
     "autoload-dev": {
