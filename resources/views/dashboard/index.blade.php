@@ -64,13 +64,13 @@
         <!-- Trend Chart -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Notification Trend</h3>
-            <canvas id="trendChart" height="250"></canvas>
+            <canvas id="trendChart" height="200"></canvas>
         </div>
 
         <!-- Type Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">By Notification Type</h3>
-            <canvas id="typeChart" height="250"></canvas>
+            <canvas id="typeChart" height="200"></canvas>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
         <!-- Delivery Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">By Delivery Method</h3>
-            <canvas id="deliveryChart" height="250"></canvas>
+            <canvas id="deliveryChart" height="200"></canvas>
         </div>
 
         @if($latestRegistration)
