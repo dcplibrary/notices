@@ -6,57 +6,57 @@ This guide lists all screenshots needed for the documentation and where to place
 
 ### Dashboard Documentation (DASHBOARD.md)
 
-1. **Dashboard Overview** - `docs/images/dashboard-overview.png`
+1. **Dashboard Overview** - `images/dashboard-overview.png`
    - Navigate to: `/notifications`
    - Show: Full dashboard with metrics, charts, and Shoutbomb stats
    - Browser window at ~1920x1080
    - Include navigation bar
 
-2. **Notifications List** - `docs/images/notifications-list.png`
+2. **Notifications List** - `images/notifications-list.png`
    - Navigate to: `/notifications/notifications`
    - Show: Table with filters open
    - Apply some filters to show functionality
    - Show pagination at bottom
 
-3. **Analytics Page** - `docs/images/analytics-page.png`
+3. **Analytics Page** - `images/analytics-page.png`
    - Navigate to: `/notifications/analytics`
    - Show: Success rate trend and distribution charts
    - Full page view
 
-4. **Shoutbomb Page** - `docs/images/shoutbomb-page.png`
+4. **Shoutbomb Page** - `images/shoutbomb-page.png`
    - Navigate to: `/notifications/shoutbomb`
    - Show: Subscriber stats and growth chart
    - Full page view
 
-5. **Mobile View** - `docs/images/dashboard-mobile.png`
+5. **Mobile View** - `images/dashboard-mobile.png`
    - Open dashboard on mobile or resize browser to ~375px width
    - Show responsive layout
 
 ### API Documentation (API.md)
 
-6. **API Response Example (Postman/Insomnia)** - `docs/images/api-response.png`
+6. **API Response Example (Postman/Insomnia)** - `images/api-response.png`
    - Make request to: `GET /api/notifications/notifications`
    - Show: Request with headers and JSON response
    - Use Postman or Insomnia
 
-7. **API Overview Endpoint** - `docs/images/api-overview.png`
+7. **API Overview Endpoint** - `images/api-overview.png`
    - Request: `GET /api/notifications/analytics/overview?days=30`
    - Show: Full JSON response with nested data
 
 ### Integration Guide (INTEGRATION.md)
 
-8. **Config File** - `docs/images/config-notifications.png`
+8. **Config File** - `images/config-notifications.png`
    - Show: `config/notifications.php` file in code editor
    - Highlight the dashboard and API sections
    - Use syntax highlighting
 
-9. **Route List** - `docs/images/route-list.png`
+9. **Route List** - `images/route-list.png`
    - Terminal screenshot of: `php artisan route:list | grep notifications`
    - Show: All registered routes with middleware
 
 ### README.md
 
-10. **Quick Start** - `docs/images/readme-hero.png`
+10. **Quick Start** - `images/readme-hero.png`
     - Dashboard overview or logo/banner image
     - Professional looking, welcoming
 
@@ -135,12 +135,12 @@ For responsive screenshots:
 
 ### Naming Convention
 ```
-docs/images/[section]-[description].png
+images/[section]-[description].png
 
 Examples:
-docs/images/dashboard-overview.png
-docs/images/api-response-example.png
-docs/images/mobile-responsive.png
+images/dashboard-overview.png
+images/api-response-example.png
+images/mobile-responsive.png
 ```
 
 ## Adding to Documentation
@@ -148,19 +148,19 @@ docs/images/mobile-responsive.png
 Once you have screenshots, add them to the markdown files:
 
 ```markdown
-![Dashboard Overview](docs/images/dashboard-overview.png)
+![Dashboard Overview](images/dashboard-overview.png)
 ```
 
 Or with alt text and title:
 
 ```markdown
-![Dashboard showing metrics and charts](docs/images/dashboard-overview.png "Notifications Dashboard")
+![Dashboard showing metrics and charts](images/dashboard-overview.png "Notifications Dashboard")
 ```
 
 For GitHub, you can also use HTML for more control:
 
 ```html
-<img src="docs/images/dashboard-overview.png" alt="Dashboard Overview" width="800">
+<img src="images/dashboard-overview.png" alt="Dashboard Overview" width="800">
 ```
 
 ## Privacy & Security
