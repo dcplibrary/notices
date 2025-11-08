@@ -180,6 +180,10 @@ https://yourapp.com/notifications
 
 **Note:** Dashboard requires authentication by default (configure in `config/notifications.php`).
 
+![Dashboard Overview](docs/images/dashboard-overview.png)
+
+> See [docs/DASHBOARD.md](docs/DASHBOARD.md) for detailed documentation and [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) for adding images.
+
 ### Dashboard Features
 
 - **Overview**: Key metrics, trends, type/delivery distribution
@@ -196,7 +200,7 @@ php artisan vendor:publish --tag=notifications-views
 
 Views will be in `resources/views/vendor/notifications/`.
 
-For detailed dashboard customization, see [DASHBOARD.md](DASHBOARD.md).
+For detailed dashboard customization, see [docs/DASHBOARD.md](docs/DASHBOARD.md).
 
 ### Disabling the Dashboard
 
@@ -256,7 +260,7 @@ $stats = $response->json();
 // ['total' => 1000, 'successful' => 950, 'failed' => 50, ...]
 ```
 
-For complete API documentation, see [API.md](API.md).
+For complete API documentation, see [docs/API.md](docs/API.md).
 
 ## Demo Data
 
@@ -391,6 +395,16 @@ Shoutbomb FTP → Parser → shoutbomb_* tables (MySQL)
                                          ↓
                                     Dashboard
 ```
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Dashboard Guide](docs/DASHBOARD.md)** - Using and customizing the built-in dashboard
+- **[API Reference](docs/API.md)** - Complete API endpoint documentation
+- **[Integration Guide](docs/INTEGRATION.md)** - Integrating with authentication systems
+- **[Testing Guide](docs/TESTING.md)** - Running tests and writing new tests
+- **[Screenshots Guide](docs/SCREENSHOTS.md)** - Adding visual documentation
 
 ## Requirements
 

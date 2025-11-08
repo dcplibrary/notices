@@ -84,6 +84,9 @@ If using an Entra ID/Azure AD SSO package:
 ],
 ```
 
+![Configuration Example](images/config-notifications.png)
+*Example configuration file with SSO settings*
+
 ### Example with Laravel Socialite
 
 If using Socialite for Azure AD:
@@ -468,6 +471,9 @@ php artisan tinker
 php artisan config:clear
 php artisan route:list | grep notifications
 ```
+
+![Route List](images/route-list.png)
+*Example output showing registered notification routes*
 
 ## Testing Integration
 

@@ -12,6 +12,11 @@ https://yourapp.com/notifications
 
 **Note:** The dashboard requires authentication by default. Ensure users are logged in before accessing.
 
+![Dashboard Overview](images/dashboard-overview.png)
+*Screenshot: Dashboard overview showing metrics, trends, and charts*
+
+> **Note:** Screenshot placeholder - See [SCREENSHOTS.md](SCREENSHOTS.md) for instructions on adding images.
+
 ## Configuration
 
 Dashboard settings can be configured in `config/notifications.php`:
@@ -50,6 +55,8 @@ Dashboard settings can be configured in `config/notifications.php`:
 
 **URL:** `/notifications`
 
+![Dashboard Overview](images/dashboard-overview.png)
+
 The main dashboard showing:
 - **Key Metrics**: Total sent, successful, failed, total holds
 - **Trend Chart**: Daily notification volume over time
@@ -66,6 +73,8 @@ The main dashboard showing:
 ### 2. Notifications Page
 
 **URL:** `/notifications/notifications`
+
+![Notifications List](images/notifications-list.png)
 
 A filterable list of individual notification records.
 
@@ -89,6 +98,8 @@ A filterable list of individual notification records.
 
 **URL:** `/notifications/analytics`
 
+![Analytics Page](images/analytics-page.png)
+
 Detailed analytics and visualizations.
 
 **Features:**
@@ -106,6 +117,8 @@ Detailed analytics and visualizations.
 ### 4. Shoutbomb Page
 
 **URL:** `/notifications/shoutbomb`
+
+![Shoutbomb Statistics](images/shoutbomb-page.png)
 
 Shoutbomb SMS/Voice subscriber statistics.
 
@@ -391,6 +404,9 @@ The dashboard requires authentication by default. Options:
 ## Mobile Responsiveness
 
 The dashboard is mobile-responsive using Tailwind's responsive classes. Test on mobile devices and adjust breakpoints as needed in published views.
+
+![Mobile View](images/dashboard-mobile.png)
+*Dashboard on mobile devices*
 
 ## Next Steps
 

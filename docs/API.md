@@ -95,6 +95,9 @@ curl -X GET "https://yourapp.com/api/notifications/notifications?days=7&successf
 }
 ```
 
+![API Response Example](images/api-response.png)
+*Example API request and response in Postman*
+
 ### Get Single Notification
 
 ```
@@ -241,6 +244,9 @@ Get comprehensive dashboard overview data.
   ]
 }
 ```
+
+![API Overview Response](images/api-overview.png)
+*Analytics overview endpoint response*
 
 ### Get Time Series Data
 
