@@ -1,5 +1,5 @@
 {
-    "name": "dcplibrary/polaris-notifications",
+    "name": "dcplibrary/notifications",
     "description": "Laravel package for tracking and analyzing Polaris ILS notifications with Shoutbomb integration",
     "type": "library",
     "keywords": ["laravel", "polaris", "ils", "notifications", "shoutbomb", "library"],

@@ -11,7 +11,7 @@ class TestConnections extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'polaris:test-connections
+    protected $signature = 'notifications:test-connections
                             {--polaris : Test only Polaris MSSQL connection}
                             {--shoutbomb : Test only Shoutbomb FTP connection}';
 
@@ -50,7 +50,7 @@ class TestConnections extends Command
 
         // Test Shoutbomb FTP connection
         if (!$this->option('polaris')) {
-            if (config('polaris-notifications.shoutbomb.enabled')) {
+            if (config('notifications.shoutbomb.enabled')) {
                 $this->line('→ Testing Shoutbomb FTP connection...');
 
                 $ftpResult = $ftpService->testConnection();
@@ -88,13 +88,13 @@ class TestConnections extends Command
             $this->table(
                 ['Setting', 'Value'],
                 [
-                    ['Polaris Host', config('polaris-notifications.polaris_connection.host')],
-                    ['Polaris Database', config('polaris-notifications.polaris_connection.database')],
-                    ['Reporting Org ID', config('polaris-notifications.reporting_org_id')],
-                    ['Shoutbomb Enabled', config('polaris-notifications.shoutbomb.enabled') ? 'Yes' : 'No'],
-                    ['Shoutbomb FTP Host', config('polaris-notifications.shoutbomb.ftp.host', 'Not configured')],
-                    ['Default Import Days', config('polaris-notifications.import.default_days')],
-                    ['Batch Size', config('polaris-notifications.import.batch_size')],
+                    ['Polaris Host', config('notifications.polaris_connection.host')],
+                    ['Polaris Database', config('notifications.polaris_connection.database')],
+                    ['Reporting Org ID', config('notifications.reporting_org_id')],
+                    ['Shoutbomb Enabled', config('notifications.shoutbomb.enabled') ? 'Yes' : 'No'],
+                    ['Shoutbomb FTP Host', config('notifications.shoutbomb.ftp.host', 'Not configured')],
+                    ['Default Import Days', config('notifications.import.default_days')],
+                    ['Batch Size', config('notifications.import.batch_size')],
                 ]
             );
         }

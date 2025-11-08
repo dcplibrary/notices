@@ -20,12 +20,12 @@ class ShoutbombFTPService
      */
     public function connect(): bool
     {
-        if (!config('polaris-notifications.shoutbomb.enabled')) {
+        if (!config('notifications.shoutbomb.enabled')) {
             Log::info('Shoutbomb FTP is disabled');
             return false;
         }
 
-        $config = config('polaris-notifications.shoutbomb.ftp');
+        $config = config('notifications.shoutbomb.ftp');
 
         try {
             if ($config['ssl']) {
@@ -80,7 +80,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('polaris-notifications.shoutbomb.paths.monthly_reports');
+            $remotePath = config('notifications.shoutbomb.paths.monthly_reports');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -129,7 +129,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('polaris-notifications.shoutbomb.paths.weekly_reports');
+            $remotePath = config('notifications.shoutbomb.paths.weekly_reports');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -177,7 +177,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('polaris-notifications.shoutbomb.paths.daily_invalid');
+            $remotePath = config('notifications.shoutbomb.paths.daily_invalid');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -225,7 +225,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('polaris-notifications.shoutbomb.paths.daily_undelivered');
+            $remotePath = config('notifications.shoutbomb.paths.daily_undelivered');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -269,7 +269,7 @@ class ShoutbombFTPService
     private function downloadFile(string $remoteFile): ?string
     {
         try {
-            $localDir = config('polaris-notifications.shoutbomb.local_storage_path');
+            $localDir = config('notifications.shoutbomb.local_storage_path');
 
             if (!is_dir($localDir)) {
                 mkdir($localDir, 0755, true);

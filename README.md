@@ -26,10 +26,10 @@ composer require dcplibrary/notifications
 ### 2. Publish configuration file
 
 ```bash
-php artisan vendor:publish --tag=polaris-notifications-config
+php artisan vendor:publish --tag=notifications-config
 ```
 
-This creates `config/polaris-notifications.php` where you can configure database connections, FTP settings, and other options.
+This creates `config/notifications.php` where you can configure database connections, FTP settings, and other options.
 
 ### 3. Configure environment variables
 
@@ -74,72 +74,72 @@ This creates the following tables:
 Before importing data, test your connections:
 
 ```bash
-php artisan polaris:test-connections
+php artisan notifications:test-connections
 ```
 
 Test specific connections:
 ```bash
-php artisan polaris:test-connections --polaris
-php artisan polaris:test-connections --shoutbomb
+php artisan notifications:test-connections --polaris
+php artisan notifications:test-connections --shoutbomb
 ```
 
 ### Import Polaris Notifications
 
 Import notifications from the last 24 hours (default):
 ```bash
-php artisan polaris:import-notifications
+php artisan notifications:import-notifications
 ```
 
 Import from the last 7 days:
 ```bash
-php artisan polaris:import-notifications --days=7
+php artisan notifications:import-notifications --days=7
 ```
 
 Import a specific date range:
 ```bash
-php artisan polaris:import-notifications --start-date=2025-01-01 --end-date=2025-01-31
+php artisan notifications:import-notifications --start-date=2025-01-01 --end-date=2025-01-31
 ```
 
 Import all historical data:
 ```bash
-php artisan polaris:import-notifications --full
+php artisan notifications:import-notifications --full
 ```
 
 ### Import Shoutbomb Reports
 
 Import all Shoutbomb reports from FTP:
 ```bash
-php artisan polaris:import-shoutbomb
+php artisan notifications:import-shoutbomb
 ```
 
 Import specific report types:
 ```bash
-php artisan polaris:import-shoutbomb --type=monthly
-php artisan polaris:import-shoutbomb --type=weekly
-php artisan polaris:import-shoutbomb --type=daily-invalid
-php artisan polaris:import-shoutbomb --type=daily-undelivered
+php artisan notifications:import-shoutbomb --type=monthly
+php artisan notifications:import-shoutbomb --type=weekly
+php artisan notifications:import-shoutbomb --type=daily-invalid
+php artisan notifications:import-shoutbomb --type=daily-undelivered
 ```
 
 ### Aggregate Notification Data
 
 Aggregate yesterday's notifications (typical nightly job):
 ```bash
-php artisan polaris:aggregate-notifications
+php artisan notifications:aggregate-notifications
 ```
 
 Aggregate a specific date:
 ```bash
-php artisan polaris:aggregate-notifications --date=2025-01-15
+php artisan notifications:aggregate-notifications --date=2025-01-15
 ```
 
 Aggregate a date range:
 ```bash
-php artisan polaris:aggregate-notifications --start-date=2025-01-01 --end-date=2025-01-31
+php artisan notifications:aggregate-notifications --start-date=2025-01-01 --end-date=2025-01-31
 ```
 
 Re-aggregate all historical data:
 ```bash
-php artisan polaris:aggregate-notifications --all
+php artisan notifications:aggregate-notifications --all
 ```
 
 ## Scheduled Tasks
@@ -150,17 +150,17 @@ Add these to your `app/Console/Kernel.php` for automated imports:
 protected function schedule(Schedule $schedule)
 {
     // Import Polaris notifications hourly
-    $schedule->command('polaris:import-notifications --days=1')
+    $schedule->command('notifications:import-notifications --days=1')
         ->hourly()
         ->withoutOverlapping();
 
     // Import Shoutbomb reports daily at 9 AM
-    $schedule->command('polaris:import-shoutbomb')
+    $schedule->command('notifications:import-shoutbomb')
         ->dailyAt('09:00')
         ->withoutOverlapping();
 
     // Aggregate yesterday's data at midnight
-    $schedule->command('polaris:aggregate-notifications')
+    $schedule->command('notifications:aggregate-notifications')
         ->dailyAt('00:30')
         ->withoutOverlapping();
 }
@@ -250,7 +250,7 @@ $rhlUsage = ShoutbombKeywordUsage::getTotalUsageByKeyword('RHL', $startDate, $en
 
 ## Configuration
 
-The `config/polaris-notifications.php` file contains all configuration options:
+The `config/notifications.php` file contains all configuration options:
 
 - **polaris_connection**: MSSQL connection settings
 - **import**: Batch size, default days, duplicate handling

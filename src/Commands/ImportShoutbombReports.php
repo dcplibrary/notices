@@ -10,7 +10,7 @@ class ImportShoutbombReports extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'polaris:import-shoutbomb
+    protected $signature = 'notifications:import-shoutbomb
                             {--type=all : Type of reports to import (monthly, weekly, daily-invalid, daily-undelivered, all)}';
 
     /**
@@ -23,7 +23,7 @@ class ImportShoutbombReports extends Command
      */
     public function handle(ShoutbombFTPService $ftpService): int
     {
-        if (!config('polaris-notifications.shoutbomb.enabled')) {
+        if (!config('notifications.shoutbomb.enabled')) {
             $this->warn('⚠️  Shoutbomb import is disabled in configuration.');
             return Command::SUCCESS;
         }

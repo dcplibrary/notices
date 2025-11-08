@@ -361,7 +361,7 @@ Created comprehensive fake dataset:
 - Excellent MSSQL support via `sqlsrv` driver
 - Great for web dashboards (Blade, Livewire, or Inertia)
 - Laravel Excel for report generation
-- Can create reusable package: `dcplibrary/polaris-notifications`
+- Can create reusable package: `dcplibrary/notifications`
 - Strong community, mature package ecosystem
 
 ❌ **Cons:**
@@ -401,7 +401,7 @@ Created comprehensive fake dataset:
 1. You already have Entra SSO working in Laravel
 2. Web dashboard is the primary deliverable
 3. Laravel's MSSQL support is solid
-4. Can package it: `dcplibrary/polaris-notifications`
+4. Can package it: `dcplibrary/notifications`
 5. Reusable for other library projects
 6. The data volume isn't huge (doesn't need Python's speed)
 
@@ -413,9 +413,9 @@ Created comprehensive fake dataset:
 
 ### Planned Package Structure
 ```
-dcplibrary/polaris-notifications/
+dcplibrary/notifications/
 ├── config/
-│   └── polaris-notifications.php
+│   └── notifications.php
 ├── database/
 │   └── migrations/
 │       ├── create_notification_logs_table.php
@@ -888,9 +888,9 @@ INSERT INTO notification_statuses VALUES
 ## Laravel Package Structure
 
 ```
-packages/dcplibrary/polaris-notifications/
+packages/dcplibrary/notifications/
 ├── config/
-│   └── polaris-notifications.php           # Configuration file
+│   └── notifications.php           # Configuration file
 │
 ├── database/
 │   ├── migrations/
@@ -974,17 +974,17 @@ packages/dcplibrary/polaris-notifications/
 protected function schedule(Schedule $schedule)
 {
     // Import Polaris notifications every hour
-    $schedule->command('polaris:import-notifications')
+    $schedule->command('notifications:import-notifications')
         ->hourly()
         ->runInBackground();
 
     // Import Shoutbomb files daily at 9 AM
-    $schedule->command('polaris:import-shoutbomb')
+    $schedule->command('notifications:import-shoutbomb')
         ->dailyAt('09:00')
         ->runInBackground();
 
     // Aggregate daily summaries at 11 PM
-    $schedule->command('polaris:aggregate-daily')
+    $schedule->command('notifications:aggregate-notifications')
         ->dailyAt('23:00')
         ->runInBackground();
 }
@@ -1003,7 +1003,7 @@ use Dcplibrary\PolarisNotifications\Services\PolarisImportService;
 
 class ImportPolarisNotifications extends Command
 {
-    protected $signature = 'polaris:import-notifications
+    protected $signature = 'notifications:import-notifications
                             {--days=1 : Number of days to import}
                             {--full : Full historical import}';
 
@@ -1041,7 +1041,7 @@ use Dcplibrary\PolarisNotifications\Services\ShoutbombFileParser;
 
 class ImportShoutbombReports extends Command
 {
-    protected $signature = 'polaris:import-shoutbomb
+    protected $signature = 'notifications:import-shoutbomb
                             {--path= : Path to report files}';
 
     protected $description = 'Import Shoutbomb reports from FTP directory';
@@ -1050,7 +1050,7 @@ class ImportShoutbombReports extends Command
     {
         $this->info('Starting Shoutbomb report import...');
 
-        $path = $this->option('path') ?? config('polaris-notifications.shoutbomb_path');
+        $path = $this->option('path') ?? config('notifications.shoutbomb_path');
 
         // Find all unprocessed report files
         $files = glob($path . '/*.txt');
@@ -1080,7 +1080,7 @@ class ImportShoutbombReports extends Command
 ## Configuration
 
 ```php
-// config/polaris-notifications.php
+// config/notifications.php
 <?php
 
 return [
