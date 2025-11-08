@@ -9,6 +9,7 @@ use Dcplibrary\PolarisNotifications\Commands\TestConnections;
 use Dcplibrary\PolarisNotifications\Commands\SeedDemoDataCommand;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
 
 class PolarisNotificationsServiceProvider extends ServiceProvider
 {
@@ -61,11 +62,11 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
         // Load migrations automatically
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        // Load routes (if you create them)
-        // $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        // Load views
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'notifications');
 
-        // Load views (if you create them)
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'notifications');
+        // Register routes
+        $this->registerRoutes();
     }
 
     /**
@@ -77,6 +78,34 @@ class PolarisNotificationsServiceProvider extends ServiceProvider
 
         if ($config) {
             Config::set('database.connections.polaris', $config);
+        }
+    }
+
+    /**
+     * Register package routes.
+     */
+    protected function registerRoutes(): void
+    {
+        // Register API routes if enabled
+        if (config('notifications.api.enabled', true)) {
+            Route::group([
+                'prefix' => config('notifications.api.route_prefix', 'api/notifications'),
+                'middleware' => config('notifications.api.middleware', ['api', 'auth:sanctum']),
+                'as' => 'notifications.api.',
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            });
+        }
+
+        // Register web (dashboard) routes if enabled
+        if (config('notifications.dashboard.enabled', true)) {
+            Route::group([
+                'prefix' => config('notifications.dashboard.route_prefix', 'notifications'),
+                'middleware' => config('notifications.dashboard.middleware', ['web', 'auth']),
+                'as' => 'notifications.',
+            ], function () {
+                $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+            });
         }
     }
 

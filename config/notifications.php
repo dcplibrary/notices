@@ -95,11 +95,21 @@ return [
     | Dashboard Settings
     |--------------------------------------------------------------------------
     |
-    | Configure dashboard display preferences.
+    | Configure the built-in dashboard interface. The dashboard can be
+    | disabled if you're building a custom frontend using the API.
     |
     */
 
     'dashboard' => [
+        // Enable or disable the default dashboard
+        'enabled' => env('NOTIFICATIONS_DASHBOARD_ENABLED', true),
+
+        // Route prefix for dashboard URLs
+        'route_prefix' => env('NOTIFICATIONS_DASHBOARD_PREFIX', 'notifications'),
+
+        // Middleware applied to dashboard routes
+        'middleware' => ['web', 'auth'],
+
         // Default date range for dashboard (days)
         'default_date_range' => 30,
 
@@ -114,6 +124,36 @@ return [
 
         // Refresh interval in seconds
         'refresh_interval' => 300,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | API Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure the RESTful API endpoints. The API can be used to build
+    | custom dashboards or integrate with other applications.
+    |
+    */
+
+    'api' => [
+        // Enable or disable API routes
+        'enabled' => env('NOTIFICATIONS_API_ENABLED', true),
+
+        // Route prefix for API URLs
+        'route_prefix' => env('NOTIFICATIONS_API_PREFIX', 'api/notifications'),
+
+        // Middleware applied to API routes
+        'middleware' => ['api', 'auth:sanctum'],
+
+        // Rate limiting (requests per minute)
+        'rate_limit' => env('NOTIFICATIONS_API_RATE_LIMIT', 60),
+
+        // Default pagination size
+        'per_page' => 20,
+
+        // Maximum pagination size
+        'max_per_page' => 100,
     ],
 
     /*
