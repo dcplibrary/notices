@@ -122,7 +122,7 @@ class DashboardController extends Controller
                 SUM(total_failed) as total_failed,
                 CASE
                     WHEN SUM(total_sent) > 0
-                    THEN ROUND((SUM(total_success) / SUM(total_sent)) * 100, 2)
+                    THEN ROUND((SUM(total_success) * 100.0 / SUM(total_sent)), 2)
                     ELSE 0
                 END as success_rate
             ')
