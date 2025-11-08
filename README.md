@@ -15,6 +15,7 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **Historical Analysis**: Aggregated summaries and trend analysis
 - ✅ **Comprehensive Commands**: Artisan commands for all operations
 - ✅ **Fully Customizable**: Publish views, disable components, use API only
+- 🚧 **Email Report Ingester**: Automated email report fetching and parsing (planned)
 
 ## Installation
 
