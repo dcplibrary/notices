@@ -6,14 +6,15 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 
 ## Features
 
-- ✅ Direct MSSQL connection to Polaris ILS database
-- ✅ FTP integration for Shoutbomb SMS/Voice delivery reports
-- ✅ Automated daily imports via scheduled tasks
-- ✅ Real-time notification tracking and verification
-- ✅ Historical trend analysis with aggregated summaries
-- ✅ Dashboard-ready data models
-- ✅ Comprehensive Artisan commands
-- ✅ Configurable import schedules and batch sizes
+- ✅ **Built-in Dashboard**: Visualize notification data out-of-the-box with charts and metrics
+- ✅ **RESTful API**: Access data programmatically for custom integrations
+- ✅ **Direct MSSQL Connection**: Connect to Polaris ILS database
+- ✅ **Shoutbomb Integration**: Import SMS/Voice delivery reports via FTP
+- ✅ **Automated Imports**: Schedule daily/hourly imports via Laravel scheduler
+- ✅ **Real-time Tracking**: Track notification delivery across all channels
+- ✅ **Historical Analysis**: Aggregated summaries and trend analysis
+- ✅ **Comprehensive Commands**: Artisan commands for all operations
+- ✅ **Fully Customizable**: Publish views, disable components, use API only
 
 ## Installation
 
@@ -165,6 +166,114 @@ protected function schedule(Schedule $schedule)
         ->withoutOverlapping();
 }
 ```
+
+## Dashboard
+
+This package includes a **built-in dashboard** for visualizing notification data. The dashboard works out-of-the-box and can be customized.
+
+### Accessing the Dashboard
+
+After installation, visit:
+```
+https://yourapp.com/notifications
+```
+
+**Note:** Dashboard requires authentication by default (configure in `config/notifications.php`).
+
+### Dashboard Features
+
+- **Overview**: Key metrics, trends, type/delivery distribution
+- **Notifications List**: Filterable table of individual notifications
+- **Analytics**: Success rates, detailed breakdowns, performance metrics
+- **Shoutbomb**: Subscriber statistics and growth trends
+
+### Customization
+
+Publish and modify the views:
+```bash
+php artisan vendor:publish --tag=notifications-views
+```
+
+Views will be in `resources/views/vendor/notifications/`.
+
+For detailed dashboard customization, see [DASHBOARD.md](DASHBOARD.md).
+
+### Disabling the Dashboard
+
+If building a custom UI using the API:
+
+```php
+// config/notifications.php
+'dashboard' => [
+    'enabled' => false,
+],
+```
+
+## API
+
+The package provides a **RESTful API** for accessing notification data. Perfect for building custom dashboards or integrating with other systems.
+
+### API Endpoints
+
+All endpoints are prefixed with `/api/notifications`:
+
+```bash
+# Get notifications (with filters)
+GET /api/notifications/notifications?days=7&successful=1
+
+# Get daily summaries
+GET /api/notifications/summaries
+
+# Get analytics overview
+GET /api/notifications/analytics/overview?days=30
+
+# Get Shoutbomb data
+GET /api/notifications/shoutbomb/deliveries
+GET /api/notifications/shoutbomb/keyword-usage
+GET /api/notifications/shoutbomb/registrations/latest
+```
+
+### Authentication
+
+API routes use Laravel Sanctum by default:
+
+```bash
+curl -X GET "https://yourapp.com/api/notifications/notifications" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+### Example: Fetch Notification Stats
+
+```php
+use Illuminate\Support\Facades\Http;
+
+$response = Http::withToken('YOUR_TOKEN')
+    ->get('/api/notifications/notifications/stats', [
+        'days' => 30
+    ]);
+
+$stats = $response->json();
+// ['total' => 1000, 'successful' => 950, 'failed' => 50, ...]
+```
+
+For complete API documentation, see [API.md](API.md).
+
+## Demo Data
+
+Generate realistic demo data for testing the dashboard:
+
+```bash
+# Generate 30 days of demo data
+php artisan notifications:seed-demo
+
+# Generate 60 days
+php artisan notifications:seed-demo --days=60
+
+# Clear existing data and seed fresh
+php artisan notifications:seed-demo --fresh
+```
+
+This creates sample notifications, summaries, Shoutbomb deliveries, keyword usage, and registration snapshots.
 
 ## Models
 
