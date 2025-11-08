@@ -57,7 +57,9 @@
     <!-- Registration Trend -->
     <div class="bg-white shadow rounded-lg p-6 mb-8">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Subscriber Growth</h3>
-        <canvas id="registrationChart" height="100"></canvas>
+        <div style="height: 200px;">
+            <canvas id="registrationChart"></canvas>
+        </div>
     </div>
     @endif
 

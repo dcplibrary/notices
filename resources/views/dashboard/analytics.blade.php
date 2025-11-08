@@ -15,7 +15,9 @@
     <!-- Success Rate Trend -->
     <div class="bg-white shadow rounded-lg p-6 mb-8">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Success Rate Trend</h3>
-        <canvas id="successRateChart" height="100"></canvas>
+        <div style="height: 200px;">
+            <canvas id="successRateChart"></canvas>
+        </div>
     </div>
 
     <!-- Distribution Charts -->
@@ -23,7 +25,9 @@
         <!-- Type Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Notification Type Distribution</h3>
-            <canvas id="typeDistChart" height="200"></canvas>
+            <div style="height: 300px;">
+                <canvas id="typeDistChart"></canvas>
+            </div>
             <div class="mt-4 space-y-2">
                 @foreach($typeDistribution as $type)
                 <div class="flex justify-between text-sm">
@@ -41,7 +45,9 @@
         <!-- Delivery Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Delivery Method Distribution</h3>
-            <canvas id="deliveryDistChart" height="200"></canvas>
+            <div style="height: 300px;">
+                <canvas id="deliveryDistChart"></canvas>
+            </div>
             <div class="mt-4 space-y-2">
                 @foreach($deliveryDistribution as $delivery)
                 <div class="flex justify-between text-sm">
