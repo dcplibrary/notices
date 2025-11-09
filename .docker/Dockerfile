@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get install -y nodejs libicu-dev && \
     apt-get install -y zlib1g-dev mysql-client-* libzip-dev zip nano && \
     apt-get install -y freetds-dev freetds-bin freetds-common && \
-    apt-get install -y libc-client-dev libkrb5-dev && \
+    apt-get install -y libc-client2007e-dev libkrb5-dev && \
     docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
     docker-php-ext-install pdo_dblib && \
     docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
