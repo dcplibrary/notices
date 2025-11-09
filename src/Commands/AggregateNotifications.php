@@ -39,7 +39,7 @@ class AggregateNotifications extends Command
                 $this->warn('⚠️  Re-aggregating all historical data. This may take a while...');
 
                 if ($this->confirm('This will overwrite existing aggregated data. Are you sure?', true)) {
-                    $result = $aggregator->reAggregateAll();
+                    $result = $this->aggregateAllWithProgress($aggregator);
                 } else {
                     $this->info('Aggregation cancelled.');
                     return Command::SUCCESS;
@@ -59,7 +59,7 @@ class AggregateNotifications extends Command
 
                 $this->info("Aggregating notifications from {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}...");
 
-                $result = $aggregator->aggregateDateRange($startDate, $endDate);
+                $result = $this->aggregateDateRangeWithProgress($aggregator, $startDate, $endDate);
 
             } else {
                 // Default: aggregate yesterday
@@ -109,5 +109,73 @@ class AggregateNotifications extends Command
 
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * Aggregate all historical data with progress feedback.
+     */
+    protected function aggregateAllWithProgress(NotificationAggregatorService $aggregator): array
+    {
+        // Get date range from notification_logs
+        $firstDate = \Dcplibrary\Notifications\Models\NotificationLog::min('notification_date');
+        $lastDate = \Dcplibrary\Notifications\Models\NotificationLog::max('notification_date');
+
+        if (!$firstDate || !$lastDate) {
+            $this->warn('No notification data found to aggregate');
+            return [
+                'success' => false,
+                'message' => 'No notification data found',
+                'start_date' => null,
+                'end_date' => null,
+                'combinations_aggregated' => 0,
+            ];
+        }
+
+        $startDate = Carbon::parse($firstDate)->startOfDay();
+        $endDate = Carbon::parse($lastDate)->startOfDay();
+
+        $this->info("Found data from {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}");
+        $this->newLine();
+
+        return $this->aggregateDateRangeWithProgress($aggregator, $startDate, $endDate);
+    }
+
+    /**
+     * Aggregate date range with progress bar.
+     */
+    protected function aggregateDateRangeWithProgress(NotificationAggregatorService $aggregator, Carbon $startDate, Carbon $endDate): array
+    {
+        $totalDays = $startDate->diffInDays($endDate) + 1;
+        $totalAggregated = 0;
+        $currentDate = $startDate->copy();
+
+        $this->info("Processing {$totalDays} days...");
+        $this->newLine();
+
+        $progressBar = $this->output->createProgressBar($totalDays);
+        $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% - %message%');
+        $progressBar->setMessage('Starting...');
+        $progressBar->start();
+
+        while ($currentDate->lte($endDate)) {
+            $progressBar->setMessage("Processing {$currentDate->format('Y-m-d')}");
+
+            $result = $aggregator->aggregateDate($currentDate);
+            $totalAggregated += $result['combinations_aggregated'];
+
+            $progressBar->advance();
+            $currentDate->addDay();
+        }
+
+        $progressBar->setMessage('Complete!');
+        $progressBar->finish();
+        $this->newLine(2);
+
+        return [
+            'success' => true,
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+            'combinations_aggregated' => $totalAggregated,
+        ];
     }
 }
