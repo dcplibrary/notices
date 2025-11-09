@@ -103,6 +103,14 @@ class ShoutbombPhoneNoticeImporter
                 $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
             }
 
+            // Normalize all values for SQLite bulk insert
+            // SQLite needs consistent types - convert integers to strings for insert
+            foreach ($notice as $key => $value) {
+                if ($value !== null && !is_string($value)) {
+                    $notice[$key] = (string) $value;
+                }
+            }
+
             $batch[] = $notice;
 
             // Insert in batches of 500
