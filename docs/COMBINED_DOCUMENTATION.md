@@ -319,6 +319,33 @@ Create an automated web application to track, log, and verify Polaris ILS (Integ
 - User requested documentation updates and timeline maintenance
 - Created note for future Claude sessions to maintain development timeline
 
+**Evening Session:**
+- **COMPLETED Email Report Ingester Implementation** ✅
+- Analyzed two Shoutbomb email report formats:
+  1. "Invalid patron phone number" (opt-outs & invalid phones) - `::` delimited
+  2. "Voice notices that were not delivered" - `|` delimited
+- Created migration to extend `shoutbomb_deliveries` table:
+  - Added `patron_id`, `patron_name`, `library_name`, `status_code` fields
+  - Extended status enum to include 'OptedOut'
+  - Extended report_type enum for email sources
+- Implemented `EmailReportService` (src/Services/EmailReportService.php):
+  - IMAP connection management
+  - Email fetching with search criteria
+  - Mark as read and move to folder functionality
+  - Connection testing
+- Implemented `ShoutbombEmailParser` (src/Services/ShoutbombEmailParser.php):
+  - Parses both `::` and `|` delimited formats
+  - Imports opt-out, invalid, and undelivered voice records
+  - Duplicate detection
+  - Phone number normalization
+- Created `ImportEmailReports` command:
+  - Options: --mark-read, --move-to, --limit
+  - Progress reporting and statistics
+- Updated `TestConnections` command to test email IMAP connection
+- Added email configuration to `config/notifications.php`
+- Updated README with email ingester documentation
+- **Package Status:** ✅ Email ingester fully implemented and ready to use
+
 ---
 
 ## Phase 1: Discovery & Understanding
@@ -594,7 +621,7 @@ CREATE TABLE notification_summary (
 
 ## Phase 5: Email Report Ingester
 
-### Status: 📋 PLANNING (Started November 8, 2025)
+### Status: ✅ COMPLETE (November 8, 2025)
 
 ### Background
 
@@ -750,7 +777,36 @@ $schedule->command('notifications:import-email-reports')
 6. Test with historical email reports
 7. Deploy and schedule
 
-**Status:** ⏳ Awaiting sample email reports from user
+**Status:** ✅ COMPLETED - User provided samples and implementation finished
+
+### Implementation Summary
+
+**Email Report Formats Analyzed:**
+
+1. **Opt-Out & Invalid Phone Numbers Report**
+   - Subject: "Invalid patron phone number [Date]"
+   - Time: 6:00 AM daily
+   - Format: `phone_number :: patron_barcode :: patron_id :: status_code :: delivery_type`
+   - Sections: OPTED-OUT and invalid
+
+2. **Undelivered Voice Notices Report**
+   - Subject: "Voice notices that were not delivered on [Date]"
+   - Time: 4:10 PM daily
+   - Format: `phone_number | patron_barcode | library_name | patron_name | message_type`
+
+**Components Created:**
+
+1. `EmailReportService` - IMAP email connection and retrieval
+2. `ShoutbombEmailParser` - Multi-format parser for email reports
+3. `ImportEmailReports` - Artisan command for scheduled imports
+4. Migration: Added patron_id, patron_name, library_name, status_code to shoutbomb_deliveries
+5. Extended enums: Added 'OptedOut' status and email report types
+6. Updated `TestConnections` command for email testing
+7. Configuration: Added email_reports section to config
+
+**Architecture Decision:**
+
+Reused existing `shoutbomb_deliveries` table rather than creating a new table, since email reports contain complementary Shoutbomb data (opt-outs, invalid phones, undelivered voice). This maintains data consistency and integrates seamlessly with existing dashboard and API.
 
 ---
 
@@ -790,12 +846,30 @@ $schedule->command('notifications:import-email-reports')
 
 ### Decision #5: Email Report Ingester
 **Date:** November 8, 2025
-**Decision:** Add third data source via email report ingestion (PLANNING)
+**Decision:** ✅ Implement third data source via email report ingestion using IMAP
 **Rationale:**
-- User receives automated email reports that currently require manual processing
-- Can follow established pattern from ShoutbombFTPService/Parser
-- Would complete the automation of all notification data sources
-**Status:** 📋 PLANNING - Awaiting sample reports and requirements clarification
+- User receives automated Shoutbomb email reports (opt-outs, invalid phones, undelivered voice)
+- Follows established pattern from ShoutbombFTPService/Parser
+- Completes automation of all notification data sources
+- Eliminates manual processing of email reports
+**Implementation Details:**
+- Uses PHP IMAP extension for email connectivity
+- Parses two different delimited formats (`::` and `|`)
+- Extends existing `shoutbomb_deliveries` table (not new table)
+- Added 'OptedOut' status to track patron opt-outs separately from invalid numbers
+- Configurable email connection via environment variables
+**Outcome:** ✅ Successfully implemented - November 8, 2025 (same day)
+
+### Decision #6: Reuse shoutbomb_deliveries Table for Email Data
+**Date:** November 8, 2025
+**Decision:** Extend `shoutbomb_deliveries` table rather than create separate email reports table
+**Rationale:**
+- Email reports contain Shoutbomb-specific data (opt-outs, invalid, undelivered)
+- Same domain as FTP reports - complementary data sources
+- Avoids data duplication and maintains single source of truth
+- Simplifies dashboard and API - no need for separate endpoints
+- Added `report_type` enum values to distinguish source (FTP vs email)
+**Outcome:** ✅ Seamless integration with existing architecture
 
 ---
 
