@@ -89,19 +89,25 @@ class ShoutbombPhoneNoticeImporter
         $notices = $this->parser->parsePhoneNoticesCSV($filePath);
         $imported = 0;
         $batch = [];
+        $timestamp = now()->toDateTimeString();
 
         foreach ($notices as $notice) {
-            // Add metadata
+            // Add metadata with proper string formatting for bulk insert
             $notice['source_file'] = $filename;
-            $notice['imported_at'] = now();
-            $notice['created_at'] = now();
-            $notice['updated_at'] = now();
+            $notice['imported_at'] = $timestamp;
+            $notice['created_at'] = $timestamp;
+            $notice['updated_at'] = $timestamp;
+
+            // Convert notice_date to proper format if it exists
+            if (isset($notice['notice_date']) && $notice['notice_date'] instanceof \Carbon\Carbon) {
+                $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
+            }
 
             $batch[] = $notice;
 
             // Insert in batches of 500
             if (count($batch) >= 500) {
-                ShoutbombPhoneNotice::insert($batch);
+                DB::table('shoutbomb_phone_notices')->insert($batch);
                 $imported += count($batch);
                 $batch = [];
             }
@@ -109,7 +115,7 @@ class ShoutbombPhoneNoticeImporter
 
         // Insert remaining
         if (!empty($batch)) {
-            ShoutbombPhoneNotice::insert($batch);
+            DB::table('shoutbomb_phone_notices')->insert($batch);
             $imported += count($batch);
         }
 
