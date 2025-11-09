@@ -39,6 +39,7 @@ Add the following to your `.env` file:
 
 ```env
 # Polaris MSSQL Database
+POLARIS_DB_DRIVER=dblib  # Use 'dblib' for Linux/FreeTDS or 'sqlsrv' for Windows
 POLARIS_DB_HOST=your-polaris-server.local
 POLARIS_DB_PORT=1433
 POLARIS_DB_DATABASE=Polaris
@@ -444,6 +445,48 @@ Comprehensive documentation is available in the `docs/` directory:
 - MSSQL Server (for Polaris database)
 - MySQL/MariaDB (for local cache)
 - FTP extension enabled (for Shoutbomb imports)
+- **SQL Server PDO driver** (see Troubleshooting below)
+
+## Troubleshooting
+
+### ❌ "could not find driver" error
+
+If you see `could not find driver` when testing the Polaris connection, the SQL Server PDO driver is not installed.
+
+**Quick Fix (Linux):**
+```bash
+# Install FreeTDS driver
+sudo apt-get install php8.4-sybase freetds-common
+sudo service php8.4-fpm restart
+
+# Update .env file
+POLARIS_DB_DRIVER=dblib
+```
+
+**Detailed Installation Guide:**
+
+See **[docs/SQL_SERVER_DRIVER_INSTALLATION.md](docs/SQL_SERVER_DRIVER_INSTALLATION.md)** for:
+- Complete installation instructions for all platforms
+- Driver comparison (FreeTDS vs Microsoft ODBC)
+- Configuration examples
+- Advanced troubleshooting
+
+### Other Common Issues
+
+**Connection timeout:**
+- Verify SQL Server is accessible: `telnet your-server 1433`
+- Check firewall rules
+- Verify credentials in `.env`
+
+**No data imported:**
+- Check `POLARIS_REPORTING_ORG_ID` matches your library's ID
+- Verify date range: `--days=7` or `--start-date/--end-date`
+- Check Laravel logs: `storage/logs/laravel.log`
+
+**Dashboard blank:**
+- Run: `php artisan notifications:import-notifications`
+- Then: `php artisan notifications:aggregate`
+- Verify data exists: Check `notification_logs` table
 
 ## License
 

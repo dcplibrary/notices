@@ -197,6 +197,24 @@ class PolarisImportService
                 'message' => 'Successfully connected to Polaris database',
                 'total_notifications' => $count,
             ];
+        } catch (\PDOException $e) {
+            // Check if this is a driver issue
+            if (str_contains($e->getMessage(), 'could not find driver')) {
+                $driver = config('notifications.polaris_connection.driver', 'sqlsrv');
+                $errorMessage = $this->getDriverInstallationHelp($driver);
+
+                return [
+                    'success' => false,
+                    'message' => 'Database driver not found',
+                    'error' => $errorMessage,
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Failed to connect to Polaris database',
+                'error' => $e->getMessage(),
+            ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
@@ -204,5 +222,41 @@ class PolarisImportService
                 'error' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Get helpful installation instructions for the missing driver.
+     */
+    protected function getDriverInstallationHelp(string $driver): string
+    {
+        $os = PHP_OS_FAMILY;
+
+        if ($driver === 'sqlsrv') {
+            if ($os === 'Linux') {
+                return "The 'sqlsrv' driver is not installed.\n\n" .
+                    "On Linux, you have two options:\n\n" .
+                    "Option 1 - Microsoft ODBC Driver (recommended for production):\n" .
+                    "  1. Install Microsoft ODBC Driver for SQL Server\n" .
+                    "  2. Install PHP sqlsrv extension: pecl install sqlsrv pdo_sqlsrv\n" .
+                    "  See: https://docs.microsoft.com/en-us/sql/connect/php/installation-tutorial-linux-mac\n\n" .
+                    "Option 2 - FreeTDS (easier installation):\n" .
+                    "  1. Install FreeTDS: sudo apt-get install php-sybase\n" .
+                    "  2. Change driver in config/notifications.php to 'dblib'\n" .
+                    "  3. Restart PHP-FPM: sudo service php-fpm restart";
+            } elseif ($os === 'Windows') {
+                return "The 'sqlsrv' driver is not installed.\n\n" .
+                    "Download and install the Microsoft Drivers for PHP for SQL Server:\n" .
+                    "https://docs.microsoft.com/en-us/sql/connect/php/download-drivers-php-sql-server";
+            }
+        } elseif ($driver === 'dblib' || $driver === 'mssql') {
+            return "The '{$driver}' driver (FreeTDS) is not installed.\n\n" .
+                "Install FreeTDS:\n" .
+                "  Ubuntu/Debian: sudo apt-get install php-sybase freetds-common\n" .
+                "  CentOS/RHEL: sudo yum install php-mssql freetds\n" .
+                "  macOS: brew install freetds && pecl install pdo_dblib\n\n" .
+                "After installation, restart PHP-FPM.";
+        }
+
+        return "The '{$driver}' driver is not installed. Please install the appropriate PDO driver for SQL Server.";
     }
 }
