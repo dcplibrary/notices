@@ -58,6 +58,7 @@ class NotificationsServiceProvider extends ServiceProvider
                 AggregateNotifications::class,
                 TestConnections::class,
                 SeedDemoDataCommand::class,
+                Commands\ImportShoutbombSubmissions::class,
             ]);
         }
 
