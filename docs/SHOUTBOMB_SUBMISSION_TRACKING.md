@@ -1,333 +1,349 @@
 # Shoutbomb Submission Tracking
 
-This document explains the Shoutbomb submission tracking feature, which tracks **what notifications were sent to Shoutbomb** (separate from delivery confirmations).
+This document explains the two-tier tracking system for Shoutbomb notifications.
 
-## Overview
+## System Overview
 
-Your Shoutbomb FTP contains **submission verification files** that show what notifications Polaris submitted to Shoutbomb for delivery. This is different from delivery reports (which track whether messages were actually delivered).
+### Primary System: SQL-Generated Submissions
+The **official** notification submission system uses SQL-generated files uploaded to Shoutbomb FTP:
 
-## What Gets Tracked
+- `holds_submitted_{yyyy-mm-dd_hh-mm-ss}.txt` - Hold notifications
+- `overdue_submitted_{yyyy-mm-dd_hh-mm-ss}.txt` - Overdue notifications
+- `renew_submitted_{yyyy-mm-dd_hh-mm-ss}.txt` - Renewal notifications
+- `voice_patrons_submitted_{yyyy-mm-dd}.txt` - Voice delivery patron list
+- `text_patrons_submitted_{yyyy-mm-dd}.txt` - Text delivery patron list
 
-### Submission Files
-Daily files showing what was submitted to Shoutbomb:
-- `holds_submitted_{yyyy-mm-dd_hh-mm-ss}.txt`
-- `overdue_submitted_{yyyy-mm-dd_hh-mm-ss}.txt`
-- `renew_submitted_{yyyy-mm-dd_hh-mm-ss}.txt`
+**Database Table**: `shoutbomb_submissions`
 
-### Patron Lists
-Daily files showing patron delivery preferences:
-- `voice_patrons_submitted_{yyyy-mm-dd_hh-mm-ss}.txt` - Patrons who get voice calls
-- `text_patrons_submitted_{yyyy-mm-dd_hh-mm-ss}.txt` - Patrons who get text messages
+### Verification System: PhoneNotices.csv
+Polaris native export that serves as **corroboration** to verify the SQL submissions were processed correctly:
 
-## File Formats
+- `PhoneNotices.csv` - Polaris export with full patron and item details
 
-### Holds Submissions
-Format (7 fields):
-```
-Title|CreationDate|HoldRequestID|PatronID|BranchID|HoldTillDate|PhoneNumber
-```
+**Database Table**: `shoutbomb_phone_notices`
 
-Example:
-```
-Museum Pass|2025-05-15|830874|11677|3|2025-05-19|23307013757366
-```
+## Import Commands
 
-Based on `holds.sql`:
-1. BTitle - Item title
-2. CreationDate - When hold was created
-3. SysHoldRequestID - Hold request ID
-4. PatronID - Patron's internal ID
-5. PickupOrganizationID - Branch ID
-6. HoldTillDate - Hold expiration date
-7. PBarcode - Phone number (appears to be substituted by Polaris)
+### Primary Submissions (Official System)
+```bash
+# Import SQL-generated submission files
+php artisan notifications:import-shoutbomb-submissions
 
-### Overdue/Renew Submissions
-Format (13 fields):
-```
-PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PhoneNumber
+# Import specific date range
+php artisan notifications:import-shoutbomb-submissions --date=2025-01-15
+
+# Import last N days
+php artisan notifications:import-shoutbomb-submissions --days=7
+
+# Import from local file for testing
+php artisan notifications:import-shoutbomb-submissions --file=/path/to/holds_submitted_2025-01-15_14-30-45.txt --type=holds
 ```
 
-Example:
-```
-598|33307006781769|I'm an immigrant too!|2025-09-08|740711|||||2|712138|2|23307014592648
-```
+### Verification/Corroboration
+```bash
+# Import PhoneNotices.csv for verification
+php artisan notifications:import-phone-notices
 
-Based on `overdue.sql` and `renew.sql`:
-1. PatronID - Patron's internal ID
-2. ItemBarcode - Item barcode
-3. Title - Item title
-4. DueDate - Due date
-5. ItemRecordID - Item record ID
-6-9. Dummy fields (empty)
-10. Renewals - Number of renewals
-11. BibliographicRecordID - Bib record ID
-12. RenewalLimit - Renewal limit
-13. PatronBarcode - Phone number (appears to be substituted by Polaris)
-
-### Patron Lists
-Format (2 fields):
+# Import from local file
+php artisan notifications:import-phone-notices --file=/path/to/PhoneNotices.csv
 ```
-PhoneNumber|PatronBarcode
-```
-
-Example:
-```
-23307014592648|123456
-```
-
-Based on `voice_patrons.sql` and `text_patrons.sql`:
-1. PhoneVoice1 - Phone number (dashes removed)
-2. Barcode - Patron barcode
 
 ## Database Schema
 
-### shoutbomb_submissions Table
+### shoutbomb_submissions (Primary/Official)
+Tracks what was officially submitted to Shoutbomb via SQL-generated files:
 
-Stores all submission records:
-
-| Column | Type | Description |
-|--------|------|-------------|
-| id | bigint | Primary key |
-| notification_type | enum | 'holds', 'overdue', 'renew' |
-| patron_barcode | string | Patron barcode |
-| phone_number | string | Phone number |
-| title | string | Item title (nullable) |
-| item_id | string | Item/hold ID (nullable) |
-| branch_id | integer | Branch ID (nullable) |
-| pickup_date | date | Pickup date (holds only) |
-| expiration_date | date | Expiration/due date (nullable) |
-| submitted_at | datetime | When submitted to Shoutbomb |
-| source_file | string | Original filename |
-| delivery_type | enum | 'voice' or 'text' |
-| imported_at | timestamp | When imported |
-
-### Indexes
-
-- `notification_type` - Fast filtering by type
-- `patron_barcode` - Lookup by patron
-- `phone_number` - Lookup by phone
-- `submitted_at` - Date range queries
-- `delivery_type` - Filter voice vs text
-- Composite indexes for common queries
-
-## Usage
-
-### Import from FTP
-
-Import yesterday's submissions:
-```bash
-php artisan notifications:import-shoutbomb-submissions
+```sql
+- id
+- notification_type (holds, overdue, renew)
+- patron_barcode
+- phone_number
+- title
+- item_id
+- branch_id
+- pickup_date
+- expiration_date
+- submitted_at (timestamp from filename)
+- source_file (original filename)
+- delivery_type (voice/text from patron lists)
+- imported_at
+- created_at, updated_at
 ```
 
-Import specific date:
-```bash
-php artisan notifications:import-shoutbomb-submissions --date=2025-05-15
+### shoutbomb_phone_notices (Verification)
+Polaris export for corroboration with full details:
+
+```sql
+- id
+- delivery_type (voice/text from CSV field 1)
+- language
+- patron_barcode
+- first_name, last_name
+- phone_number
+- email
+- library_code, library_name
+- item_barcode
+- notice_date
+- title
+- organization_code
+- language_code
+- patron_id
+- item_record_id
+- bib_record_id
+- source_file
+- imported_at
+- created_at, updated_at
 ```
 
-Import last 7 days:
-```bash
-php artisan notifications:import-shoutbomb-submissions --days=7
+## File Formats
+
+### SQL-Generated Files (Official System)
+
+**Holds** (7 fields):
+```
+BTitle|CreationDate|SysHoldRequestID|PatronID|PickupOrganizationID|HoldTillDate|PBarcode
+Museum Pass|2025-05-15|830874|11677|3|2025-05-19|23307013757366
 ```
 
-### Import from Local File (Testing)
-
-```bash
-php artisan notifications:import-shoutbomb-submissions \
-  --file=/path/to/holds_submitted_2025-05-15_14-30-00.txt \
-  --type=holds
+**Overdue/Renew** (13 fields):
+```
+PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PatronBarcode
 ```
 
-Valid types: `holds`, `overdue`, `renew`
+**Patron Lists** (2 fields):
+```
+PhoneNumber|PatronBarcode
+5551234567|11677
+```
 
-### Querying Data
+### PhoneNotices.csv (Verification)
 
+CSV format with 22+ fields from Polaris native export:
+- Field 1: Delivery type (V=Voice, T=Text)
+- Field 2: Language
+- Field 5: Patron barcode
+- Field 7: First name
+- Field 8: Last name
+- Field 9: Phone number
+- Field 10: Email
+- Field 11: Library code
+- Field 12: Library name
+- Field 13: Item barcode
+- Field 14: Date
+- Field 15: Title
+- Field 16: Organization code
+- Field 17: Language code
+- Field 20: Patron ID
+- Field 21: Item Record ID
+- Field 22: Bibliographic Record ID
+
+## Verification Workflow
+
+1. **Import official submissions** from SQL-generated files
+2. **Import PhoneNotices.csv** for corroboration
+3. **Compare** the two sources to verify accuracy
+
+### Comparison Example
+```php
+use Dcplibrary\Notifications\Services\ShoutbombPhoneNoticeImporter;
+use Carbon\Carbon;
+
+$importer = app(ShoutbombPhoneNoticeImporter::class);
+$comparison = $importer->compareWithSubmissions(Carbon::parse('2025-01-15'));
+
+// Results show:
+// - Count from official SQL submissions
+// - Count from PhoneNotices.csv corroboration
+// - Any differences for investigation
+```
+
+## Query Examples
+
+### Official Submissions
 ```php
 use Dcplibrary\Notifications\Models\ShoutbombSubmission;
 
-// Get all holds from last 7 days
+// Get all hold notifications for a patron
 $holds = ShoutbombSubmission::holds()
-    ->recent(7)
+    ->forPatron('11677')
+    ->recent(30)
     ->get();
 
-// Get voice notifications for a patron
-$voice = ShoutbombSubmission::forPatron('123456')
-    ->voice()
-    ->get();
+// Get voice vs text breakdown
+$voiceCount = ShoutbombSubmission::voice()->count();
+$textCount = ShoutbombSubmission::text()->count();
 
-// Get overdues by date range
-$overdues = ShoutbombSubmission::overdues()
-    ->dateRange($startDate, $endDate)
-    ->get();
-
-// Get text message submissions
-$texts = ShoutbombSubmission::text()
-    ->orderBy('submitted_at', 'desc')
-    ->get();
+// Get submissions by date range
+$submissions = ShoutbombSubmission::dateRange(
+    Carbon::parse('2025-01-01'),
+    Carbon::parse('2025-01-31')
+)->get();
 ```
 
-### Available Scopes
-
-- `holds()` - Filter to hold notifications
-- `overdues()` - Filter to overdue notifications
-- `renewals()` - Filter to renewal notifications
-- `voice()` - Filter to voice delivery
-- `text()` - Filter to text delivery
-- `recent($days)` - Get recent submissions
-- `dateRange($start, $end)` - Filter by date range
-- `forPatron($barcode)` - Filter by patron
-- `ofType($type)` - Filter by notification type
-- `byDeliveryType($type)` - Filter by delivery type
-
-## How It Works
-
-### Import Process
-
-1. **Connect to FTP** - Connects to your Shoutbomb FTP server
-
-2. **Download Patron Lists**
-   - Downloads `voice_patrons_submitted_{date}.txt`
-   - Downloads `text_patrons_submitted_{date}.txt`
-   - Parses into lookup arrays (PatronBarcode => PhoneNumber)
-
-3. **Download Submission Files**
-   - Downloads `holds_submitted_{date}*.txt`
-   - Downloads `overdue_submitted_{date}*.txt`
-   - Downloads `renew_submitted_{date}*.txt`
-
-4. **Parse Submissions**
-   - Parses pipe-delimited format
-   - Extracts timestamp from filename
-   - Matches patron with delivery type (voice vs text)
-
-5. **Store in Database**
-   - Inserts in batches of 500
-   - Tracks source file and import time
-
-### Delivery Type Matching
-
-The importer determines if a notification was voice or text by checking the patron lists:
-- If patron barcode is in `voice_patrons` → delivery_type = 'voice'
-- If patron barcode is in `text_patrons` → delivery_type = 'text'
-- If in neither list → delivery_type = null
-
-## Configuration
-
-Update your `.env` file:
-
-```env
-# Disable the old Shoutbomb FTP reports (you don't have these)
-SHOUTBOMB_ENABLED=false
-
-# FTP credentials for submission files
-SHOUTBOMB_FTP_HOST=ftp.example.com
-SHOUTBOMB_FTP_PORT=21
-SHOUTBOMB_FTP_USERNAME=your-username
-SHOUTBOMB_FTP_PASSWORD=your-password
-SHOUTBOMB_FTP_PASSIVE=true
-```
-
-## Scheduled Imports
-
-Add to `app/Console/Kernel.php`:
-
+### Verification Data
 ```php
-protected function schedule(Schedule $schedule)
-{
-    // Import submissions daily at 3 AM
-    $schedule->command('notifications:import-shoutbomb-submissions --days=1')
-        ->dailyAt('03:00')
-        ->withoutOverlapping();
-}
-```
+use Dcplibrary\Notifications\Models\ShoutbombPhoneNotice;
 
-## Differences from Delivery Reports
-
-| Feature | Submissions | Delivery Reports |
-|---------|-------------|------------------|
-| **What it tracks** | What was sent to Shoutbomb | What was delivered to patrons |
-| **Source** | FTP submission files | Email reports (opt-outs, failures) |
-| **Status info** | No status (just submitted) | Delivered, Failed, Invalid, etc. |
-| **Use case** | Verify what Polaris sent | Track actual delivery success |
-| **Frequency** | Daily | Varies (daily, weekly, monthly) |
-
-## Use Cases
-
-### 1. Verify Polaris Submissions
-Check that Polaris is actually sending notifications to Shoutbomb:
-```php
-$submittedToday = ShoutbombSubmission::where('submitted_at', '>=', today())->count();
-```
-
-### 2. Compare Voice vs Text
-See the split between voice and text notifications:
-```php
-$stats = ShoutbombSubmission::recent(30)
-    ->groupBy('delivery_type')
-    ->selectRaw('delivery_type, count(*) as count')
+// Get all notices for a patron (from Polaris export)
+$notices = ShoutbombPhoneNotice::forPatron('11677')
+    ->recent(30)
     ->get();
+
+// Compare by library
+$byLibrary = ShoutbombPhoneNotice::forLibrary('MAIN')
+    ->whereDate('notice_date', '2025-01-15')
+    ->count();
+
+// Voice vs text from verification
+$voiceNotices = ShoutbombPhoneNotice::voice()->count();
+$textNotices = ShoutbombPhoneNotice::text()->count();
 ```
 
-### 3. Patron Notification History
-See all notifications sent for a patron:
+## Statistics
+
+### Official Submission Stats
 ```php
-$history = ShoutbombSubmission::forPatron('123456')
-    ->orderBy('submitted_at', 'desc')
-    ->get();
+use Dcplibrary\Notifications\Services\ShoutbombSubmissionImporter;
+
+$importer = app(ShoutbombSubmissionImporter::class);
+$stats = $importer->getStats(
+    Carbon::parse('2025-01-01'),
+    Carbon::parse('2025-01-31')
+);
+
+// Returns:
+// - total: Total submissions
+// - by_type: Breakdown by holds/overdue/renew
+// - by_delivery: Breakdown by voice/text
+// - unique_patrons: Unique patron count
 ```
 
-### 4. Branch Activity
-Track which branches are sending the most notifications:
+### Verification Stats
 ```php
-$byBranch = ShoutbombSubmission::holds()
-    ->groupBy('branch_id')
-    ->selectRaw('branch_id, count(*) as count')
-    ->orderBy('count', 'desc')
-    ->get();
+use Dcplibrary\Notifications\Services\ShoutbombPhoneNoticeImporter;
+
+$importer = app(ShoutbombPhoneNoticeImporter::class);
+$stats = $importer->getStats(
+    Carbon::parse('2025-01-01'),
+    Carbon::parse('2025-01-31')
+);
+
+// Returns:
+// - total: Total phone notices
+// - by_delivery_type: Breakdown by voice/text
+// - by_library: Breakdown by library
+// - unique_patrons: Unique patron count
+// - unique_phones: Unique phone numbers
+```
+
+## Workflow Integration
+
+### Daily Import Automation
+```bash
+#!/bin/bash
+# Daily import script
+
+# Import official submissions from yesterday
+php artisan notifications:import-shoutbomb-submissions --days=1
+
+# Import PhoneNotices.csv for verification
+php artisan notifications:import-phone-notices
+
+# Import delivery reports (what Shoutbomb actually delivered)
+php artisan notifications:import-shoutbomb-reports --days=1
+```
+
+### Cron Schedule
+```cron
+# Import submissions daily at 2 AM
+0 2 * * * cd /var/www && php artisan notifications:import-shoutbomb-submissions --days=1
+
+# Import PhoneNotices.csv for verification at 2:30 AM
+30 2 * * * cd /var/www && php artisan notifications:import-phone-notices
+
+# Import delivery reports at 3 AM
+0 3 * * * cd /var/www && php artisan notifications:import-shoutbomb-reports --days=1
+```
+
+## Complete Data Flow
+
+```
+┌─────────────────────────────────────────┐
+│   POLARIS ILS (Library System)         │
+└─────────────────┬───────────────────────┘
+                  │
+         ┌────────┴────────┐
+         │                 │
+         ▼                 ▼
+┌─────────────────┐  ┌──────────────────┐
+│  SQL Scripts    │  │ PhoneNotices.csv │
+│  (Official)     │  │ (Verification)   │
+└────────┬────────┘  └────────┬─────────┘
+         │                    │
+         │  UPLOAD TO FTP     │
+         │                    │
+         ▼                    ▼
+┌──────────────────────────────────────┐
+│     Shoutbomb FTP Server             │
+│  - holds_submitted_*.txt             │
+│  - overdue_submitted_*.txt           │
+│  - renew_submitted_*.txt             │
+│  - *_patrons_submitted_*.txt         │
+│  - PhoneNotices.csv                  │
+└──────────┬───────────────────────────┘
+           │
+           │  IMPORT
+           ▼
+┌──────────────────────────────────────┐
+│    Laravel Notifications Package     │
+│  ┌────────────────────────────────┐  │
+│  │  shoutbomb_submissions         │  │ ← Official
+│  │  (Primary tracking)            │  │
+│  └────────────────────────────────┘  │
+│  ┌────────────────────────────────┐  │
+│  │  shoutbomb_phone_notices       │  │ ← Verification
+│  │  (Corroboration)               │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘
+           │
+           │  VERIFICATION/REPORTING
+           ▼
+     ┌──────────┐
+     │Dashboard │
+     └──────────┘
 ```
 
 ## Troubleshooting
 
-### No files found on FTP
+### Discrepancies Between Systems
 
-Check your FTP path configuration and credentials:
-```bash
-php artisan notifications:test-connections --shoutbomb -vvv
+If you find differences between `shoutbomb_submissions` and `shoutbomb_phone_notices`:
+
+1. **Check import dates** - Ensure you're comparing the same date range
+2. **Verify patron lists** - Voice/text assignments may differ
+3. **Review logs** - Check for parsing errors in either system
+4. **File timestamps** - SQL files have timestamp in filename, CSV may not
+
+### Missing Data
+
+**Official submissions not importing:**
+- Check FTP connection
+- Verify file naming pattern matches expected format
+- Review parser for field count validation
+
+**PhoneNotices.csv not found:**
+- Confirm Polaris is generating the export
+- Check FTP directory permissions
+- Verify CSV has at least 22 fields
+
+## API Integration
+
+Both tracking systems are available via the notifications API:
+
+```
+GET /api/notifications/submissions?date=2025-01-15
+GET /api/notifications/phone-notices?date=2025-01-15
+GET /api/notifications/compare?date=2025-01-15
 ```
 
-### Wrong field mappings
-
-The parsers are based on the Polaris SQL schemas. If your files have different formats, you may need to adjust the parsers in:
-- `src/Services/ShoutbombSubmissionParser.php`
-
-### Patron delivery type not set
-
-If `delivery_type` is null, it means the patron wasn't found in either the voice or text patron lists. This could mean:
-- Patron lists weren't downloaded
-- Patron opted out between submission and list generation
-- PatronID vs Barcode mismatch
-
-### Duplicate imports
-
-The system doesn't currently prevent duplicate imports. To avoid duplicates, only import each date once or add unique constraints.
-
-## Future Enhancements
-
-Potential improvements:
-- [ ] Add duplicate detection (check if file already imported)
-- [ ] Track import history (which files were imported when)
-- [ ] Add dashboard widgets for submission stats
-- [ ] Correlate submissions with actual deliveries
-- [ ] Alert if expected submissions are missing
-
-## Support
-
-For issues or questions:
-1. Check Laravel logs: `storage/logs/laravel.log`
-2. Run with verbose output: `php artisan notifications:import-shoutbomb-submissions -vvv`
-3. Verify FTP connection: `php artisan notifications:test-connections --shoutbomb`
-
-## Related Documentation
-
-- [Main README](../README.md)
-- [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
-- [Docker Setup](DOCKER_SETUP.md)
+See API documentation for full details.

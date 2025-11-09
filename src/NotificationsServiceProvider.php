@@ -59,6 +59,7 @@ class NotificationsServiceProvider extends ServiceProvider
                 TestConnections::class,
                 SeedDemoDataCommand::class,
                 Commands\ImportShoutbombSubmissions::class,
+                Commands\ImportShoutbombPhoneNotices::class,
             ]);
         }
 
