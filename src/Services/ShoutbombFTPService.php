@@ -266,7 +266,7 @@ class ShoutbombFTPService
     /**
      * Download a file from FTP to local storage.
      */
-    private function downloadFile(string $remoteFile): ?string
+    public function downloadFile(string $remoteFile): ?string
     {
         try {
             $localDir = config('notifications.shoutbomb.local_storage_path');
@@ -289,6 +289,34 @@ class ShoutbombFTPService
         } catch (\Exception $e) {
             Log::error("Error downloading file: {$remoteFile}", ['error' => $e->getMessage()]);
             return null;
+        }
+    }
+
+    /**
+     * List files in a directory on the FTP server.
+     */
+    public function listFiles(string $directory = '/'): array
+    {
+        try {
+            if (!$this->connection) {
+                throw new \Exception('Not connected to FTP server');
+            }
+
+            $files = ftp_nlist($this->connection, $directory);
+
+            if ($files === false) {
+                return [];
+            }
+
+            // Filter out . and ..
+            return array_filter($files, function($file) {
+                $basename = basename($file);
+                return $basename !== '.' && $basename !== '..';
+            });
+
+        } catch (\Exception $e) {
+            Log::error("Error listing files in {$directory}", ['error' => $e->getMessage()]);
+            return [];
         }
     }
 
