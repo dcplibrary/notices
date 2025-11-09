@@ -34,7 +34,9 @@ class ShoutbombSubmissionParser
 
     /**
      * Parse a single holds line.
-     * Format: Title|PickupDate|PatronBarcode|ItemID|BranchID|ExpirationDate|PhoneNumber
+     * Based on holds.sql:
+     * BTitle|CreationDate|SysHoldRequestID|PatronID|PickupOrganizationID|HoldTillDate|PBarcode
+     * Note: PBarcode appears to be phone number in actual files
      */
     protected function parseHoldsLine(string $line): ?array
     {
@@ -48,8 +50,8 @@ class ShoutbombSubmissionParser
             'notification_type' => 'holds',
             'title' => trim($parts[0]),
             'pickup_date' => $this->parseDate($parts[1]),
-            'patron_barcode' => trim($parts[2]),
-            'item_id' => trim($parts[3]),
+            'item_id' => trim($parts[2]), // SysHoldRequestID
+            'patron_barcode' => trim($parts[3]), // PatronID (will be matched with patron lists)
             'branch_id' => (int) trim($parts[4]),
             'expiration_date' => $this->parseDate($parts[5]),
             'phone_number' => $this->formatPhoneNumber($parts[6]),
@@ -93,14 +95,15 @@ class ShoutbombSubmissionParser
             return null;
         }
 
-        // Format: ?|ItemBarcode|Title|DueDate|PatronBarcode|||||BranchID|?|?|PhoneNumber
+        // Based on overdue.sql:
+        // PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PatronBarcode
         return [
             'notification_type' => 'overdue',
+            'patron_barcode' => trim($parts[0]), // PatronID
+            'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
-            'item_id' => trim($parts[1]),
-            'patron_barcode' => trim($parts[4]),
-            'branch_id' => !empty($parts[9]) ? (int) trim($parts[9]) : null,
-            'expiration_date' => $this->parseDate($parts[3]),
+            'expiration_date' => $this->parseDate($parts[3]), // DueDate
+            'branch_id' => null,
             'phone_number' => $this->formatPhoneNumber($parts[12]),
         ];
     }
@@ -132,7 +135,9 @@ class ShoutbombSubmissionParser
 
     /**
      * Parse a single renewal line.
-     * Format: ?|ItemBarcode|Title|DueDate|PatronBarcode|||||BranchID|?|?|PhoneNumber
+     * Based on renew.sql:
+     * PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PatronBarcode
+     * Note: PatronBarcode appears to be phone number in actual files
      */
     protected function parseRenewLine(string $line): ?array
     {
@@ -144,18 +149,19 @@ class ShoutbombSubmissionParser
 
         return [
             'notification_type' => 'renew',
+            'patron_barcode' => trim($parts[0]), // PatronID (will be matched with patron lists)
+            'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
-            'item_id' => trim($parts[1]),
-            'patron_barcode' => trim($parts[4]),
-            'branch_id' => !empty($parts[9]) ? (int) trim($parts[9]) : null,
-            'expiration_date' => $this->parseDate($parts[3]),
+            'expiration_date' => $this->parseDate($parts[3]), // DueDate
+            'branch_id' => null, // Not in SQL output
             'phone_number' => $this->formatPhoneNumber($parts[12]),
         ];
     }
 
     /**
      * Parse patron list files (voice/text).
-     * Format: PatronBarcode|PhoneNumber
+     * Based on voice_patrons.sql:
+     * PhoneVoice1|Barcode (phone first, then barcode)
      */
     public function parsePatronList(string $filePath): array
     {
@@ -165,8 +171,8 @@ class ShoutbombSubmissionParser
         foreach ($lines as $line) {
             $parts = explode('|', $line);
             if (count($parts) >= 2) {
-                $barcode = trim($parts[0]);
-                $phone = $this->formatPhoneNumber($parts[1]);
+                $phone = $this->formatPhoneNumber($parts[0]);
+                $barcode = trim($parts[1]);
                 $patrons[$barcode] = $phone;
             }
         }
