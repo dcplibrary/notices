@@ -83,48 +83,39 @@ class ShoutbombPhoneNoticeImporter
 
     /**
      * Import PhoneNotices.csv file.
+     *
+     * Note: Using individual inserts instead of bulk for reliable parameter binding
+     * across all database drivers (SQLite, MySQL, etc.)
      */
     protected function importPhoneNoticesFile(string $filePath, string $filename): int
     {
         $notices = $this->parser->parsePhoneNoticesCSV($filePath);
         $imported = 0;
-        $batch = [];
-        $timestamp = now()->toDateTimeString();
+        $timestamp = now();
 
         foreach ($notices as $notice) {
-            // Add metadata with proper string formatting for bulk insert
-            $notice['source_file'] = $filename;
-            $notice['imported_at'] = $timestamp;
-            $notice['created_at'] = $timestamp;
-            $notice['updated_at'] = $timestamp;
+            try {
+                // Add metadata
+                $notice['source_file'] = $filename;
+                $notice['imported_at'] = $timestamp;
+                $notice['created_at'] = $timestamp;
+                $notice['updated_at'] = $timestamp;
 
-            // Convert notice_date to proper format if it exists
-            if (isset($notice['notice_date']) && $notice['notice_date'] instanceof \Carbon\Carbon) {
-                $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
-            }
-
-            // Normalize all values for SQLite bulk insert
-            // SQLite needs consistent types - convert integers to strings for insert
-            foreach ($notice as $key => $value) {
-                if ($value !== null && !is_string($value)) {
-                    $notice[$key] = (string) $value;
+                // Convert notice_date to proper format if it's a Carbon instance
+                if (isset($notice['notice_date']) && $notice['notice_date'] instanceof \Carbon\Carbon) {
+                    $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
                 }
+
+                // Insert individual record - this ensures proper PDO parameter binding
+                ShoutbombPhoneNotice::create($notice);
+                $imported++;
+
+            } catch (\Exception $e) {
+                Log::error("Failed to import phone notice", [
+                    'error' => $e->getMessage(),
+                    'notice' => $notice,
+                ]);
             }
-
-            $batch[] = $notice;
-
-            // Insert in batches of 500
-            if (count($batch) >= 500) {
-                DB::table('shoutbomb_phone_notices')->insert($batch);
-                $imported += count($batch);
-                $batch = [];
-            }
-        }
-
-        // Insert remaining
-        if (!empty($batch)) {
-            DB::table('shoutbomb_phone_notices')->insert($batch);
-            $imported += count($batch);
         }
 
         return $imported;
