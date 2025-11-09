@@ -4,6 +4,7 @@ namespace Dcplibrary\Notifications\Commands;
 
 use Dcplibrary\Notifications\Services\PolarisImportService;
 use Dcplibrary\Notifications\Services\ShoutbombFTPService;
+use Dcplibrary\Notifications\Services\EmailReportService;
 use Illuminate\Console\Command;
 
 class TestConnections extends Command
@@ -13,17 +14,22 @@ class TestConnections extends Command
      */
     protected $signature = 'notifications:test-connections
                             {--polaris : Test only Polaris MSSQL connection}
-                            {--shoutbomb : Test only Shoutbomb FTP connection}';
+                            {--shoutbomb : Test only Shoutbomb FTP connection}
+                            {--email : Test only Email IMAP connection}';
 
     /**
      * The console command description.
      */
-    protected $description = 'Test database and FTP connections for the Polaris Notifications package';
+    protected $description = 'Test database, FTP, and email connections for the Polaris Notifications package';
 
     /**
      * Execute the console command.
      */
-    public function handle(PolarisImportService $polarisImporter, ShoutbombFTPService $ftpService): int
+    public function handle(
+        PolarisImportService $polarisImporter,
+        ShoutbombFTPService $ftpService,
+        EmailReportService $emailService
+    ): int
     {
         $this->info('🔍 Testing connections...');
         $this->newLine();
@@ -31,7 +37,7 @@ class TestConnections extends Command
         $allPassed = true;
 
         // Test Polaris connection
-        if (!$this->option('shoutbomb')) {
+        if (!$this->option('shoutbomb') && !$this->option('email')) {
             $this->line('→ Testing Polaris MSSQL connection...');
 
             $polarisResult = $polarisImporter->testConnection();
@@ -49,7 +55,7 @@ class TestConnections extends Command
         }
 
         // Test Shoutbomb FTP connection
-        if (!$this->option('polaris')) {
+        if (!$this->option('polaris') && !$this->option('email')) {
             if (config('notifications.shoutbomb.enabled')) {
                 $this->line('→ Testing Shoutbomb FTP connection...');
 
@@ -66,6 +72,31 @@ class TestConnections extends Command
                 $this->newLine();
             } else {
                 $this->warn('⚠️  Shoutbomb FTP is disabled in configuration');
+                $this->newLine();
+            }
+        }
+
+        // Test Email IMAP connection
+        if (!$this->option('polaris') && !$this->option('shoutbomb')) {
+            if (config('notifications.email_reports.enabled')) {
+                $this->line('→ Testing Email IMAP connection...');
+
+                $emailResult = $emailService->testConnection();
+
+                if ($emailResult['success']) {
+                    $this->info('  ✅ Email connection successful');
+                    if (isset($emailResult['details']['total_messages'])) {
+                        $this->line('  📧 Total messages in mailbox: ' . number_format($emailResult['details']['total_messages']));
+                    }
+                } else {
+                    $this->error('  ❌ Email connection failed');
+                    $this->error('  ' . $emailResult['message']);
+                    $allPassed = false;
+                }
+
+                $this->newLine();
+            } else {
+                $this->warn('⚠️  Email reports are disabled in configuration');
                 $this->newLine();
             }
         }
@@ -93,6 +124,8 @@ class TestConnections extends Command
                     ['Reporting Org ID', config('notifications.reporting_org_id')],
                     ['Shoutbomb Enabled', config('notifications.shoutbomb.enabled') ? 'Yes' : 'No'],
                     ['Shoutbomb FTP Host', config('notifications.shoutbomb.ftp.host', 'Not configured')],
+                    ['Email Reports Enabled', config('notifications.email_reports.enabled') ? 'Yes' : 'No'],
+                    ['Email Host', config('notifications.email_reports.connection.host', 'Not configured')],
                     ['Default Import Days', config('notifications.import.default_days')],
                     ['Batch Size', config('notifications.import.batch_size')],
                 ]

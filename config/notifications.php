@@ -80,6 +80,38 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Email Report Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure email inbox connection for importing Shoutbomb reports
+    | sent via email (opt-outs, invalid phones, undelivered voice).
+    |
+    */
+
+    'email_reports' => [
+        'enabled' => env('EMAIL_REPORTS_ENABLED', false),
+
+        'connection' => [
+            'protocol' => env('EMAIL_PROTOCOL', 'imap'),
+            'host' => env('EMAIL_HOST', ''),
+            'port' => env('EMAIL_PORT', 993),
+            'username' => env('EMAIL_USERNAME', ''),
+            'password' => env('EMAIL_PASSWORD', ''),
+            'encryption' => env('EMAIL_ENCRYPTION', 'ssl'),
+        ],
+
+        // Email inbox settings
+        'mailbox' => env('EMAIL_MAILBOX', 'INBOX'),
+        'from_address' => env('EMAIL_FROM_ADDRESS', 'shoutbomb'),
+
+        // Processing options
+        'mark_as_read' => env('EMAIL_MARK_AS_READ', true),
+        'move_to_folder' => env('EMAIL_MOVE_TO_FOLDER', ''),
+        'max_emails_per_run' => env('EMAIL_MAX_PER_RUN', 50),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reporting Organization
     |--------------------------------------------------------------------------
     |

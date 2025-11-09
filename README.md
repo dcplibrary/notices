@@ -10,6 +10,7 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **RESTful API**: Access data programmatically for custom integrations
 - ✅ **Direct MSSQL Connection**: Connect to Polaris ILS database
 - ✅ **Shoutbomb Integration**: Import SMS/Voice delivery reports via FTP
+- ✅ **Email Report Ingester**: Automated IMAP email fetching and parsing for Shoutbomb reports
 - ✅ **Automated Imports**: Schedule daily/hourly imports via Laravel scheduler
 - ✅ **Real-time Tracking**: Track notification delivery across all channels
 - ✅ **Historical Analysis**: Aggregated summaries and trend analysis
@@ -53,6 +54,16 @@ SHOUTBOMB_FTP_USERNAME=your-username
 SHOUTBOMB_FTP_PASSWORD=your-password
 SHOUTBOMB_FTP_PASSIVE=true
 SHOUTBOMB_FTP_SSL=false
+
+# Email Reports (optional)
+EMAIL_REPORTS_ENABLED=true
+EMAIL_HOST=imap.example.com
+EMAIL_PORT=993
+EMAIL_USERNAME=your-email@example.com
+EMAIL_PASSWORD=your-password
+EMAIL_ENCRYPTION=ssl
+EMAIL_MAILBOX=INBOX
+EMAIL_FROM_ADDRESS=shoutbomb
 ```
 
 ### 4. Run migrations
@@ -82,6 +93,7 @@ Test specific connections:
 ```bash
 php artisan notifications:test-connections --polaris
 php artisan notifications:test-connections --shoutbomb
+php artisan notifications:test-connections --email
 ```
 
 ### Import Polaris Notifications
@@ -121,6 +133,20 @@ php artisan notifications:import-shoutbomb --type=daily-invalid
 php artisan notifications:import-shoutbomb --type=daily-undelivered
 ```
 
+### Import Email Reports
+
+Import Shoutbomb reports from email inbox (opt-outs, invalid phones, undelivered voice):
+```bash
+php artisan notifications:import-email-reports
+```
+
+Options:
+```bash
+php artisan notifications:import-email-reports --mark-read  # Mark emails as read after import
+php artisan notifications:import-email-reports --move-to=Processed  # Move to folder after import
+php artisan notifications:import-email-reports --limit=100  # Process max 100 emails
+```
+
 ### Aggregate Notification Data
 
 Aggregate yesterday's notifications (typical nightly job):
@@ -158,6 +184,11 @@ protected function schedule(Schedule $schedule)
     // Import Shoutbomb reports daily at 9 AM
     $schedule->command('notifications:import-shoutbomb')
         ->dailyAt('09:00')
+        ->withoutOverlapping();
+
+    // Import email reports daily at 9:30 AM
+    $schedule->command('notifications:import-email-reports --mark-read')
+        ->dailyAt('09:30')
         ->withoutOverlapping();
 
     // Aggregate yesterday's data at midnight

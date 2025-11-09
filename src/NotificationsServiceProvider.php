@@ -4,6 +4,7 @@ namespace Dcplibrary\Notifications;
 
 use Dcplibrary\Notifications\Commands\ImportNotifications;
 use Dcplibrary\Notifications\Commands\ImportShoutbombReports;
+use Dcplibrary\Notifications\Commands\ImportEmailReports;
 use Dcplibrary\Notifications\Commands\AggregateNotifications;
 use Dcplibrary\Notifications\Commands\TestConnections;
 use Dcplibrary\Notifications\Commands\SeedDemoDataCommand;
@@ -53,6 +54,7 @@ class NotificationsServiceProvider extends ServiceProvider
             $this->commands([
                 ImportNotifications::class,
                 ImportShoutbombReports::class,
+                ImportEmailReports::class,
                 AggregateNotifications::class,
                 TestConnections::class,
                 SeedDemoDataCommand::class,
