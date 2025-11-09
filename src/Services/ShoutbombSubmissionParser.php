@@ -181,6 +181,82 @@ class ShoutbombSubmissionParser
     }
 
     /**
+     * Parse PhoneNotices.csv file (Polaris export).
+     */
+    public function parsePhoneNoticesCSV(string $filePath): array
+    {
+        $submissions = [];
+
+        if (($handle = fopen($filePath, 'r')) === false) {
+            return [];
+        }
+
+        $lineNumber = 0;
+        while (($data = fgetcsv($handle)) !== false) {
+            $lineNumber++;
+
+            try {
+                $parsed = $this->parsePhoneNoticesLine($data);
+                if ($parsed) {
+                    $submissions[] = $parsed;
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to parse PhoneNotices.csv line {$lineNumber}", [
+                    'error' => $e->getMessage(),
+                    'line' => implode(',', $data),
+                ]);
+            }
+        }
+
+        fclose($handle);
+        return $submissions;
+    }
+
+    /**
+     * Parse a single PhoneNotices.csv line.
+     *
+     * CSV Fields (1-based):
+     * 1: Delivery type (V=Voice, T=Text)
+     * 2: Language
+     * 5: Patron barcode
+     * 7: First name
+     * 8: Last name
+     * 9: Phone number
+     * 10: Email
+     * 11: Library code
+     * 12: Library name
+     * 13: Item barcode
+     * 14: Date
+     * 15: Title
+     * 16: Organization code
+     * 17: Language code
+     * 20: Patron ID
+     * 21: Item Record ID
+     * 22: Bibliographic Record ID
+     */
+    protected function parsePhoneNoticesLine(array $data): ?array
+    {
+        // Need at least 22 fields
+        if (count($data) < 22) {
+            return null;
+        }
+
+        $deliveryType = strtoupper(trim($data[0]));
+
+        return [
+            'notification_type' => 'polaris_export', // Generic type for CSV exports
+            'patron_barcode' => trim($data[4]), // Field 5
+            'phone_number' => $this->formatPhoneNumber($data[8]), // Field 9
+            'title' => trim($data[14]), // Field 15
+            'item_id' => trim($data[12]), // Field 13 - Item barcode
+            'branch_id' => !empty($data[15]) ? (int) trim($data[15]) : null, // Field 16 - Org code
+            'pickup_date' => $this->parseDate($data[13]), // Field 14 - Date
+            'expiration_date' => null, // Not in CSV
+            'delivery_type' => $deliveryType === 'V' ? 'voice' : ($deliveryType === 'T' ? 'text' : null),
+        ];
+    }
+
+    /**
      * Extract submission timestamp from filename.
      * Format: holds_submitted_2025-05-15_14-30-45.txt
      */

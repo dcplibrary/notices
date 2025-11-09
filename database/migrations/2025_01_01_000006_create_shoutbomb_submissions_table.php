@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // Notification details
-            $table->enum('notification_type', ['holds', 'overdue', 'renew'])->index();
+            $table->enum('notification_type', ['holds', 'overdue', 'renew', 'polaris_export'])->index();
             $table->string('patron_barcode', 20)->index();
             $table->string('phone_number', 20)->index();
 
