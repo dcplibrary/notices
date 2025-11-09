@@ -83,9 +83,15 @@ class NotificationAggregatorService
         $successRate = $totalSent > 0 ? round(($totalSuccess / $totalSent) * 100, 2) : 0;
         $failureRate = $totalSent > 0 ? round(($totalFailed / $totalSent) * 100, 2) : 0;
 
-        DailyNotificationSummary::updateOrCreate(
+        $dateString = $date->format('Y-m-d');
+        $timestamp = now()->toDateTimeString();
+
+        // Use DB::table()->updateOrInsert() to avoid model date casting issues with SQLite
+        // The model's 'date' cast converts the string to a Carbon object, which then
+        // becomes a datetime in SQLite, breaking the unique constraint lookup
+        DB::table('daily_notification_summary')->updateOrInsert(
             [
-                'summary_date' => $date->format('Y-m-d'),
+                'summary_date' => $dateString,
                 'notification_type_id' => $notificationTypeId,
                 'delivery_option_id' => $deliveryOptionId,
             ],
@@ -104,7 +110,9 @@ class NotificationAggregatorService
                 'unique_patrons' => $stats->unique_patrons ?? 0,
                 'success_rate' => $successRate,
                 'failure_rate' => $failureRate,
-                'aggregated_at' => now(),
+                'aggregated_at' => $timestamp,
+                'updated_at' => $timestamp,
+                'created_at' => $timestamp,
             ]
         );
     }
