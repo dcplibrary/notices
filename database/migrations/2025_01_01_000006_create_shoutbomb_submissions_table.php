@@ -8,6 +8,9 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * This table tracks the OFFICIAL SQL-generated submission files
+     * sent to Shoutbomb (holds, overdue, renew).
      */
     public function up(): void
     {

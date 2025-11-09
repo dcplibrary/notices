@@ -8,6 +8,9 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * This table stores PhoneNotices.csv (Polaris native export) for
+     * VERIFICATION/CORROBORATION of the official SQL submissions.
      */
     public function up(): void
     {

@@ -20,12 +20,15 @@ class ShoutbombSubmissionImporter
 
     /**
      * Import all submission files from FTP.
+     *
+     * This imports the OFFICIAL SQL-generated submission files that are
+     * sent to Shoutbomb (holds, overdue, renew).
      */
     public function importFromFTP(?Carbon $startDate = null): array
     {
         $startDate = $startDate ?? now()->subDays(1);
 
-        Log::info("Starting Shoutbomb submission import", [
+        Log::info("Starting Shoutbomb submission import (official system)", [
             'start_date' => $startDate->format('Y-m-d'),
         ]);
 

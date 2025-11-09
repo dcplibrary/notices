@@ -20,11 +20,13 @@ class ShoutbombPhoneNoticeImporter
 
     /**
      * Import PhoneNotices.csv from FTP.
-     * This serves as verification/confirmation of notices sent to Shoutbomb.
+     *
+     * PhoneNotices.csv is a Polaris native export that serves as
+     * VERIFICATION/CORROBORATION of the official SQL-generated submissions.
      */
     public function importFromFTP(): array
     {
-        Log::info("Starting PhoneNotices.csv import for verification");
+        Log::info("Starting PhoneNotices.csv import for verification/corroboration");
 
         $results = [
             'imported' => 0,
