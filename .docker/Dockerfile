@@ -1,5 +1,7 @@
 FROM php:8.3-apache
 
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
 RUN apt-get update && \
     mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
     curl -sL https://deb.nodesource.com/setup_20.x | bash - && \
@@ -10,9 +12,7 @@ RUN apt-get update && \
     apt-get install -y freetds-dev freetds-bin freetds-common && \
     docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
     docker-php-ext-install pdo_dblib && \
-    apt-get install -y libssl-dev libc-client-dev libkrb5-dev && \
-    PHP_OPENSSL=yes docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
-    docker-php-ext-install imap && \
+    install-php-extensions imap && \
     docker-php-ext-configure zip && \
     docker-php-ext-install zip mysqli pdo_mysql intl ftp && \
     a2enmod rewrite && \
