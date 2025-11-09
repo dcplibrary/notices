@@ -47,6 +47,29 @@ sudo service php8.4-fpm restart
 sudo service apache2 restart
 ```
 
+**Note:** If `php8.4-sybase` is not available in your repositories:
+
+1. **Option A - Use generic package (recommended):**
+   ```bash
+   sudo apt-get install php-sybase freetds-common
+   # This installs the sybase extension for your default PHP version
+   ```
+
+2. **Option B - Enable ondrej/php PPA:**
+   ```bash
+   sudo add-apt-repository ppa:ondrej/php
+   sudo apt-get update
+   sudo apt-get install php8.4-sybase freetds-common
+   ```
+
+3. **Option C - Compile from source (advanced):**
+   ```bash
+   sudo apt-get install freetds-dev php8.4-dev
+   sudo pecl install pdo_dblib
+   echo "extension=pdo_dblib.so" | sudo tee /etc/php/8.4/mods-available/pdo_dblib.ini
+   sudo phpenmod pdo_dblib
+   ```
+
 #### For other PHP versions
 
 Replace `php8.4` with your version (e.g., `php8.3`, `php8.2`, etc.):
@@ -233,6 +256,57 @@ If you have issues with the `dblib` driver, try these FreeTDS configurations in 
 - **Production**: Microsoft driver preferred for best performance
 - **Development**: FreeTDS is fine
 
+## Development/Testing Without Driver
+
+If you're in a restricted environment (CI/CD, containers, etc.) where you can't install the driver:
+
+### Option 1: Mock Connection for Testing
+
+Update your testing database configuration to use SQLite or MySQL:
+
+```php
+// config/database.php or tests/TestCase.php
+'polaris' => [
+    'driver' => 'sqlite',  // or 'mysql'
+    'database' => ':memory:',
+],
+```
+
+### Option 2: Skip Driver-Dependent Tests
+
+```php
+// In your tests
+public function testPolarisImport()
+{
+    if (!extension_loaded('pdo_dblib') && !extension_loaded('pdo_sqlsrv')) {
+        $this->markTestSkipped('SQL Server driver not available');
+    }
+
+    // Test code here...
+}
+```
+
+### Option 3: Use Docker for Development
+
+Create a `docker-compose.yml` with the driver pre-installed:
+
+```yaml
+version: '3.8'
+services:
+  app:
+    image: php:8.4-fpm
+    volumes:
+      - .:/var/www/html
+    command: |
+      bash -c "
+      apt-get update &&
+      apt-get install -y freetds-dev php-pear php-dev &&
+      pecl install pdo_dblib &&
+      docker-php-ext-enable pdo_dblib &&
+      php-fpm
+      "
+```
+
 ## Getting Help
 
 If you're still having issues:
@@ -240,6 +314,7 @@ If you're still having issues:
 1. Check the error logs: `storage/logs/laravel.log`
 2. Run with verbose output: `php artisan notifications:test-connections --polaris -v`
 3. Check PHP error logs: `tail -f /var/log/php8.4-fpm.log`
+4. Verify repository access: `apt-cache policy php8.4-sybase`
 
 ## References
 

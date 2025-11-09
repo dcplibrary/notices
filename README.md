@@ -455,13 +455,20 @@ If you see `could not find driver` when testing the Polaris connection, the SQL 
 
 **Quick Fix (Linux):**
 ```bash
-# Install FreeTDS driver
+# Option 1: Install version-specific package
 sudo apt-get install php8.4-sybase freetds-common
+
+# Option 2: Install generic package (if php8.4-sybase unavailable)
+sudo apt-get install php-sybase freetds-common
+
+# Restart PHP-FPM
 sudo service php8.4-fpm restart
 
 # Update .env file
 POLARIS_DB_DRIVER=dblib
 ```
+
+> **Note:** If you encounter repository errors (403, package not available), see the detailed installation guide below for alternative methods.
 
 **Detailed Installation Guide:**
 
