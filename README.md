@@ -16,10 +16,15 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **Historical Analysis**: Aggregated summaries and trend analysis
 - ✅ **Comprehensive Commands**: Artisan commands for all operations
 - ✅ **Fully Customizable**: Publish views, disable components, use API only
+- ✅ **Docker Ready**: Complete Docker setup with SQL Server driver pre-installed
 
 ## Installation
 
-### 1. Install the package via Composer
+> **🐳 Using Docker?** See **[Docker Setup Guide](docs/DOCKER_SETUP.md)** for a complete Docker-based installation with the SQL Server driver pre-configured.
+
+### Standard Installation
+
+#### 1. Install the package via Composer
 
 ```bash
 composer require dcplibrary/notifications
@@ -39,6 +44,7 @@ Add the following to your `.env` file:
 
 ```env
 # Polaris MSSQL Database
+POLARIS_DB_DRIVER=dblib  # Use 'dblib' for Linux/FreeTDS or 'sqlsrv' for Windows
 POLARIS_DB_HOST=your-polaris-server.local
 POLARIS_DB_PORT=1433
 POLARIS_DB_DATABASE=Polaris
@@ -431,6 +437,12 @@ Shoutbomb FTP → Parser → shoutbomb_* tables (MySQL)
 
 Comprehensive documentation is available in the `docs/` directory:
 
+### Setup & Deployment
+- **[Docker Setup Guide](docs/DOCKER_SETUP.md)** - Complete Docker-based installation
+- **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[SQL Server Driver Installation](docs/SQL_SERVER_DRIVER_INSTALLATION.md)** - Fixing "could not find driver" error
+
+### Usage & Development
 - **[Dashboard Guide](docs/DASHBOARD.md)** - Using and customizing the built-in dashboard
 - **[API Reference](docs/API.md)** - Complete API endpoint documentation
 - **[Integration Guide](docs/INTEGRATION.md)** - Integrating with authentication systems
@@ -444,6 +456,55 @@ Comprehensive documentation is available in the `docs/` directory:
 - MSSQL Server (for Polaris database)
 - MySQL/MariaDB (for local cache)
 - FTP extension enabled (for Shoutbomb imports)
+- **SQL Server PDO driver** (see Troubleshooting below)
+
+## Troubleshooting
+
+### ❌ "could not find driver" error
+
+If you see `could not find driver` when testing the Polaris connection, the SQL Server PDO driver is not installed.
+
+**Quick Fix (Linux):**
+```bash
+# Option 1: Install version-specific package
+sudo apt-get install php8.4-sybase freetds-common
+
+# Option 2: Install generic package (if php8.4-sybase unavailable)
+sudo apt-get install php-sybase freetds-common
+
+# Restart PHP-FPM
+sudo service php8.4-fpm restart
+
+# Update .env file
+POLARIS_DB_DRIVER=dblib
+```
+
+> **Note:** If you encounter repository errors (403, package not available), see the detailed installation guide below for alternative methods.
+
+**Detailed Installation Guide:**
+
+See **[docs/SQL_SERVER_DRIVER_INSTALLATION.md](docs/SQL_SERVER_DRIVER_INSTALLATION.md)** for:
+- Complete installation instructions for all platforms
+- Driver comparison (FreeTDS vs Microsoft ODBC)
+- Configuration examples
+- Advanced troubleshooting
+
+### Other Common Issues
+
+**Connection timeout:**
+- Verify SQL Server is accessible: `telnet your-server 1433`
+- Check firewall rules
+- Verify credentials in `.env`
+
+**No data imported:**
+- Check `POLARIS_REPORTING_ORG_ID` matches your library's ID
+- Verify date range: `--days=7` or `--start-date/--end-date`
+- Check Laravel logs: `storage/logs/laravel.log`
+
+**Dashboard blank:**
+- Run: `php artisan notifications:import-notifications`
+- Then: `php artisan notifications:aggregate`
+- Verify data exists: Check `notification_logs` table
 
 ## License
 

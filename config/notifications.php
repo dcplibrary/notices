@@ -10,10 +10,20 @@ return [
     | Configure the MSSQL connection to your Polaris ILS database.
     | This connection is used to import notification logs and related data.
     |
+    | Supported drivers:
+    | - 'sqlsrv': Microsoft SQL Server driver (Windows, or Linux with Microsoft ODBC)
+    | - 'dblib': FreeTDS driver (Linux/macOS - easier installation)
+    |
+    | For Linux systems, we recommend using 'dblib' with FreeTDS:
+    |   sudo apt-get install php8.4-sybase freetds-common
+    |   sudo service php8.4-fpm restart
+    |
+    | Then set POLARIS_DB_DRIVER=dblib in your .env file
+    |
     */
 
     'polaris_connection' => [
-        'driver' => 'sqlsrv',
+        'driver' => env('POLARIS_DB_DRIVER', 'sqlsrv'),
         'host' => env('POLARIS_DB_HOST', 'localhost'),
         'port' => env('POLARIS_DB_PORT', '1433'),
         'database' => env('POLARIS_DB_DATABASE', 'Polaris'),
