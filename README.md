@@ -16,10 +16,15 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **Historical Analysis**: Aggregated summaries and trend analysis
 - ✅ **Comprehensive Commands**: Artisan commands for all operations
 - ✅ **Fully Customizable**: Publish views, disable components, use API only
+- ✅ **Docker Ready**: Complete Docker setup with SQL Server driver pre-installed
 
 ## Installation
 
-### 1. Install the package via Composer
+> **🐳 Using Docker?** See **[Docker Setup Guide](docs/DOCKER_SETUP.md)** for a complete Docker-based installation with the SQL Server driver pre-configured.
+
+### Standard Installation
+
+#### 1. Install the package via Composer
 
 ```bash
 composer require dcplibrary/notifications
@@ -432,6 +437,12 @@ Shoutbomb FTP → Parser → shoutbomb_* tables (MySQL)
 
 Comprehensive documentation is available in the `docs/` directory:
 
+### Setup & Deployment
+- **[Docker Setup Guide](docs/DOCKER_SETUP.md)** - Complete Docker-based installation
+- **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[SQL Server Driver Installation](docs/SQL_SERVER_DRIVER_INSTALLATION.md)** - Fixing "could not find driver" error
+
+### Usage & Development
 - **[Dashboard Guide](docs/DASHBOARD.md)** - Using and customizing the built-in dashboard
 - **[API Reference](docs/API.md)** - Complete API endpoint documentation
 - **[Integration Guide](docs/INTEGRATION.md)** - Integrating with authentication systems
