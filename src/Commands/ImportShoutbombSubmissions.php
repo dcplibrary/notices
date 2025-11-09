@@ -52,10 +52,9 @@ class ImportShoutbombSubmissions extends Command
         $this->table(
             ['Type', 'Count'],
             [
-                ['PhoneNotices.csv (Polaris)', $results['polaris_csv']],
-                ['Holds (SQL)', $results['holds']],
-                ['Overdues (SQL)', $results['overdues']],
-                ['Renewals (SQL)', $results['renewals']],
+                ['Holds', $results['holds']],
+                ['Overdues', $results['overdues']],
+                ['Renewals', $results['renewals']],
                 ['Voice Patrons', $results['voice_patrons']],
                 ['Text Patrons', $results['text_patrons']],
                 ['Errors', $results['errors']],

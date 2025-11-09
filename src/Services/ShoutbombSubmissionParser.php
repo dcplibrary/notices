@@ -213,7 +213,7 @@ class ShoutbombSubmissionParser
     }
 
     /**
-     * Parse a single PhoneNotices.csv line.
+     * Parse a single PhoneNotices.csv line - FULL FIELDS for verification tracking.
      *
      * CSV Fields (1-based):
      * 1: Delivery type (V=Voice, T=Text)
@@ -244,15 +244,26 @@ class ShoutbombSubmissionParser
         $deliveryType = strtoupper(trim($data[0]));
 
         return [
-            'notification_type' => 'polaris_export', // Generic type for CSV exports
-            'patron_barcode' => trim($data[4]), // Field 5
-            'phone_number' => $this->formatPhoneNumber($data[8]), // Field 9
-            'title' => trim($data[14]), // Field 15
-            'item_id' => trim($data[12]), // Field 13 - Item barcode
-            'branch_id' => !empty($data[15]) ? (int) trim($data[15]) : null, // Field 16 - Org code
-            'pickup_date' => $this->parseDate($data[13]), // Field 14 - Date
-            'expiration_date' => null, // Not in CSV
+            // Map delivery type
             'delivery_type' => $deliveryType === 'V' ? 'voice' : ($deliveryType === 'T' ? 'text' : null),
+
+            // All CSV fields
+            'language' => !empty($data[1]) ? trim($data[1]) : null, // Field 2
+            'patron_barcode' => trim($data[4]), // Field 5
+            'first_name' => !empty($data[6]) ? trim($data[6]) : null, // Field 7
+            'last_name' => !empty($data[7]) ? trim($data[7]) : null, // Field 8
+            'phone_number' => $this->formatPhoneNumber($data[8]), // Field 9
+            'email' => !empty($data[9]) ? trim($data[9]) : null, // Field 10
+            'library_code' => !empty($data[10]) ? trim($data[10]) : null, // Field 11
+            'library_name' => !empty($data[11]) ? trim($data[11]) : null, // Field 12
+            'item_barcode' => !empty($data[12]) ? trim($data[12]) : null, // Field 13
+            'notice_date' => $this->parseDate($data[13]), // Field 14
+            'title' => !empty($data[14]) ? trim($data[14]) : null, // Field 15
+            'organization_code' => !empty($data[15]) ? trim($data[15]) : null, // Field 16
+            'language_code' => !empty($data[16]) ? trim($data[16]) : null, // Field 17
+            'patron_id' => !empty($data[19]) ? (int) trim($data[19]) : null, // Field 20
+            'item_record_id' => !empty($data[20]) ? (int) trim($data[20]) : null, // Field 21
+            'bib_record_id' => !empty($data[21]) ? (int) trim($data[21]) : null, // Field 22
         ];
     }
 

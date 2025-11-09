@@ -33,7 +33,6 @@ class ShoutbombSubmissionImporter
             'holds' => 0,
             'overdues' => 0,
             'renewals' => 0,
-            'polaris_csv' => 0,
             'voice_patrons' => 0,
             'text_patrons' => 0,
             'errors' => 0,
@@ -45,17 +44,14 @@ class ShoutbombSubmissionImporter
                 throw new \Exception('Failed to connect to FTP');
             }
 
-            // Import PhoneNotices.csv (Polaris export) - preferred source
-            $results['polaris_csv'] = $this->importPhoneNoticesCSV();
-
-            // Download and process patron lists (for backwards compatibility with SQL-generated files)
+            // Download and process patron lists
             $voicePatrons = $this->downloadAndParsePatronList('voice', $startDate);
             $textPatrons = $this->downloadAndParsePatronList('text', $startDate);
 
             $results['voice_patrons'] = count($voicePatrons);
             $results['text_patrons'] = count($textPatrons);
 
-            // Import holds (only if PhoneNotices.csv not found or as supplement)
+            // Import holds
             $results['holds'] = $this->importSubmissionType('holds', $startDate, $voicePatrons, $textPatrons);
 
             // Import overdues
@@ -75,54 +71,6 @@ class ShoutbombSubmissionImporter
         }
 
         return $results;
-    }
-
-    /**
-     * Import PhoneNotices.csv file (Polaris export).
-     */
-    protected function importPhoneNoticesCSV(): int
-    {
-        try {
-            $files = $this->ftpService->listFiles('/');
-
-            foreach ($files as $file) {
-                if (str_contains(strtolower($file), 'phonenotices.csv')) {
-                    $localPath = $this->ftpService->downloadFile('/' . $file);
-
-                    if ($localPath) {
-                        $submissions = $this->parser->parsePhoneNoticesCSV($localPath);
-                        $imported = 0;
-
-                        foreach ($submissions as $submission) {
-                            $submission['submitted_at'] = now(); // CSV doesn't have timestamp
-                            $submission['source_file'] = $file;
-                            $submission['imported_at'] = now();
-                            $submission['created_at'] = now();
-                            $submission['updated_at'] = now();
-
-                            ShoutbombSubmission::insert($submission);
-                            $imported++;
-                        }
-
-                        Log::info("Imported PhoneNotices.csv", [
-                            'file' => $file,
-                            'count' => $imported,
-                        ]);
-
-                        return $imported;
-                    }
-                }
-            }
-
-            Log::info("PhoneNotices.csv not found on FTP");
-            return 0;
-
-        } catch (\Exception $e) {
-            Log::error("Failed to import PhoneNotices.csv", [
-                'error' => $e->getMessage(),
-            ]);
-            return 0;
-        }
     }
 
     /**
