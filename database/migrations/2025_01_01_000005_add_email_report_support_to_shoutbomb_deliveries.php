@@ -26,11 +26,15 @@ return new class extends Migration
             $table->integer('status_code')->nullable()->after('status');
         });
 
-        // Update the status enum to include 'OptedOut'
-        DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN status ENUM('Delivered', 'Failed', 'Pending', 'Invalid', 'OptedOut') DEFAULT 'Pending'");
+        // Update ENUM columns - only for MySQL (SQLite stores enums as strings)
+        if (DB::getDriverName() === 'mysql') {
+            // Update the status enum to include 'OptedOut'
+            DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN status ENUM('Delivered', 'Failed', 'Pending', 'Invalid', 'OptedOut') DEFAULT 'Pending'");
 
-        // Update report_type enum to include email sources
-        DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN report_type ENUM('Daily', 'Weekly', 'Monthly', 'text_delivery', 'voice_delivery', 'email_optout', 'email_invalid', 'email_undelivered_voice') NULL");
+            // Update report_type enum to include email sources
+            DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN report_type ENUM('Daily', 'Weekly', 'Monthly', 'text_delivery', 'voice_delivery', 'email_optout', 'email_invalid', 'email_undelivered_voice') NULL");
+        }
+        // SQLite doesn't enforce ENUM types, so no modification needed
     }
 
     /**
@@ -42,10 +46,13 @@ return new class extends Migration
             $table->dropColumn(['patron_id', 'patron_name', 'library_name', 'status_code']);
         });
 
-        // Revert status enum
-        DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN status ENUM('Delivered', 'Failed', 'Pending', 'Invalid') DEFAULT 'Pending'");
+        // Revert ENUM columns - only for MySQL
+        if (DB::getDriverName() === 'mysql') {
+            // Revert status enum
+            DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN status ENUM('Delivered', 'Failed', 'Pending', 'Invalid') DEFAULT 'Pending'");
 
-        // Revert report_type enum
-        DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN report_type ENUM('Daily', 'Weekly', 'Monthly', 'text_delivery', 'voice_delivery') NULL");
+            // Revert report_type enum
+            DB::statement("ALTER TABLE shoutbomb_deliveries MODIFY COLUMN report_type ENUM('Daily', 'Weekly', 'Monthly', 'text_delivery', 'voice_delivery') NULL");
+        }
     }
 };
