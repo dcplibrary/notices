@@ -42,23 +42,73 @@
                 </div>
             </div>
 
-            <!-- Date Range -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-                    <input type="date"
-                           name="start_date"
-                           id="start_date"
-                           value="{{ request('start_date', now()->subDays(30)->format('Y-m-d')) }}"
-                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <!-- Date Range Quick Filters -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quick Date Filters</label>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfDay()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Today
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDay()->startOfDay()->format('Y-m-d'), 'end_date' => now()->subDay()->endOfDay()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Yesterday
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        This Week
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subWeek()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->subWeek()->endOfWeek()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Last Week
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        This Month
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subMonth()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->subMonth()->endOfMonth()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Last Month
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfYear()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        This Year
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(7)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Last 7 Days
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(30)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Last 30 Days
+                    </a>
+                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(90)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                        Last 90 Days
+                    </a>
                 </div>
-                <div>
-                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-                    <input type="date"
-                           name="end_date"
-                           id="end_date"
-                           value="{{ request('end_date', now()->format('Y-m-d')) }}"
-                           class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <!-- Custom Date Range -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Custom Date Range</label>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="start_date" class="block text-xs text-gray-500 mb-1">Start Date</label>
+                        <input type="date"
+                               name="start_date"
+                               id="start_date"
+                               value="{{ request('start_date', now()->subDays(30)->format('Y-m-d')) }}"
+                               class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="end_date" class="block text-xs text-gray-500 mb-1">End Date</label>
+                        <input type="date"
+                               name="end_date"
+                               id="end_date"
+                               value="{{ request('end_date', now()->format('Y-m-d')) }}"
+                               class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    </div>
                 </div>
             </div>
 
