@@ -2,7 +2,7 @@
 
 namespace Dcplibrary\Notices\Tests;
 
-use Dcplibrary\Notices\NotificationsServiceProvider;
+use Dcplibrary\Notices\NoticesServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -17,7 +17,7 @@ abstract class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            NotificationsServiceProvider::class,
+            NoticesServiceProvider::class,
         ];
     }
 
@@ -71,6 +71,6 @@ abstract class TestCase extends Orchestra
         }
 
         // Load package config
-        $app['config']->set('notifications', require __DIR__ . '/../config/notifications.php');
+        $app['config']->set('notices', require __DIR__ . '/../config/notices.php');
     }
 }
