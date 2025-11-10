@@ -200,6 +200,9 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
@@ -230,6 +233,7 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->first_name) {
@@ -254,6 +258,7 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->last_name) {
@@ -278,6 +283,7 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->email) {
@@ -302,6 +308,7 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->phone_number) {
@@ -341,6 +348,7 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
