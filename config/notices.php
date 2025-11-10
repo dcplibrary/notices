@@ -240,26 +240,59 @@ return [
     */
 
     'notification_types' => [
+        0 => 'Combined',
         1 => '1st Overdue',
         2 => 'Hold Ready',
         3 => 'Hold Cancel',
+        4 => 'Recall',
+        5 => 'All',
+        6 => 'Route',
         7 => 'Almost Overdue',
         8 => 'Fine Notice',
+        9 => 'Inactive Reminder',
+        10 => 'Expiration Reminder',
+        11 => 'Bill',
         12 => '2nd Overdue',
         13 => '3rd Overdue',
+        14 => 'Serial Claim',
+        15 => 'Polaris Fusion',
+        16 => 'Course Reserves',
+        17 => 'Borrow-By-Mail Failure',
+        18 => '2nd Hold',
+        19 => 'Missing Part',
+        20 => 'Manual Bill',
+        21 => '2nd Fine Notice',
     ],
 
     'delivery_options' => [
         1 => 'Mail',
         2 => 'Email',
-        3 => 'Voice',
-        8 => 'SMS',
+        3 => 'Voice',           // PhoneVoice1 - Primary phone field (used for voice calls)
+        4 => 'Phone 2 (Voice)', // PhoneVoice2 - Not used at DCPL
+        5 => 'Phone 3 (Voice)', // PhoneVoice3 - Not used at DCPL
+        6 => 'FAX',             // Not used at DCPL
+        7 => 'EDI',             // Not used at DCPL
+        8 => 'SMS',             // PhoneVoice1 - Same phone field as Voice (used for text messages)
+        9 => 'Mobile App',      // Not active in Polaris
     ],
 
     'notification_statuses' => [
-        12 => 'Success',
-        14 => 'Failed',
-        15 => 'Pending',
+        1 => 'Call completed - Voice',
+        2 => 'Call completed - Answering machine',
+        3 => 'Call not completed - Hang up',
+        4 => 'Call not completed - Busy',
+        5 => 'Call not completed - No answer',
+        6 => 'Call not completed - No ring',
+        7 => 'Call failed - No dial tone',
+        8 => 'Call failed - Intercept tones heard',
+        9 => 'Call failed - Probable bad phone number',
+        10 => 'Call failed - Maximum retries exceeded',
+        11 => 'Call failed - Undetermined error',
+        12 => 'Email Completed',
+        13 => 'Email Failed - Invalid address',
+        14 => 'Email Failed',
+        15 => 'Mail Printed',
+        16 => 'Sent',
     ],
 
 ];
