@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Database\Factories;
+namespace Dcplibrary\Notices\Database\Factories;
 
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ShoutbombDeliveryFactory extends Factory

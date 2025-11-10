@@ -105,8 +105,8 @@ php artisan notifications:aggregate
 
 # Verify data
 php artisan tinker
->>> \Dcplibrary\Notifications\Models\NotificationLog::count();
->>> \Dcplibrary\Notifications\Models\DailyNotificationSummary::count();
+>>> \Dcplibrary\Notices\Models\NotificationLog::count();
+>>> \Dcplibrary\Notices\Models\DailyNotificationSummary::count();
 ```
 
 ### 6. Schedule Regular Imports
@@ -305,7 +305,7 @@ php artisan schedule:list
 2. **Review error logs** regularly
 3. **Update package** when new versions release:
    ```bash
-   composer update dcplibrary/notifications
+   composer update dcplibrary/notices
    php artisan migrate
    ```
 

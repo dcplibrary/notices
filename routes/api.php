@@ -1,9 +1,9 @@
 <?php
 
-use Dcplibrary\Notifications\Http\Controllers\Api\NotificationController;
-use Dcplibrary\Notifications\Http\Controllers\Api\SummaryController;
-use Dcplibrary\Notifications\Http\Controllers\Api\AnalyticsController;
-use Dcplibrary\Notifications\Http\Controllers\Api\ShoutbombController;
+use Dcplibrary\Notices\Http\Controllers\Api\NotificationController;
+use Dcplibrary\Notices\Http\Controllers\Api\SummaryController;
+use Dcplibrary\Notices\Http\Controllers\Api\AnalyticsController;
+use Dcplibrary\Notices\Http\Controllers\Api\ShoutbombController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Notifications
-Route::prefix('notifications')->name('notifications.')->group(function () {
+Route::prefix('notifications')->name('notices.')->group(function () {
     Route::get('/', [NotificationController::class, 'index'])->name('index');
     Route::get('/stats', [NotificationController::class, 'stats'])->name('stats');
     Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');

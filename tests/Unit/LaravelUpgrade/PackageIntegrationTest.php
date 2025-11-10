@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\LaravelUpgrade;
+namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PackageIntegrationTest extends TestCase

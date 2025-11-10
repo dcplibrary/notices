@@ -26,21 +26,25 @@
                         <h1 class="text-xl font-bold text-gray-800">Notifications Dashboard</h1>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('notifications.dashboard') }}"
-                           class="@if(request()->routeIs('notifications.dashboard')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('notices.dashboard') }}"
+                           class="@if(request()->routeIs('notices.dashboard')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Overview
                         </a>
-                        <a href="{{ route('notifications.notifications') }}"
-                           class="@if(request()->routeIs('notifications.notifications')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('notices.notifications') }}"
+                           class="@if(request()->routeIs('notices.notifications')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Notifications
                         </a>
-                        <a href="{{ route('notifications.analytics') }}"
-                           class="@if(request()->routeIs('notifications.analytics')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('notices.analytics') }}"
+                           class="@if(request()->routeIs('notices.analytics')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Analytics
                         </a>
-                        <a href="{{ route('notifications.shoutbomb') }}"
-                           class="@if(request()->routeIs('notifications.shoutbomb')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('notices.shoutbomb') }}"
+                           class="@if(request()->routeIs('notices.shoutbomb')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Shoutbomb
+                        </a>
+                        <a href="{{ route('notices.settings.index') }}"
+                           class="@if(request()->routeIs('notices.settings.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Settings
                         </a>
                     </div>
                 </div>

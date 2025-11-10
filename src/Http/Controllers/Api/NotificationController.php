@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers\Api;
+namespace Dcplibrary\Notices\Http\Controllers\Api;
 
-use Dcplibrary\Notifications\Http\Resources\NotificationLogResource;
-use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notices\Http\Resources\NotificationLogResource;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
@@ -17,8 +17,8 @@ class NotificationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $perPage = min(
-            $request->input('per_page', config('notifications.api.per_page', 20)),
-            config('notifications.api.max_per_page', 100)
+            $request->input('per_page', config('notices.api.per_page', 20)),
+            config('notices.api.max_per_page', 100)
         );
 
         $query = NotificationLog::query();

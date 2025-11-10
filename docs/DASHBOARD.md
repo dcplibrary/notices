@@ -27,7 +27,7 @@ Dashboard settings can be configured in `config/notifications.php`:
     'enabled' => true,
 
     // Route prefix for dashboard URLs
-    'route_prefix' => 'notifications',
+    'route_prefix' => 'notices',
 
     // Middleware applied to dashboard routes
     'middleware' => ['web', 'auth'],
@@ -283,7 +283,7 @@ To add custom pages, extend the `DashboardController`:
 ```php
 namespace App\Http\Controllers;
 
-use Dcplibrary\Notifications\Http\Controllers\DashboardController as BaseDashboardController;
+use Dcplibrary\Notices\Http\Controllers\DashboardController as BaseDashboardController;
 
 class CustomDashboardController extends BaseDashboardController
 {
@@ -317,11 +317,11 @@ To enable auto-refresh (useful for monitoring):
 Add this to your layout:
 
 ```blade
-@if(config('notifications.dashboard.enable_realtime'))
+@if(config('notices.dashboard.enable_realtime'))
 <script>
     setInterval(() => {
         location.reload();
-    }, {{ config('notifications.dashboard.refresh_interval') * 1000 }});
+    }, {{ config('notices.dashboard.refresh_interval') * 1000 }});
 </script>
 @endif
 ```
@@ -360,7 +360,7 @@ Disable the package routes and define your own:
 
 ```php
 // routes/web.php
-Route::middleware(['auth', 'admin'])->prefix('notifications')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('notices')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
     // ... other routes
 });

@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
 use Illuminate\Console\Command;
 
 class ImportShoutbombPhoneNotices extends Command

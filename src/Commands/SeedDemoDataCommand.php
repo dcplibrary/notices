@@ -1,12 +1,12 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 

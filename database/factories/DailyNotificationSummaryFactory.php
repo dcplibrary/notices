@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Database\Factories;
+namespace Dcplibrary\Notices\Database\Factories;
 
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DailyNotificationSummaryFactory extends Factory

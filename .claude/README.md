@@ -90,7 +90,7 @@ Always include working code examples with proper syntax:
 
 ```php
 // Good example with context
-config('notifications.polaris_connection')
+config('notices.polaris_connection')
 ```
 
 ```bash
@@ -129,7 +129,7 @@ git diff
 
 ## Project Quick Facts
 
-**Package**: dcplibrary/notifications
+**Package**: dcplibrary/notices
 **Branch**: claude/composer-package-refactor-011CUuQNMm5JBJfjP7hfrTc3
 **Commands**: notifications:*
 **Config**: config/notifications.php

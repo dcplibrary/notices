@@ -1,8 +1,8 @@
 {
-    "name": "dcplibrary/notifications",
-    "description": "Laravel package for tracking and analyzing Polaris ILS notifications with Shoutbomb integration",
+    "name": "dcplibrary/notices",
+    "description": "Laravel package for tracking and analyzing Polaris ILS patron notices with Shoutbomb integration",
     "type": "library",
-    "keywords": ["laravel", "polaris", "ils", "notifications", "shoutbomb", "library"],
+    "keywords": ["laravel", "polaris", "ils", "notices", "shoutbomb", "library"],
     "license": "MIT",
     "authors": [
         {
@@ -22,19 +22,19 @@
     },
     "autoload": {
         "psr-4": {
-            "Dcplibrary\\Notifications\\": "src/",
-            "Dcplibrary\\Notifications\\Database\\Factories\\": "database/factories/"
+            "Dcplibrary\\Notices\\": "src/",
+            "Dcplibrary\\Notices\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Dcplibrary\\Notifications\\Tests\\": "tests/"
+            "Dcplibrary\\Notices\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Dcplibrary\\Notifications\\NotificationsServiceProvider"
+                "Dcplibrary\\Notices\\NoticesServiceProvider"
             ]
         }
     },

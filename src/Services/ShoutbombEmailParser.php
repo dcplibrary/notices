@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
 use Carbon\Carbon;
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Illuminate\Support\Facades\Log;
 
 class ShoutbombEmailParser

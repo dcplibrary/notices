@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Resources;
+namespace Dcplibrary\Notices\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

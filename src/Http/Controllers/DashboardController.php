@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers;
+namespace Dcplibrary\Notices\Http\Controllers;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
@@ -17,7 +17,7 @@ class DashboardController extends Controller
      */
     public function index(Request $request): View
     {
-        $days = $request->input('days', config('notifications.dashboard.default_date_range', 30));
+        $days = $request->input('days', config('notices.dashboard.default_date_range', 30));
         $startDate = now()->subDays($days);
         $endDate = now();
 
@@ -92,9 +92,9 @@ class DashboardController extends Controller
         $notifications = $query->paginate(50);
 
         // Get filter options
-        $notificationTypes = config('notifications.notification_types', []);
-        $deliveryOptions = config('notifications.delivery_options', []);
-        $notificationStatuses = config('notifications.notification_statuses', []);
+        $notificationTypes = config('notices.notification_types', []);
+        $deliveryOptions = config('notices.delivery_options', []);
+        $notificationStatuses = config('notices.notification_statuses', []);
 
         return view('notifications::dashboard.notifications', compact(
             'notifications',
@@ -167,20 +167,60 @@ class DashboardController extends Controller
         $startDate = now()->subDays($days);
         $endDate = now();
 
-        // Get registration history
-        $registrationHistory = ShoutbombRegistration::whereBetween('snapshot_date', [$startDate, $endDate])
-            ->orderBy('snapshot_date')
-            ->get();
+        // Get submission statistics (official SQL-generated files)
+        $submissionStats = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+            ->selectRaw('
+                COUNT(*) as total_submissions,
+                COUNT(DISTINCT patron_barcode) as unique_patrons,
+                SUM(CASE WHEN notification_type = "holds" THEN 1 ELSE 0 END) as holds_count,
+                SUM(CASE WHEN notification_type = "overdue" THEN 1 ELSE 0 END) as overdue_count,
+                SUM(CASE WHEN notification_type = "renew" THEN 1 ELSE 0 END) as renew_count,
+                SUM(CASE WHEN delivery_type = "voice" THEN 1 ELSE 0 END) as voice_count,
+                SUM(CASE WHEN delivery_type = "text" THEN 1 ELSE 0 END) as text_count
+            ')
+            ->first();
 
-        // Get latest registration
-        $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
+        // Get phone notices statistics (verification/corroboration)
+        $phoneNoticeStats = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+            ->selectRaw('
+                COUNT(*) as total_notices,
+                COUNT(DISTINCT patron_barcode) as unique_patrons,
+                SUM(CASE WHEN delivery_type = "voice" THEN 1 ELSE 0 END) as voice_count,
+                SUM(CASE WHEN delivery_type = "text" THEN 1 ELSE 0 END) as text_count
+            ')
+            ->first();
+
+        // Daily submission trend
+        $submissionTrend = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+            ->selectRaw('DATE(submitted_at) as date, COUNT(*) as count, notification_type')
+            ->groupBy('date', 'notification_type')
+            ->orderBy('date')
+            ->get()
+            ->groupBy('date');
+
+        // Daily phone notice trend
+        $phoneNoticeTrend = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+            ->selectRaw('DATE(notice_date) as date, COUNT(*) as count')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->pluck('count', 'date');
+
+        // Get recent submissions for display
+        $recentSubmissions = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+            ->orderBy('submitted_at', 'desc')
+            ->limit(10)
+            ->get();
 
         return view('notifications::dashboard.shoutbomb', compact(
             'days',
             'startDate',
             'endDate',
-            'registrationHistory',
-            'latestRegistration'
+            'submissionStats',
+            'phoneNoticeStats',
+            'submissionTrend',
+            'phoneNoticeTrend',
+            'recentSubmissions'
         ));
     }
 }

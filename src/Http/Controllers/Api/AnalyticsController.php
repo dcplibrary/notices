@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers\Api;
+namespace Dcplibrary\Notices\Http\Controllers\Api;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;

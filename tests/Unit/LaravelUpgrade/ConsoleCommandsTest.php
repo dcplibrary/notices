@@ -1,13 +1,13 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\LaravelUpgrade;
+namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
-use Dcplibrary\Notifications\Commands\TestConnections;
-use Dcplibrary\Notifications\Commands\ImportNotifications;
-use Dcplibrary\Notifications\Commands\ImportShoutbombReports;
-use Dcplibrary\Notifications\Commands\AggregateNotifications;
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Commands\TestConnections;
+use Dcplibrary\Notices\Commands\ImportNotifications;
+use Dcplibrary\Notices\Commands\ImportShoutbombReports;
+use Dcplibrary\Notices\Commands\AggregateNotifications;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 

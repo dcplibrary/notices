@@ -1,18 +1,19 @@
 <?php
 
-namespace Dcplibrary\Notifications;
+namespace Dcplibrary\Notices;
 
-use Dcplibrary\Notifications\Commands\ImportNotifications;
-use Dcplibrary\Notifications\Commands\ImportShoutbombReports;
-use Dcplibrary\Notifications\Commands\ImportEmailReports;
-use Dcplibrary\Notifications\Commands\AggregateNotifications;
-use Dcplibrary\Notifications\Commands\TestConnections;
-use Dcplibrary\Notifications\Commands\SeedDemoDataCommand;
+use Dcplibrary\Notices\Commands\ImportNotifications;
+use Dcplibrary\Notices\Commands\ImportShoutbombReports;
+use Dcplibrary\Notices\Commands\ImportEmailReports;
+use Dcplibrary\Notices\Commands\AggregateNotifications;
+use Dcplibrary\Notices\Commands\TestConnections;
+use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
+use Dcplibrary\Notices\Services\SettingsManager;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 
-class NotificationsServiceProvider extends ServiceProvider
+class NoticesServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -21,12 +22,17 @@ class NotificationsServiceProvider extends ServiceProvider
     {
         // Merge package config with application config
         $this->mergeConfigFrom(
-            __DIR__.'/../config/notifications.php',
-            'notifications'
+            __DIR__.'/../config/notices.php',
+            'notices'
         );
 
         // Register the Polaris database connection
         $this->registerPolarisConnection();
+
+        // Register SettingsManager as a singleton
+        $this->app->singleton(SettingsManager::class, function ($app) {
+            return new SettingsManager();
+        });
     }
 
     /**
@@ -37,18 +43,18 @@ class NotificationsServiceProvider extends ServiceProvider
         // Publish configuration file
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/notifications.php' => config_path('notifications.php'),
-            ], 'notifications-config');
+                __DIR__.'/../config/notices.php' => config_path('notices.php'),
+            ], 'notices-config');
 
             // Publish migrations
             $this->publishes([
                 __DIR__.'/../database/migrations' => database_path('migrations'),
-            ], 'notifications-migrations');
+            ], 'notices-migrations');
 
             // Publish views (if you create them later)
             $this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/notifications'),
-            ], 'notifications-views');
+                __DIR__.'/../resources/views' => resource_path('views/vendor/notices'),
+            ], 'notices-views');
 
             // Register commands
             $this->commands([
@@ -67,7 +73,7 @@ class NotificationsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Load views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'notifications');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'notices');
 
         // Register routes
         $this->registerRoutes();
@@ -78,7 +84,7 @@ class NotificationsServiceProvider extends ServiceProvider
      */
     protected function registerPolarisConnection(): void
     {
-        $config = config('notifications.polaris_connection');
+        $config = config('notices.polaris_connection');
 
         if ($config) {
             Config::set('database.connections.polaris', $config);
@@ -91,22 +97,22 @@ class NotificationsServiceProvider extends ServiceProvider
     protected function registerRoutes(): void
     {
         // Register API routes if enabled
-        if (config('notifications.api.enabled', true)) {
+        if (config('notices.api.enabled', true)) {
             Route::group([
-                'prefix' => config('notifications.api.route_prefix', 'api/notifications'),
-                'middleware' => config('notifications.api.middleware', ['api', 'auth:sanctum']),
-                'as' => 'notifications.api.',
+                'prefix' => config('notices.api.route_prefix', 'api/notices'),
+                'middleware' => config('notices.api.middleware', ['api', 'auth:sanctum']),
+                'as' => 'notices.api.',
             ], function () {
                 $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
             });
         }
 
         // Register web (dashboard) routes if enabled
-        if (config('notifications.dashboard.enabled', true)) {
+        if (config('notices.dashboard.enabled', true)) {
             Route::group([
-                'prefix' => config('notifications.dashboard.route_prefix', 'notifications'),
-                'middleware' => config('notifications.dashboard.middleware', ['web', 'auth']),
-                'as' => 'notifications.',
+                'prefix' => config('notices.dashboard.route_prefix', 'notices'),
+                'middleware' => config('notices.dashboard.middleware', ['web', 'auth']),
+                'as' => 'notices.',
             ], function () {
                 $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
             });
@@ -119,7 +125,7 @@ class NotificationsServiceProvider extends ServiceProvider
     public function provides(): array
     {
         return [
-            'notifications',
+            'notices',
         ];
     }
 }

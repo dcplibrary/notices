@@ -21,7 +21,7 @@ The package works out-of-the-box with Laravel's default authentication:
 // config/notifications.php
 'dashboard' => [
     'enabled' => true,
-    'route_prefix' => 'notifications',
+    'route_prefix' => 'notices',
     'middleware' => ['web', 'auth'],  // Uses default 'web' guard
 ],
 ```
@@ -62,7 +62,7 @@ If using an Entra ID/Azure AD SSO package:
 // config/notifications.php
 'dashboard' => [
     'enabled' => true,
-    'route_prefix' => 'notifications',
+    'route_prefix' => 'notices',
 
     // Option 1: Use default auth (if SSO modifies default guard)
     'middleware' => ['web', 'auth'],
@@ -259,7 +259,7 @@ Create multiple route configurations:
 
 ```php
 // routes/web.php (in your application)
-use Dcplibrary\Notifications\Http\Controllers\DashboardController;
+use Dcplibrary\Notices\Http\Controllers\DashboardController;
 
 // Admin dashboard
 Route::middleware(['web', 'auth', 'role:admin'])

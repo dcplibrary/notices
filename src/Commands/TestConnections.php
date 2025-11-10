@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\PolarisImportService;
-use Dcplibrary\Notifications\Services\ShoutbombFTPService;
-use Dcplibrary\Notifications\Services\EmailReportService;
+use Dcplibrary\Notices\Services\PolarisImportService;
+use Dcplibrary\Notices\Services\ShoutbombFTPService;
+use Dcplibrary\Notices\Services\EmailReportService;
 use Illuminate\Console\Command;
 
 class TestConnections extends Command
@@ -56,7 +56,7 @@ class TestConnections extends Command
 
         // Test Shoutbomb FTP connection
         if (!$this->option('polaris') && !$this->option('email')) {
-            if (config('notifications.shoutbomb.enabled')) {
+            if (config('notices.shoutbomb.enabled')) {
                 $this->line('→ Testing Shoutbomb FTP connection...');
 
                 $ftpResult = $ftpService->testConnection();
@@ -78,7 +78,7 @@ class TestConnections extends Command
 
         // Test Email IMAP connection
         if (!$this->option('polaris') && !$this->option('shoutbomb')) {
-            if (config('notifications.email_reports.enabled')) {
+            if (config('notices.email_reports.enabled')) {
                 $this->line('→ Testing Email IMAP connection...');
 
                 $emailResult = $emailService->testConnection();
@@ -119,15 +119,15 @@ class TestConnections extends Command
             $this->table(
                 ['Setting', 'Value'],
                 [
-                    ['Polaris Host', config('notifications.polaris_connection.host')],
-                    ['Polaris Database', config('notifications.polaris_connection.database')],
-                    ['Reporting Org ID', config('notifications.reporting_org_id')],
-                    ['Shoutbomb Enabled', config('notifications.shoutbomb.enabled') ? 'Yes' : 'No'],
-                    ['Shoutbomb FTP Host', config('notifications.shoutbomb.ftp.host', 'Not configured')],
-                    ['Email Reports Enabled', config('notifications.email_reports.enabled') ? 'Yes' : 'No'],
-                    ['Email Host', config('notifications.email_reports.connection.host', 'Not configured')],
-                    ['Default Import Days', config('notifications.import.default_days')],
-                    ['Batch Size', config('notifications.import.batch_size')],
+                    ['Polaris Host', config('notices.polaris_connection.host')],
+                    ['Polaris Database', config('notices.polaris_connection.database')],
+                    ['Reporting Org ID', config('notices.reporting_org_id')],
+                    ['Shoutbomb Enabled', config('notices.shoutbomb.enabled') ? 'Yes' : 'No'],
+                    ['Shoutbomb FTP Host', config('notices.shoutbomb.ftp.host', 'Not configured')],
+                    ['Email Reports Enabled', config('notices.email_reports.enabled') ? 'Yes' : 'No'],
+                    ['Email Host', config('notices.email_reports.connection.host', 'Not configured')],
+                    ['Default Import Days', config('notices.import.default_days')],
+                    ['Batch Size', config('notices.import.batch_size')],
                 ]
             );
         }

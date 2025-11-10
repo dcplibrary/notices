@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\Models;
+namespace Dcplibrary\Notices\Tests\Unit\Models;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 

@@ -1,4 +1,4 @@
-@extends('notifications::layouts.app')
+@extends(notices::layouts.app')
 
 @section('title', 'Analytics')
 
@@ -32,7 +32,7 @@
                 @foreach($typeDistribution as $type)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">
-                        {{ config('notifications.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
+                        {{ config('notices.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
                     </span>
                     <span class="font-semibold text-gray-900">
                         {{ number_format($type->total_sent) }}
@@ -52,7 +52,7 @@
                 @foreach($deliveryDistribution as $delivery)
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-600">
-                        {{ config('notifications.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
+                        {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
                     </span>
                     <span class="font-semibold text-gray-900">
                         {{ number_format($delivery->total_sent) }}
@@ -109,7 +109,7 @@ new Chart(typeDistCtx, {
     type: 'pie',
     data: {
         labels: @json($typeDistribution->map(function($item) {
-            return config('notifications.notification_types')[$item->notification_type_id] ?? 'Unknown';
+            return config('notices.notification_types')[$item->notification_type_id] ?? 'Unknown';
         })),
         datasets: [{
             data: @json($typeDistribution->pluck('total_sent')),
@@ -140,7 +140,7 @@ new Chart(deliveryDistCtx, {
     type: 'pie',
     data: {
         labels: @json($deliveryDistribution->map(function($item) {
-            return config('notifications.delivery_options')[$item->delivery_option_id] ?? 'Unknown';
+            return config('notices.delivery_options')[$item->delivery_option_id] ?? 'Unknown';
         })),
         datasets: [{
             data: @json($deliveryDistribution->pluck('total_sent')),

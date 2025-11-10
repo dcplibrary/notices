@@ -265,7 +265,7 @@ Create an automated web application to track, log, and verify Polaris ILS (Integ
 ### November 7, 2025 - Day 2: Laravel Package Development & Implementation
 
 **Full Day Session:**
-- Created Laravel 11.x package structure: `dcplibrary/notifications`
+- Created Laravel 11.x package structure: `dcplibrary/notices`
 - Implemented hybrid architecture (MSSQL + FTP ingestion)
 - Built core services:
   - `PolarisImportService` - MSSQL database import with batch processing
@@ -467,7 +467,7 @@ Created comprehensive fake dataset:
 - Excellent MSSQL support via `sqlsrv` driver
 - Great for web dashboards (Blade, Livewire, or Inertia)
 - Laravel Excel for report generation
-- Can create reusable package: `dcplibrary/notifications`
+- Can create reusable package: `dcplibrary/notices`
 - Strong community, mature package ecosystem
 
 ❌ **Cons:**
@@ -507,7 +507,7 @@ Created comprehensive fake dataset:
 1. You already have Entra SSO working in Laravel
 2. Web dashboard is the primary deliverable
 3. Laravel's MSSQL support is solid
-4. Can package it: `dcplibrary/notifications`
+4. Can package it: `dcplibrary/notices`
 5. Reusable for other library projects
 6. The data volume isn't huge (doesn't need Python's speed)
 
@@ -519,7 +519,7 @@ Created comprehensive fake dataset:
 
 ### Planned Package Structure
 ```
-dcplibrary/notifications/
+dcplibrary/notices/
 ├── config/
 │   └── notifications.php
 ├── database/
@@ -1220,7 +1220,7 @@ INSERT INTO notification_statuses VALUES
 ## Laravel Package Structure
 
 ```
-packages/dcplibrary/notifications/
+packages/dcplibrary/notices/
 ├── config/
 │   └── notifications.php           # Configuration file
 │
@@ -1328,10 +1328,10 @@ protected function schedule(Schedule $schedule)
 // src/Commands/ImportNotifications.php
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
 use Illuminate\Console\Command;
-use Dcplibrary\Notifications\Services\PolarisImportService;
+use Dcplibrary\Notices\Services\PolarisImportService;
 
 class ImportNotifications extends Command
 {
@@ -1366,10 +1366,10 @@ class ImportNotifications extends Command
 // src/Commands/ImportShoutbombReports.php
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
 use Illuminate\Console\Command;
-use Dcplibrary\Notifications\Services\ShoutbombFileParser;
+use Dcplibrary\Notices\Services\ShoutbombFileParser;
 
 class ImportShoutbombReports extends Command
 {
@@ -1382,7 +1382,7 @@ class ImportShoutbombReports extends Command
     {
         $this->info('Starting Shoutbomb report import...');
 
-        $path = $this->option('path') ?? config('notifications.shoutbomb_path');
+        $path = $this->option('path') ?? config('notices.shoutbomb_path');
 
         // Find all unprocessed report files
         $files = glob($path . '/*.txt');

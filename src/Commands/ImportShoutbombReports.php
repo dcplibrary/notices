@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\ShoutbombFTPService;
+use Dcplibrary\Notices\Services\ShoutbombFTPService;
 use Illuminate\Console\Command;
 
 class ImportShoutbombReports extends Command
@@ -23,7 +23,7 @@ class ImportShoutbombReports extends Command
      */
     public function handle(ShoutbombFTPService $ftpService): int
     {
-        if (!config('notifications.shoutbomb.enabled')) {
+        if (!config('notices.shoutbomb.enabled')) {
             $this->warn('⚠️  Shoutbomb import is disabled in configuration.');
             return Command::SUCCESS;
         }

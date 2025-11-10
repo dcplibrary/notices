@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\EmailReportService;
-use Dcplibrary\Notifications\Services\ShoutbombEmailParser;
+use Dcplibrary\Notices\Services\EmailReportService;
+use Dcplibrary\Notices\Services\ShoutbombEmailParser;
 use Illuminate\Console\Command;
 
 class ImportEmailReports extends Command
@@ -26,7 +26,7 @@ class ImportEmailReports extends Command
      */
     public function handle(EmailReportService $emailService, ShoutbombEmailParser $parser): int
     {
-        if (!config('notifications.email_reports.enabled')) {
+        if (!config('notices.email_reports.enabled')) {
             $this->warn('⚠️  Email report import is disabled in configuration.');
             return Command::SUCCESS;
         }
