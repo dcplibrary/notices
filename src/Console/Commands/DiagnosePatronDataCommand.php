@@ -127,6 +127,8 @@ class DiagnosePatronDataCommand extends Command
         if ($notificationWithId) {
             $this->line("Sample patron_id: {$notificationWithId->patron_id}");
             $this->line("Sample patron_barcode: {$notificationWithId->patron_barcode}");
+        }
+
         $this->info('Checking recent notifications and Shoutbomb data...');
         $this->newLine();
 
