@@ -9,6 +9,7 @@ use Dcplibrary\Notices\Commands\AggregateNotifications;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Services\SettingsManager;
+use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,11 @@ class NoticesServiceProvider extends ServiceProvider
         // Register SettingsManager as a singleton
         $this->app->singleton(SettingsManager::class, function ($app) {
             return new SettingsManager();
+        });
+
+        // Register NoticeVerificationService as a singleton
+        $this->app->singleton(NoticeVerificationService::class, function ($app) {
+            return new NoticeVerificationService();
         });
     }
 
