@@ -51,8 +51,8 @@ return new class extends Migration
             $table->unique(['summary_date', 'notification_type_id', 'delivery_option_id'], 'unique_daily_summary');
 
             // Composite indexes for dashboard queries
-            $table->index(['summary_date', 'notification_type_id']);
-            $table->index(['summary_date', 'delivery_option_id']);
+            $table->index(['summary_date', 'notification_type_id'], 'dns_date_type_idx');
+            $table->index(['summary_date', 'delivery_option_id'], 'dns_date_delivery_idx');
         });
     }
 
