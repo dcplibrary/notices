@@ -192,12 +192,12 @@ class NotificationLog extends Model
     public function getPatronNameAttribute(): string
     {
         // First try Shoutbomb phone notices (already imported data)
-        // Use a date range (±1 day) to account for timing differences
+        // Use a 60-minute window to account for timing differences
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->first();
@@ -226,8 +226,8 @@ class NotificationLog extends Model
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->first();
@@ -250,8 +250,8 @@ class NotificationLog extends Model
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->first();
@@ -274,8 +274,8 @@ class NotificationLog extends Model
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->first();
@@ -298,8 +298,8 @@ class NotificationLog extends Model
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->first();
@@ -327,7 +327,7 @@ class NotificationLog extends Model
     /**
      * Get items associated with this notification from imported data.
      * Uses Shoutbomb phone notices first, falls back to Polaris if available.
-     * Uses a ±1 day window to account for timing differences.
+     * Uses a ±60 minute window to account for timing differences.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -337,8 +337,8 @@ class NotificationLog extends Model
         if ($this->patron_barcode) {
             $phoneNotices = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subDay(),
-                    $this->notification_date->copy()->addDay()
+                    $this->notification_date->copy()->subMinutes(60),
+                    $this->notification_date->copy()->addMinutes(60)
                 ])
                 ->orderBy('notice_date', 'desc')
                 ->get();
