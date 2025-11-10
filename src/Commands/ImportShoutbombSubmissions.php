@@ -42,9 +42,13 @@ class ImportShoutbombSubmissions extends Command
         $this->line("📥 Importing submissions from: {$date->format('Y-m-d')}");
         $this->newLine();
 
+        // Show progress as we go
+        $this->line('→ Downloading and processing patron lists...');
+
         $results = $importer->importFromFTP($date);
 
         // Display results
+        $this->newLine();
         $this->line('─────────────────────────────────────────');
         $this->info('✅ Import completed!');
         $this->line('─────────────────────────────────────────');

@@ -24,7 +24,7 @@ class ShoutbombPhoneNoticeImporter
      * PhoneNotices.csv is a Polaris native export that serves as
      * VERIFICATION/CORROBORATION of the official SQL-generated submissions.
      */
-    public function importFromFTP(): array
+    public function importFromFTP(?callable $progressCallback = null): array
     {
         Log::info("Starting PhoneNotices.csv import for verification/corroboration");
 
@@ -50,7 +50,7 @@ class ShoutbombPhoneNoticeImporter
                     $localPath = $this->ftpService->downloadFile('/' . $file);
 
                     if ($localPath) {
-                        $count = $this->importPhoneNoticesFile($localPath, basename($file));
+                        $count = $this->importPhoneNoticesFile($localPath, basename($file), $progressCallback);
                         $results['imported'] = $count;
 
                         Log::info("Imported PhoneNotices.csv", [
@@ -87,13 +87,14 @@ class ShoutbombPhoneNoticeImporter
      * Note: Using individual inserts instead of bulk for reliable parameter binding
      * across all database drivers (SQLite, MySQL, etc.)
      */
-    protected function importPhoneNoticesFile(string $filePath, string $filename): int
+    protected function importPhoneNoticesFile(string $filePath, string $filename, ?callable $progressCallback = null): int
     {
         $notices = $this->parser->parsePhoneNoticesCSV($filePath);
         $imported = 0;
         $timestamp = now();
+        $total = count($notices);
 
-        foreach ($notices as $notice) {
+        foreach ($notices as $index => $notice) {
             try {
                 // Add metadata
                 $notice['source_file'] = $filename;
@@ -109,6 +110,11 @@ class ShoutbombPhoneNoticeImporter
                 // Insert individual record - this ensures proper PDO parameter binding
                 ShoutbombPhoneNotice::create($notice);
                 $imported++;
+
+                // Call progress callback if provided
+                if ($progressCallback) {
+                    $progressCallback($index + 1, $total);
+                }
 
             } catch (\Exception $e) {
                 Log::error("Failed to import phone notice", [
