@@ -80,9 +80,9 @@ interface NotificationPlugin {
 - `shoutbomb_deliveries` - Delivery reports from Shoutbomb
 
 **Commands**:
-- `notifications:import-shoutbomb-submissions`
-- `notifications:import-phone-notices`
-- `notifications:import-shoutbomb-reports`
+- `notices:import-shoutbomb-submissions`
+- `notices:import-phone-notices`
+- `notices:import-shoutbomb-reports`
 
 **Verification Flow**:
 ```
@@ -101,7 +101,7 @@ interface NotificationPlugin {
 - `email_deliveries` - Delivery reports
 
 **Commands**:
-- `notifications:import-email-reports`
+- `notices:import-email-reports`
 
 **Verification Flow**:
 ```
@@ -283,7 +283,7 @@ Verification Mismatches
 
 #### Verification API
 ```
-GET /api/notifications/verify
+GET /api/notices/verify
 Query params: patron_barcode, phone, email, item_barcode, date_range
 
 Response:
@@ -348,7 +348,7 @@ Response:
 
 #### Search API
 ```
-GET /api/notifications/search
+GET /api/notices/search
 Query params: q, type, status, date_from, date_to, limit, offset
 
 Response:
@@ -364,7 +364,7 @@ Response:
 
 #### Patron History API
 ```
-GET /api/notifications/patron/{barcode}
+GET /api/notices/patron/{barcode}
 Query params: date_from, date_to, type
 
 Response:
@@ -393,7 +393,7 @@ Response:
 
 #### Failures API
 ```
-GET /api/notifications/failures
+GET /api/notices/failures
 Query params: date_from, date_to, reason, type
 
 Response:
@@ -422,7 +422,7 @@ Response:
 
 #### Timeline API
 ```
-GET /api/notifications/{id}/timeline
+GET /api/notices/{id}/timeline
 
 Response:
 {

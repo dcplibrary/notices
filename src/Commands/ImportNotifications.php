@@ -11,7 +11,7 @@ class ImportNotifications extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'notifications:import-notifications
+    protected $signature = 'notices:import
                             {--days=1 : Number of days to import}
                             {--start-date= : Start date for import (Y-m-d format)}
                             {--end-date= : End date for import (Y-m-d format)}

@@ -144,10 +144,10 @@ return [
 
     'dashboard' => [
         // Enable or disable the default dashboard
-        'enabled' => env('NOTIFICATIONS_DASHBOARD_ENABLED', true),
+        'enabled' => env('NOTICES_DASHBOARD_ENABLED', true),
 
         // Route prefix for dashboard URLs
-        'route_prefix' => env('NOTIFICATIONS_DASHBOARD_PREFIX', 'notifications'),
+        'route_prefix' => env('NOTICES_DASHBOARD_PREFIX', 'notices'),
 
         // Middleware applied to dashboard routes
         'middleware' => ['web', 'auth'],
@@ -180,16 +180,16 @@ return [
 
     'api' => [
         // Enable or disable API routes
-        'enabled' => env('NOTIFICATIONS_API_ENABLED', true),
+        'enabled' => env('NOTICES_API_ENABLED', true),
 
         // Route prefix for API URLs
-        'route_prefix' => env('NOTIFICATIONS_API_PREFIX', 'api/notifications'),
+        'route_prefix' => env('NOTICES_API_PREFIX', 'api/notices'),
 
         // Middleware applied to API routes
         'middleware' => ['api', 'auth:sanctum'],
 
         // Rate limiting (requests per minute)
-        'rate_limit' => env('NOTIFICATIONS_API_RATE_LIMIT', 60),
+        'rate_limit' => env('NOTICES_API_RATE_LIMIT', 60),
 
         // Default pagination size
         'per_page' => 20,

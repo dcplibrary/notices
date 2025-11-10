@@ -92,87 +92,87 @@ This creates the following tables:
 Before importing data, test your connections:
 
 ```bash
-php artisan notifications:test-connections
+php artisan notices:test-connections
 ```
 
 Test specific connections:
 ```bash
-php artisan notifications:test-connections --polaris
-php artisan notifications:test-connections --shoutbomb
-php artisan notifications:test-connections --email
+php artisan notices:test-connections --polaris
+php artisan notices:test-connections --shoutbomb
+php artisan notices:test-connections --email
 ```
 
 ### Import Polaris Notifications
 
 Import notifications from the last 24 hours (default):
 ```bash
-php artisan notifications:import-notifications
+php artisan notices:import
 ```
 
 Import from the last 7 days:
 ```bash
-php artisan notifications:import-notifications --days=7
+php artisan notices:import --days=7
 ```
 
 Import a specific date range:
 ```bash
-php artisan notifications:import-notifications --start-date=2025-01-01 --end-date=2025-01-31
+php artisan notices:import --start-date=2025-01-01 --end-date=2025-01-31
 ```
 
 Import all historical data:
 ```bash
-php artisan notifications:import-notifications --full
+php artisan notices:import --full
 ```
 
 ### Import Shoutbomb Reports
 
 Import all Shoutbomb reports from FTP:
 ```bash
-php artisan notifications:import-shoutbomb
+php artisan notices:import-shoutbomb
 ```
 
 Import specific report types:
 ```bash
-php artisan notifications:import-shoutbomb --type=monthly
-php artisan notifications:import-shoutbomb --type=weekly
-php artisan notifications:import-shoutbomb --type=daily-invalid
-php artisan notifications:import-shoutbomb --type=daily-undelivered
+php artisan notices:import-shoutbomb --type=monthly
+php artisan notices:import-shoutbomb --type=weekly
+php artisan notices:import-shoutbomb --type=daily-invalid
+php artisan notices:import-shoutbomb --type=daily-undelivered
 ```
 
 ### Import Email Reports
 
 Import Shoutbomb reports from email inbox (opt-outs, invalid phones, undelivered voice):
 ```bash
-php artisan notifications:import-email-reports
+php artisan notices:import-email-reports
 ```
 
 Options:
 ```bash
-php artisan notifications:import-email-reports --mark-read  # Mark emails as read after import
-php artisan notifications:import-email-reports --move-to=Processed  # Move to folder after import
-php artisan notifications:import-email-reports --limit=100  # Process max 100 emails
+php artisan notices:import-email-reports --mark-read  # Mark emails as read after import
+php artisan notices:import-email-reports --move-to=Processed  # Move to folder after import
+php artisan notices:import-email-reports --limit=100  # Process max 100 emails
 ```
 
 ### Aggregate Notification Data
 
 Aggregate yesterday's notifications (typical nightly job):
 ```bash
-php artisan notifications:aggregate-notifications
+php artisan notices:aggregate
 ```
 
 Aggregate a specific date:
 ```bash
-php artisan notifications:aggregate-notifications --date=2025-01-15
+php artisan notices:aggregate --date=2025-01-15
 ```
 
 Aggregate a date range:
 ```bash
-php artisan notifications:aggregate-notifications --start-date=2025-01-01 --end-date=2025-01-31
+php artisan notices:aggregate --start-date=2025-01-01 --end-date=2025-01-31
 ```
 
 Re-aggregate all historical data:
 ```bash
-php artisan notifications:aggregate-notifications --all
+php artisan notices:aggregate --all
 ```
 
 ## Scheduled Tasks
@@ -183,22 +183,22 @@ Add these to your `app/Console/Kernel.php` for automated imports:
 protected function schedule(Schedule $schedule)
 {
     // Import Polaris notifications hourly
-    $schedule->command('notifications:import-notifications --days=1')
+    $schedule->command('notices:import --days=1')
         ->hourly()
         ->withoutOverlapping();
 
     // Import Shoutbomb reports daily at 9 AM
-    $schedule->command('notifications:import-shoutbomb')
+    $schedule->command('notices:import-shoutbomb')
         ->dailyAt('09:00')
         ->withoutOverlapping();
 
     // Import email reports daily at 9:30 AM
-    $schedule->command('notifications:import-email-reports --mark-read')
+    $schedule->command('notices:import-email-reports --mark-read')
         ->dailyAt('09:30')
         ->withoutOverlapping();
 
     // Aggregate yesterday's data at midnight
-    $schedule->command('notifications:aggregate-notifications')
+    $schedule->command('notices:aggregate')
         ->dailyAt('00:30')
         ->withoutOverlapping();
 }
@@ -212,7 +212,7 @@ This package includes a **built-in dashboard** for visualizing notification data
 
 After installation, visit:
 ```
-https://yourapp.com/notifications
+https://yourapp.com/notices
 ```
 
 **Note:** Dashboard requires authentication by default (configure in `config/notices.php`).
@@ -256,22 +256,22 @@ The package provides a **RESTful API** for accessing notification data. Perfect 
 
 ### API Endpoints
 
-All endpoints are prefixed with `/api/notifications`:
+All endpoints are prefixed with `/api/notices`:
 
 ```bash
-# Get notifications (with filters)
-GET /api/notifications/notifications?days=7&successful=1
+# Get notices (with filters)
+GET /api/notices/logs?days=7&successful=1
 
 # Get daily summaries
-GET /api/notifications/summaries
+GET /api/notices/summaries
 
 # Get analytics overview
-GET /api/notifications/analytics/overview?days=30
+GET /api/notices/analytics/overview?days=30
 
 # Get Shoutbomb data
-GET /api/notifications/shoutbomb/deliveries
-GET /api/notifications/shoutbomb/keyword-usage
-GET /api/notifications/shoutbomb/registrations/latest
+GET /api/notices/shoutbomb/deliveries
+GET /api/notices/shoutbomb/keyword-usage
+GET /api/notices/shoutbomb/registrations/latest
 ```
 
 ### Authentication
@@ -279,7 +279,7 @@ GET /api/notifications/shoutbomb/registrations/latest
 API routes use Laravel Sanctum by default:
 
 ```bash
-curl -X GET "https://yourapp.com/api/notifications/notifications" \
+curl -X GET "https://yourapp.com/api/notices/logs" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -289,7 +289,7 @@ curl -X GET "https://yourapp.com/api/notifications/notifications" \
 use Illuminate\Support\Facades\Http;
 
 $response = Http::withToken('YOUR_TOKEN')
-    ->get('/api/notifications/notifications/stats', [
+    ->get('/api/notices/logs/stats', [
         'days' => 30
     ]);
 
@@ -305,13 +305,13 @@ Generate realistic demo data for testing the dashboard:
 
 ```bash
 # Generate 30 days of demo data
-php artisan notifications:seed-demo
+php artisan notices:seed-demo
 
 # Generate 60 days
-php artisan notifications:seed-demo --days=60
+php artisan notices:seed-demo --days=60
 
 # Clear existing data and seed fresh
-php artisan notifications:seed-demo --fresh
+php artisan notices:seed-demo --fresh
 ```
 
 This creates sample notifications, summaries, Shoutbomb deliveries, keyword usage, and registration snapshots.
@@ -502,8 +502,8 @@ See **[docs/SQL_SERVER_DRIVER_INSTALLATION.md](docs/SQL_SERVER_DRIVER_INSTALLATI
 - Check Laravel logs: `storage/logs/laravel.log`
 
 **Dashboard blank:**
-- Run: `php artisan notifications:import-notifications`
-- Then: `php artisan notifications:aggregate`
+- Run: `php artisan notices:import`
+- Then: `php artisan notices:aggregate`
 - Verify data exists: Check `notification_logs` table
 
 ## License

@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Notifications
-Route::prefix('notifications')->name('notices.')->group(function () {
+// Notices
+Route::prefix('logs')->name('logs.')->group(function () {
     Route::get('/', [NotificationController::class, 'index'])->name('index');
     Route::get('/stats', [NotificationController::class, 'stats'])->name('stats');
     Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');

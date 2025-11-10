@@ -177,7 +177,7 @@ php -m | grep -i pdo
 Use the test command to verify your Polaris connection:
 
 ```bash
-php artisan notifications:test-connections --polaris
+php artisan notices:test-connections --polaris
 ```
 
 You should see:
@@ -312,7 +312,7 @@ services:
 If you're still having issues:
 
 1. Check the error logs: `storage/logs/laravel.log`
-2. Run with verbose output: `php artisan notifications:test-connections --polaris -v`
+2. Run with verbose output: `php artisan notices:test-connections --polaris -v`
 3. Check PHP error logs: `tail -f /var/log/php8.4-fpm.log`
 4. Verify repository access: `apt-cache policy php8.4-sybase`
 

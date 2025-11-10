@@ -10,7 +10,7 @@ class ImportShoutbombReports extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'notifications:import-shoutbomb
+    protected $signature = 'notices:import-shoutbomb
                             {--type=all : Type of reports to import (monthly, weekly, daily-invalid, daily-undelivered, all)}';
 
     /**

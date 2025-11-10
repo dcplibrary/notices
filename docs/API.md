@@ -24,7 +24,7 @@ API routes use Laravel Sanctum authentication by default. Ensure you have Sanctu
 
 ## Base URL
 
-All API endpoints are prefixed with `/api/notifications` by default.
+All API endpoints are prefixed with `/api/notices` by default.
 
 ---
 
@@ -33,7 +33,7 @@ All API endpoints are prefixed with `/api/notifications` by default.
 ### List Notifications
 
 ```
-GET /api/notifications/notifications
+GET /api/notices/logs
 ```
 
 Retrieve a paginated list of notification logs.
@@ -54,7 +54,7 @@ Retrieve a paginated list of notification logs.
 
 **Example Request:**
 ```bash
-curl -X GET "https://yourapp.com/api/notifications/notifications?days=7&successful=1" \
+curl -X GET "https://yourapp.com/api/notices/logs?days=7&successful=1" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -101,7 +101,7 @@ curl -X GET "https://yourapp.com/api/notifications/notifications?days=7&successf
 ### Get Single Notification
 
 ```
-GET /api/notifications/notifications/{id}
+GET /api/notices/logs/{id}
 ```
 
 Retrieve a specific notification by ID.
@@ -109,7 +109,7 @@ Retrieve a specific notification by ID.
 ### Get Notification Statistics
 
 ```
-GET /api/notifications/notifications/stats
+GET /api/notices/logs/stats
 ```
 
 Get aggregated statistics for notifications.
@@ -137,7 +137,7 @@ Get aggregated statistics for notifications.
 ### List Summaries
 
 ```
-GET /api/notifications/summaries
+GET /api/notices/summaries
 ```
 
 Retrieve daily notification summaries.
@@ -152,7 +152,7 @@ Retrieve daily notification summaries.
 ### Get Summary Totals
 
 ```
-GET /api/notifications/summaries/totals
+GET /api/notices/summaries/totals
 ```
 
 Get aggregated totals for a date range.
@@ -172,7 +172,7 @@ Get aggregated totals for a date range.
 ### Get Breakdown by Type
 
 ```
-GET /api/notifications/summaries/by-type
+GET /api/notices/summaries/by-type
 ```
 
 Get summary breakdown by notification type.
@@ -198,7 +198,7 @@ Get summary breakdown by notification type.
 ### Get Breakdown by Delivery Method
 
 ```
-GET /api/notifications/summaries/by-delivery
+GET /api/notices/summaries/by-delivery
 ```
 
 Get summary breakdown by delivery method.
@@ -210,7 +210,7 @@ Get summary breakdown by delivery method.
 ### Get Dashboard Overview
 
 ```
-GET /api/notifications/analytics/overview
+GET /api/notices/analytics/overview
 ```
 
 Get comprehensive dashboard overview data.
@@ -251,7 +251,7 @@ Get comprehensive dashboard overview data.
 ### Get Time Series Data
 
 ```
-GET /api/notifications/analytics/time-series
+GET /api/notices/analytics/time-series
 ```
 
 Get time series data for charts.
@@ -264,7 +264,7 @@ Get time series data for charts.
 ### Get Top Patrons
 
 ```
-GET /api/notifications/analytics/top-patrons
+GET /api/notices/analytics/top-patrons
 ```
 
 Get patrons with highest notification counts.
@@ -276,7 +276,7 @@ Get patrons with highest notification counts.
 ### Get Success Rate Trend
 
 ```
-GET /api/notifications/analytics/success-rate-trend
+GET /api/notices/analytics/success-rate-trend
 ```
 
 Get success rate trends over time.
@@ -288,7 +288,7 @@ Get success rate trends over time.
 ### Get Deliveries
 
 ```
-GET /api/notifications/shoutbomb/deliveries
+GET /api/notices/shoutbomb/deliveries
 ```
 
 Get Shoutbomb delivery records (SMS/Voice).
@@ -303,7 +303,7 @@ Get Shoutbomb delivery records (SMS/Voice).
 ### Get Delivery Statistics
 
 ```
-GET /api/notifications/shoutbomb/deliveries/stats
+GET /api/notices/shoutbomb/deliveries/stats
 ```
 
 Get delivery statistics grouped by type and status.
@@ -311,7 +311,7 @@ Get delivery statistics grouped by type and status.
 ### Get Keyword Usage
 
 ```
-GET /api/notifications/shoutbomb/keyword-usage
+GET /api/notices/shoutbomb/keyword-usage
 ```
 
 Get keyword usage records (HOLDS, RENEW, etc.).
@@ -319,7 +319,7 @@ Get keyword usage records (HOLDS, RENEW, etc.).
 ### Get Keyword Summary
 
 ```
-GET /api/notifications/shoutbomb/keyword-usage/summary
+GET /api/notices/shoutbomb/keyword-usage/summary
 ```
 
 Get aggregated keyword usage summary.
@@ -327,7 +327,7 @@ Get aggregated keyword usage summary.
 ### Get Registrations
 
 ```
-GET /api/notifications/shoutbomb/registrations
+GET /api/notices/shoutbomb/registrations
 ```
 
 Get subscriber registration snapshots.
@@ -335,7 +335,7 @@ Get subscriber registration snapshots.
 ### Get Latest Registration
 
 ```
-GET /api/notifications/shoutbomb/registrations/latest
+GET /api/notices/shoutbomb/registrations/latest
 ```
 
 Get the most recent subscriber statistics.
@@ -402,7 +402,7 @@ All list endpoints support pagination:
 ### Using with JavaScript
 
 ```javascript
-fetch('/api/notifications/notifications?days=7&successful=1', {
+fetch('/api/notices/logs?days=7&successful=1', {
   headers: {
     'Authorization': 'Bearer YOUR_TOKEN',
     'Accept': 'application/json'
@@ -418,7 +418,7 @@ fetch('/api/notifications/notifications?days=7&successful=1', {
 use Illuminate\Support\Facades\Http;
 
 $response = Http::withToken('YOUR_TOKEN')
-    ->get('/api/notifications/notifications', [
+    ->get('/api/notices/logs', [
         'days' => 7,
         'successful' => 1
     ]);
@@ -430,7 +430,7 @@ $notifications = $response->json('data');
 
 ```bash
 curl -X GET \
-  "https://yourapp.com/api/notifications/analytics/overview?days=30" \
+  "https://yourapp.com/api/notices/analytics/overview?days=30" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Accept: application/json"
 ```

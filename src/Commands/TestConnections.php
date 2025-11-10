@@ -12,7 +12,7 @@ class TestConnections extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'notifications:test-connections
+    protected $signature = 'notices:test-connections
                             {--polaris : Test only Polaris MSSQL connection}
                             {--shoutbomb : Test only Shoutbomb FTP connection}
                             {--email : Test only Email IMAP connection}';

@@ -101,7 +101,7 @@ docker exec -it notifications php artisan migrate
 
 ```bash
 # Test Polaris connection (should work now!)
-docker exec -it notifications php artisan notifications:test-connections --polaris
+docker exec -it notifications php artisan notices:test-connections --polaris
 
 # Expected output:
 # ✅ Polaris connection successful
@@ -112,10 +112,10 @@ docker exec -it notifications php artisan notifications:test-connections --polar
 
 ```bash
 # Import last 7 days of notifications
-docker exec -it notifications php artisan notifications:import-notifications --days=7
+docker exec -it notifications php artisan notices:import --days=7
 
 # Generate summaries
-docker exec -it notifications php artisan notifications:aggregate
+docker exec -it notifications php artisan notices:aggregate
 ```
 
 ## Dockerfile Explanation
@@ -418,11 +418,11 @@ docker exec -it notifications php artisan key:generate
 docker exec -it notifications php artisan migrate
 
 # 7. Test connections
-docker exec -it notifications php artisan notifications:test-connections
+docker exec -it notifications php artisan notices:test-connections
 
 # 8. Import data
-docker exec -it notifications php artisan notifications:import-notifications --days=7
-docker exec -it notifications php artisan notifications:aggregate
+docker exec -it notifications php artisan notices:import --days=7
+docker exec -it notifications php artisan notices:aggregate
 
 # 9. Access dashboard
 open https://notifications.dcplibrary.org
@@ -442,5 +442,5 @@ If you encounter issues:
 
 1. Check container logs: `docker-compose logs -f`
 2. Verify driver installation: `docker exec -it notifications php -m | grep pdo`
-3. Test Polaris connection: `docker exec -it notifications php artisan notifications:test-connections --polaris`
+3. Test Polaris connection: `docker exec -it notifications php artisan notices:test-connections --polaris`
 4. Check Laravel logs: `docker exec -it notifications tail -f /var/www/storage/logs/laravel.log`

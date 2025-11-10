@@ -27,25 +27,25 @@ Polaris native export that serves as **corroboration** to verify the SQL submiss
 ### Primary Submissions (Official System)
 ```bash
 # Import SQL-generated submission files
-php artisan notifications:import-shoutbomb-submissions
+php artisan notices:import-shoutbomb-submissions
 
 # Import specific date range
-php artisan notifications:import-shoutbomb-submissions --date=2025-01-15
+php artisan notices:import-shoutbomb-submissions --date=2025-01-15
 
 # Import last N days
-php artisan notifications:import-shoutbomb-submissions --days=7
+php artisan notices:import-shoutbomb-submissions --days=7
 
 # Import from local file for testing
-php artisan notifications:import-shoutbomb-submissions --file=/path/to/holds_submitted_2025-01-15_14-30-45.txt --type=holds
+php artisan notices:import-shoutbomb-submissions --file=/path/to/holds_submitted_2025-01-15_14-30-45.txt --type=holds
 ```
 
 ### Verification/Corroboration
 ```bash
 # Import PhoneNotices.csv for verification
-php artisan notifications:import-phone-notices
+php artisan notices:import-phone-notices
 
 # Import from local file
-php artisan notifications:import-phone-notices --file=/path/to/PhoneNotices.csv
+php artisan notices:import-phone-notices --file=/path/to/PhoneNotices.csv
 ```
 
 ## Database Schema
@@ -244,25 +244,25 @@ $stats = $importer->getStats(
 # Daily import script
 
 # Import official submissions from yesterday
-php artisan notifications:import-shoutbomb-submissions --days=1
+php artisan notices:import-shoutbomb-submissions --days=1
 
 # Import PhoneNotices.csv for verification
-php artisan notifications:import-phone-notices
+php artisan notices:import-phone-notices
 
 # Import delivery reports (what Shoutbomb actually delivered)
-php artisan notifications:import-shoutbomb-reports --days=1
+php artisan notices:import-shoutbomb-reports --days=1
 ```
 
 ### Cron Schedule
 ```cron
 # Import submissions daily at 2 AM
-0 2 * * * cd /var/www && php artisan notifications:import-shoutbomb-submissions --days=1
+0 2 * * * cd /var/www && php artisan notices:import-shoutbomb-submissions --days=1
 
 # Import PhoneNotices.csv for verification at 2:30 AM
-30 2 * * * cd /var/www && php artisan notifications:import-phone-notices
+30 2 * * * cd /var/www && php artisan notices:import-phone-notices
 
 # Import delivery reports at 3 AM
-0 3 * * * cd /var/www && php artisan notifications:import-shoutbomb-reports --days=1
+0 3 * * * cd /var/www && php artisan notices:import-shoutbomb-reports --days=1
 ```
 
 ## Complete Data Flow
@@ -341,9 +341,9 @@ If you find differences between `shoutbomb_submissions` and `shoutbomb_phone_not
 Both tracking systems are available via the notifications API:
 
 ```
-GET /api/notifications/submissions?date=2025-01-15
-GET /api/notifications/phone-notices?date=2025-01-15
-GET /api/notifications/compare?date=2025-01-15
+GET /api/notices/submissions?date=2025-01-15
+GET /api/notices/phone-notices?date=2025-01-15
+GET /api/notices/compare?date=2025-01-15
 ```
 
 See API documentation for full details.

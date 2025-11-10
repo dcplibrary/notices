@@ -7,7 +7,7 @@ The Polaris Notifications package includes a built-in dashboard for visualizing 
 After installing the package, the dashboard is available at:
 
 ```
-https://yourapp.com/notifications
+https://yourapp.com/notices
 ```
 
 **Note:** The dashboard requires authentication by default. Ensure users are logged in before accessing.

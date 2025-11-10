@@ -20,7 +20,7 @@ docker exec -it notifications composer install
 docker exec -it notifications php artisan migrate
 
 # 6. Test Polaris connection
-docker exec -it notifications php artisan notifications:test-connections --polaris
+docker exec -it notifications php artisan notices:test-connections --polaris
 
 # ✅ You should see: "Polaris connection successful"
 ```
@@ -35,7 +35,7 @@ docker-compose logs -f
 docker exec -it notifications bash
 
 # Import data
-docker exec -it notifications php artisan notifications:import-notifications --days=7
+docker exec -it notifications php artisan notices:import-notifications --days=7
 
 # Stop container
 docker-compose down

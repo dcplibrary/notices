@@ -35,12 +35,12 @@ This guide lists all screenshots needed for the documentation and where to place
 ### API Documentation (API.md)
 
 6. **API Response Example (Postman/Insomnia)** - `images/api-response.png`
-   - Make request to: `GET /api/notifications/notifications`
+   - Make request to: `GET /api/notices/logs`
    - Show: Request with headers and JSON response
    - Use Postman or Insomnia
 
 7. **API Overview Endpoint** - `images/api-overview.png`
-   - Request: `GET /api/notifications/analytics/overview?days=30`
+   - Request: `GET /api/notices/analytics/overview?days=30`
    - Show: Full JSON response with nested data
 
 ### Integration Guide (INTEGRATION.md)
@@ -90,7 +90,7 @@ This guide lists all screenshots needed for the documentation and where to place
 
 ```bash
 # Seed demo data so screenshots show realistic content
-php artisan notifications:seed-demo --days=60
+php artisan notices:seed-demo --days=60
 ```
 
 ### Browser Developer Tools
