@@ -109,6 +109,7 @@ class NoticesServiceProvider extends ServiceProvider
                 Commands\InspectDeliveryMethods::class,
                 Commands\DiagnoseDataIssues::class,
                 Commands\SyncShoutbombToLogs::class,
+                Console\Commands\DiagnosePatronDataCommand::class,
             ]);
         }
 
