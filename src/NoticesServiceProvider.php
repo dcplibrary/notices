@@ -16,6 +16,7 @@ use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Console\Scheduling\Schedule;
 
 class NoticesServiceProvider extends ServiceProvider
 {
@@ -115,6 +116,9 @@ class NoticesServiceProvider extends ServiceProvider
 
         // Register routes
         $this->registerRoutes();
+
+        // Register scheduled tasks
+        $this->registerScheduledTasks();
     }
 
     /**
@@ -155,6 +159,47 @@ class NoticesServiceProvider extends ServiceProvider
                 $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
             });
         }
+    }
+
+    /**
+     * Register scheduled tasks.
+     */
+    protected function registerScheduledTasks(): void
+    {
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
+            $settings = $this->app->make(SettingsManager::class);
+
+            // Import Polaris notifications hourly
+            if ($settings->get('scheduler.import_polaris_enabled', true)) {
+                $schedule->command('notices:import --days=1')
+                    ->hourly()
+                    ->withoutOverlapping();
+            }
+
+            // Import Shoutbomb reports daily at 9 AM
+            if ($settings->get('scheduler.import_shoutbomb_enabled', true)) {
+                $time = $settings->get('scheduler.import_shoutbomb_time', '09:00');
+                $schedule->command('notices:import-shoutbomb')
+                    ->dailyAt($time)
+                    ->withoutOverlapping();
+            }
+
+            // Import email reports daily at 9:30 AM
+            if ($settings->get('scheduler.import_email_enabled', true)) {
+                $time = $settings->get('scheduler.import_email_time', '09:30');
+                $schedule->command('notices:import-email-reports --mark-read')
+                    ->dailyAt($time)
+                    ->withoutOverlapping();
+            }
+
+            // Aggregate yesterday's data at midnight
+            if ($settings->get('scheduler.aggregate_enabled', true)) {
+                $time = $settings->get('scheduler.aggregate_time', '00:30');
+                $schedule->command('notices:aggregate')
+                    ->dailyAt($time)
+                    ->withoutOverlapping();
+            }
+        });
     }
 
     /**
