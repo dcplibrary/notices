@@ -184,40 +184,111 @@ class NotificationLog extends Model
     }
 
     /**
-     * Get patron's full name from Polaris.
-     * Convenience accessor for displaying patron names.
+     * Get patron's full name from imported Shoutbomb data.
+     * Falls back to Polaris if available, then barcode.
      *
      * @return string
      */
     public function getPatronNameAttribute(): string
     {
-        $patron = $this->patron;
+        // First try Shoutbomb phone notices (already imported data)
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->first();
 
+            if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
+                return "{$phoneNotice->last_name}, {$phoneNotice->first_name}";
+            }
+        }
+
+        // Fall back to Polaris if connected
+        $patron = $this->patron;
         if ($patron) {
-            return $patron->FormattedName; // "Last, First"
+            return $patron->FormattedName;
         }
 
         return $this->patron_barcode ?? 'Unknown Patron';
     }
 
     /**
-     * Get patron's first name.
+     * Get patron's first name from imported data.
      *
      * @return string|null
      */
     public function getPatronFirstNameAttribute(): ?string
     {
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->first();
+
+            if ($phoneNotice && $phoneNotice->first_name) {
+                return $phoneNotice->first_name;
+            }
+        }
+
         return $this->patron?->NameFirst;
     }
 
     /**
-     * Get patron's last name.
+     * Get patron's last name from imported data.
      *
      * @return string|null
      */
     public function getPatronLastNameAttribute(): ?string
     {
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->first();
+
+            if ($phoneNotice && $phoneNotice->last_name) {
+                return $phoneNotice->last_name;
+            }
+        }
+
         return $this->patron?->NameLast;
+    }
+
+    /**
+     * Get patron's email from imported data.
+     *
+     * @return string|null
+     */
+    public function getPatronEmailAttribute(): ?string
+    {
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->first();
+
+            if ($phoneNotice && $phoneNotice->email) {
+                return $phoneNotice->email;
+            }
+        }
+
+        return $this->patron?->EmailAddress;
+    }
+
+    /**
+     * Get patron's phone from imported data.
+     *
+     * @return string|null
+     */
+    public function getPatronPhoneAttribute(): ?string
+    {
+        if ($this->patron_barcode) {
+            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->first();
+
+            if ($phoneNotice && $phoneNotice->phone_number) {
+                return $phoneNotice->phone_number;
+            }
+        }
+
+        return $this->patron?->PhoneVoice1;
     }
 
     /**
@@ -233,22 +304,55 @@ class NotificationLog extends Model
     }
 
     /**
-     * Get items associated with this notification from Polaris.
+     * Get items associated with this notification from imported data.
+     * Uses Shoutbomb phone notices first, falls back to Polaris if available.
      *
      * @return \Illuminate\Support\Collection
      */
     public function getItemsAttribute()
     {
-        if (!$this->patron_id || !$this->notification_type_id) {
-            return collect();
+        // First try to get items from imported Shoutbomb data
+        if ($this->patron_barcode) {
+            $phoneNotices = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->get();
+
+            if ($phoneNotices->isNotEmpty()) {
+                // Convert phone notices to a collection with title and barcode
+                return $phoneNotices->map(function ($notice) {
+                    return (object) [
+                        'title' => $notice->title,
+                        'item_barcode' => $notice->item_barcode,
+                        'bibliographic' => (object) [
+                            'Title' => $notice->title,
+                        ],
+                        'staff_link' => $notice->item_record_id
+                            ? "https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{$notice->item_record_id}"
+                            : null,
+                        'ItemRecordID' => $notice->item_record_id,
+                        'Barcode' => $notice->item_barcode,
+                        'CallNumber' => null, // Not in phone notices
+                    ];
+                });
+            }
         }
 
-        $service = app(PolarisQueryService::class);
-        return $service->getNotificationItems(
-            $this->patron_id,
-            $this->notification_type_id,
-            $this->notification_date
-        );
+        // Fall back to Polaris if connected
+        if ($this->patron_id && $this->notification_type_id) {
+            try {
+                $service = app(PolarisQueryService::class);
+                return $service->getNotificationItems(
+                    $this->patron_id,
+                    $this->notification_type_id,
+                    $this->notification_date
+                );
+            } catch (\Exception $e) {
+                // Polaris not available, return empty collection
+                return collect();
+            }
+        }
+
+        return collect();
     }
 
     /**
