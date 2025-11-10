@@ -166,6 +166,6 @@ class DailyNotificationSummary extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notifications\Database\Factories\DailyNotificationSummaryFactory::new();
+        return \Dcplibrary\Notices\Database\Factories\DailyNotificationSummaryFactory::new();
     }
 }

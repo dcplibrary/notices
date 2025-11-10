@@ -171,7 +171,7 @@ class DashboardController extends Controller
         $endDate = now();
 
         // Get submission statistics (official SQL-generated files)
-        $submissionStats = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionStats = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_submissions,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -184,7 +184,7 @@ class DashboardController extends Controller
             ->first();
 
         // Get phone notices statistics (verification/corroboration)
-        $phoneNoticeStats = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeStats = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_notices,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -194,7 +194,7 @@ class DashboardController extends Controller
             ->first();
 
         // Daily submission trend
-        $submissionTrend = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionTrend = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('DATE(submitted_at) as date, COUNT(*) as count, notification_type')
             ->groupBy('date', 'notification_type')
             ->orderBy('date')
@@ -202,7 +202,7 @@ class DashboardController extends Controller
             ->groupBy('date');
 
         // Daily phone notice trend
-        $phoneNoticeTrend = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeTrend = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('DATE(notice_date) as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date')
@@ -210,7 +210,7 @@ class DashboardController extends Controller
             ->pluck('count', 'date');
 
         // Get recent submissions for display
-        $recentSubmissions = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $recentSubmissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->orderBy('submitted_at', 'desc')
             ->limit(10)
             ->get();

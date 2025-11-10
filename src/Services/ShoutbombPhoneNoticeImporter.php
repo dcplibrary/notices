@@ -187,7 +187,7 @@ class ShoutbombPhoneNoticeImporter
     public function compareWithSubmissions(Carbon $date): array
     {
         $phoneNotices = ShoutbombPhoneNotice::whereDate('notice_date', $date)->get();
-        $submissions = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereDate('submitted_at', $date)->get();
+        $submissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereDate('submitted_at', $date)->get();
 
         return [
             'date' => $date->format('Y-m-d'),

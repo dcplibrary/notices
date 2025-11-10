@@ -88,7 +88,7 @@ class PackageIntegrationTest extends TestCase
         $providers = app()->getLoadedProviders();
 
         $this->assertArrayHasKey(
-            \Dcplibrary\Notifications\NotificationsServiceProvider::class,
+            \Dcplibrary\Notices\NotificationsServiceProvider::class,
             $providers
         );
     }
@@ -96,9 +96,9 @@ class PackageIntegrationTest extends TestCase
     /** @test */
     public function it_verifies_json_resource_serialization_works()
     {
-        $notification = \Dcplibrary\Notifications\Models\NotificationLog::factory()->create();
+        $notification = \Dcplibrary\Notices\Models\NotificationLog::factory()->create();
 
-        $resource = new \Dcplibrary\Notifications\Http\Resources\NotificationLogResource($notification);
+        $resource = new \Dcplibrary\Notices\Http\Resources\NotificationLogResource($notification);
         $array = $resource->toArray(request());
 
         $this->assertIsArray($array);
@@ -128,10 +128,10 @@ class PackageIntegrationTest extends TestCase
     /** @test */
     public function it_verifies_pagination_resource_works()
     {
-        \Dcplibrary\Notifications\Models\NotificationLog::factory()->count(25)->create();
+        \Dcplibrary\Notices\Models\NotificationLog::factory()->count(25)->create();
 
-        $paginated = \Dcplibrary\Notifications\Models\NotificationLog::paginate(10);
-        $resource = \Dcplibrary\Notifications\Http\Resources\NotificationLogResource::collection($paginated);
+        $paginated = \Dcplibrary\Notices\Models\NotificationLog::paginate(10);
+        $resource = \Dcplibrary\Notices\Http\Resources\NotificationLogResource::collection($paginated);
 
         $response = $resource->toResponse(request());
 
@@ -155,7 +155,7 @@ class PackageIntegrationTest extends TestCase
     /** @test */
     public function it_verifies_route_model_binding_works()
     {
-        $notification = \Dcplibrary\Notifications\Models\NotificationLog::factory()->create();
+        $notification = \Dcplibrary\Notices\Models\NotificationLog::factory()->create();
 
         $response = $this->getJson(
             route('notices.api.logs.show', $notification)
@@ -169,12 +169,12 @@ class PackageIntegrationTest extends TestCase
     public function it_verifies_database_factory_works()
     {
         // Test that Eloquent factories work
-        $notification = \Dcplibrary\Notifications\Models\NotificationLog::factory()->create([
+        $notification = \Dcplibrary\Notices\Models\NotificationLog::factory()->create([
             'patron_id' => 88888,
         ]);
 
         $this->assertInstanceOf(
-            \Dcplibrary\Notifications\Models\NotificationLog::class,
+            \Dcplibrary\Notices\Models\NotificationLog::class,
             $notification
         );
         $this->assertEquals(88888, $notification->patron_id);
@@ -184,10 +184,10 @@ class PackageIntegrationTest extends TestCase
     public function it_verifies_database_factory_make_method_works()
     {
         // Test factory make (doesn't persist)
-        $notification = \Dcplibrary\Notifications\Models\NotificationLog::factory()->make();
+        $notification = \Dcplibrary\Notices\Models\NotificationLog::factory()->make();
 
         $this->assertInstanceOf(
-            \Dcplibrary\Notifications\Models\NotificationLog::class,
+            \Dcplibrary\Notices\Models\NotificationLog::class,
             $notification
         );
         $this->assertFalse($notification->exists);

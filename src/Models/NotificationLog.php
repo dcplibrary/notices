@@ -171,6 +171,6 @@ class NotificationLog extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notifications\Database\Factories\NotificationLogFactory::new();
+        return \Dcplibrary\Notices\Database\Factories\NotificationLogFactory::new();
     }
 }
