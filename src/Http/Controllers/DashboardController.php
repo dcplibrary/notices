@@ -48,7 +48,7 @@ class DashboardController extends Controller
         // Get latest Shoutbomb registration stats
         $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
 
-        return view('notifications::dashboard.index', compact(
+        return view('notices::dashboard.index', compact(
             'days',
             'startDate',
             'endDate',
@@ -99,7 +99,7 @@ class DashboardController extends Controller
         $deliveryOptions = config('notices.delivery_options', []);
         $notificationStatuses = config('notices.notification_statuses', []);
 
-        return view('notifications::dashboard.notifications', compact(
+        return view('notices::dashboard.notifications', compact(
             'notifications',
             'notificationTypes',
             'deliveryOptions',
@@ -151,7 +151,7 @@ class DashboardController extends Controller
             ->groupBy('delivery_option_id')
             ->get();
 
-        return view('notifications::dashboard.analytics', compact(
+        return view('notices::dashboard.analytics', compact(
             'days',
             'startDate',
             'endDate',
@@ -215,7 +215,7 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('notifications::dashboard.shoutbomb', compact(
+        return view('notices::dashboard.shoutbomb', compact(
             'days',
             'startDate',
             'endDate',
@@ -289,7 +289,7 @@ class DashboardController extends Controller
             $summary['pending'] = $results->filter(fn($r) => $r['verification']->overall_status === 'pending')->count();
         }
 
-        return view('notifications::dashboard.verification', compact('results', 'summary'));
+        return view('notices::dashboard.verification', compact('results', 'summary'));
     }
 
     /**
@@ -301,7 +301,7 @@ class DashboardController extends Controller
         $service = app(NoticeVerificationService::class);
         $verification = $service->verify($notice);
 
-        return view('notifications::dashboard.verification-timeline', compact('notice', 'verification'));
+        return view('notices::dashboard.verification-timeline', compact('notice', 'verification'));
     }
 
     /**
@@ -345,7 +345,7 @@ class DashboardController extends Controller
             $byType[$typeName]++;
         }
 
-        return view('notifications::dashboard.verification-patron', compact(
+        return view('notices::dashboard.verification-patron', compact(
             'barcode',
             'results',
             'stats',
@@ -383,7 +383,7 @@ class DashboardController extends Controller
         // Get recent failures (limit to 20 for display)
         $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
 
-        return view('notifications::dashboard.troubleshooting', compact(
+        return view('notices::dashboard.troubleshooting', compact(
             'days',
             'startDate',
             'endDate',
