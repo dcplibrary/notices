@@ -1,0 +1,24 @@
+ItemStatusID	Description	Name	BannerText
+1	Available	In	Available
+2	Out	Out	Out
+3	Out-ILL	Out-ILL	Out-ILL
+4	Held	Held	Held
+5	Transferred	Transferred	Transferred
+6	Outreach	In-Transit	Outreach
+7	Lost	Lost	Lost
+8	Claimed Returned	Claim Returned	Claimed
+9	Not Available	Claim Never Had	Claimed
+10	MISSING	Missing	MISSING
+11	WEEDING	Withdrawn	WEEDING
+12	PROGRAMMING	Bindery	PROGRAMMING
+13	On-Order	On-Order	On-Order
+14	IN-REPAIR	In-Repair	IN-REPAIR
+15	Processing	In-Process	Processing
+16	HOMEBOUND	Unavailable	HOMEBOUND
+17	Returned-ILL	Returned-ILL	Returned-ILL
+18	Routed	Routed	Routed
+19	Shelving Cart	Shelving	Shelving Cart
+20	Non-circulating	Non-circulating	Non-circulating
+21	Claim Missing Parts	Claim Missing Parts	Missing Parts
+22	EContent External Loan	EContent External Loan	External Loan
+23	Damaged	Damaged	Damaged

@@ -1,0 +1,14 @@
+AddressTypeID	Description
+1	 Generic
+2	 Notice
+3	 Invoice
+4	 Statement
+5	 Billing
+6	 Shipping
+7	 Claim Response
+8	 Corporation
+9	 Claiming
+10	 Ordering
+11	 Payment
+12	 Mailing
+13	 Receiving

@@ -1,0 +1,9 @@
+DeliveryOptionID	DeliveryOption
+1	Mailing Address
+2	Email Address
+3	Phone 1
+4	Phone 2
+5	Phone 3
+6	FAX
+7	EDI
+8	TXT Messaging
