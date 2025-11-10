@@ -67,7 +67,7 @@ class DashboardController extends Controller
     {
         $query = NotificationLog::query();
 
-        // Apply filters
+        // Apply date range filter
         if ($request->has('start_date') && $request->has('end_date')) {
             $query->dateRange(
                 Carbon::parse($request->start_date),
@@ -77,22 +77,35 @@ class DashboardController extends Controller
             $query->recent(30);
         }
 
+        // Apply type filter
         if ($request->has('type_id')) {
             $query->ofType((int) $request->type_id);
         }
 
+        // Apply delivery method filter
         if ($request->has('delivery_id')) {
             $query->byDeliveryMethod((int) $request->delivery_id);
         }
 
+        // Apply status filter
         if ($request->has('status_id')) {
             $query->byStatus((int) $request->status_id);
+        }
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('patron_barcode', 'like', "%{$search}%")
+                  ->orWhere('patron_id', $search)
+                  ->orWhere('delivery_string', 'like', "%{$search}%");
+            });
         }
 
         // Sort
         $query->orderBy('notification_date', 'desc');
 
-        $notifications = $query->paginate(50);
+        $notifications = $query->paginate(50)->withQueryString();
 
         // Get filter options
         $notificationTypes = config('notices.notification_types', []);
@@ -105,6 +118,19 @@ class DashboardController extends Controller
             'deliveryOptions',
             'notificationStatuses'
         ));
+    }
+
+    /**
+     * Display detailed view of a single notification.
+     */
+    public function notificationDetail(int $id): View
+    {
+        $notification = NotificationLog::findOrFail($id);
+
+        // Eager load patron and items data from Polaris
+        // This is done via accessors in the model
+
+        return view('notices::dashboard.notification-detail', compact('notification'));
     }
 
     /**
