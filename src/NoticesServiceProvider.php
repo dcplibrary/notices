@@ -107,6 +107,8 @@ class NoticesServiceProvider extends ServiceProvider
                 Commands\ImportShoutbombPhoneNotices::class,
                 Commands\ListShoutbombFiles::class,
                 Commands\InspectDeliveryMethods::class,
+                Commands\DiagnoseDataIssues::class,
+                Commands\SyncShoutbombToLogs::class,
             ]);
         }
 
