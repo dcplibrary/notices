@@ -325,6 +325,112 @@ class VerificationController extends Controller
     }
 
     /**
+     * Get troubleshooting summary.
+     *
+     * GET /api/notices/troubleshooting/summary
+     */
+    public function troubleshootingSummary(Request $request): JsonResponse
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $dateFrom = $request->date_from ? Carbon::parse($request->date_from) : now()->subDays(7);
+        $dateTo = $request->date_to ? Carbon::parse($request->date_to) : now();
+
+        $summary = $this->verificationService->getTroubleshootingSummary($dateFrom, $dateTo);
+
+        return response()->json([
+            'summary' => $summary,
+            'date_range' => [
+                'from' => $dateFrom->toDateString(),
+                'to' => $dateTo->toDateString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get failures grouped by reason.
+     *
+     * GET /api/notices/troubleshooting/by-reason
+     */
+    public function failuresByReason(Request $request): JsonResponse
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $dateFrom = $request->date_from ? Carbon::parse($request->date_from) : now()->subDays(7);
+        $dateTo = $request->date_to ? Carbon::parse($request->date_to) : now();
+
+        $failures = $this->verificationService->getFailuresByReason($dateFrom, $dateTo);
+
+        return response()->json([
+            'failures_by_reason' => $failures,
+            'total' => array_sum(array_column($failures, 'count')),
+            'date_range' => [
+                'from' => $dateFrom->toDateString(),
+                'to' => $dateTo->toDateString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get failures grouped by notification type.
+     *
+     * GET /api/notices/troubleshooting/by-type
+     */
+    public function failuresByType(Request $request): JsonResponse
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $dateFrom = $request->date_from ? Carbon::parse($request->date_from) : now()->subDays(7);
+        $dateTo = $request->date_to ? Carbon::parse($request->date_to) : now();
+
+        $failures = $this->verificationService->getFailuresByType($dateFrom, $dateTo);
+
+        return response()->json([
+            'failures_by_type' => $failures,
+            'total' => array_sum(array_column($failures, 'count')),
+            'date_range' => [
+                'from' => $dateFrom->toDateString(),
+                'to' => $dateTo->toDateString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Get verification mismatches.
+     *
+     * GET /api/notices/troubleshooting/mismatches
+     */
+    public function mismatches(Request $request): JsonResponse
+    {
+        $request->validate([
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+        ]);
+
+        $dateFrom = $request->date_from ? Carbon::parse($request->date_from) : now()->subDays(1);
+        $dateTo = $request->date_to ? Carbon::parse($request->date_to) : now();
+
+        $mismatches = $this->verificationService->getMismatches($dateFrom, $dateTo);
+
+        return response()->json([
+            'mismatches' => $mismatches,
+            'date_range' => [
+                'from' => $dateFrom->toDateString(),
+                'to' => $dateTo->toDateString(),
+            ],
+        ]);
+    }
+
+    /**
      * Helper: Get contact value (phone or email).
      */
     protected function getContactValue(NotificationLog $notice): ?string

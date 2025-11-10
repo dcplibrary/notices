@@ -19,6 +19,7 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/list', [DashboardController::class, 'notifications'])->name('list');
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 Route::get('/shoutbomb', [DashboardController::class, 'shoutbomb'])->name('shoutbomb');
+Route::get('/troubleshooting', [DashboardController::class, 'troubleshooting'])->name('troubleshooting');
 
 // Verification routes
 Route::prefix('verification')->name('verification.')->group(function () {
