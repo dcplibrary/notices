@@ -110,6 +110,6 @@ class ShoutbombRegistration extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notifications\Database\Factories\ShoutbombRegistrationFactory::new();
+        return \Dcplibrary\Notices\Database\Factories\ShoutbombRegistrationFactory::new();
     }
 }

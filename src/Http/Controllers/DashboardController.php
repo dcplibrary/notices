@@ -48,7 +48,7 @@ class DashboardController extends Controller
         // Get latest Shoutbomb registration stats
         $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
 
-        return view('notifications::dashboard.index', compact(
+        return view('notices::dashboard.index', compact(
             'days',
             'startDate',
             'endDate',
@@ -99,7 +99,7 @@ class DashboardController extends Controller
         $deliveryOptions = config('notices.delivery_options', []);
         $notificationStatuses = config('notices.notification_statuses', []);
 
-        return view('notifications::dashboard.notifications', compact(
+        return view('notices::dashboard.notifications', compact(
             'notifications',
             'notificationTypes',
             'deliveryOptions',
@@ -151,7 +151,7 @@ class DashboardController extends Controller
             ->groupBy('delivery_option_id')
             ->get();
 
-        return view('notifications::dashboard.analytics', compact(
+        return view('notices::dashboard.analytics', compact(
             'days',
             'startDate',
             'endDate',
@@ -171,7 +171,7 @@ class DashboardController extends Controller
         $endDate = now();
 
         // Get submission statistics (official SQL-generated files)
-        $submissionStats = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionStats = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_submissions,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -184,7 +184,7 @@ class DashboardController extends Controller
             ->first();
 
         // Get phone notices statistics (verification/corroboration)
-        $phoneNoticeStats = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeStats = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_notices,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -194,7 +194,7 @@ class DashboardController extends Controller
             ->first();
 
         // Daily submission trend
-        $submissionTrend = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionTrend = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('DATE(submitted_at) as date, COUNT(*) as count, notification_type')
             ->groupBy('date', 'notification_type')
             ->orderBy('date')
@@ -202,7 +202,7 @@ class DashboardController extends Controller
             ->groupBy('date');
 
         // Daily phone notice trend
-        $phoneNoticeTrend = \Dcplibrary\Notifications\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeTrend = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('DATE(notice_date) as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date')
@@ -210,12 +210,12 @@ class DashboardController extends Controller
             ->pluck('count', 'date');
 
         // Get recent submissions for display
-        $recentSubmissions = \Dcplibrary\Notifications\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $recentSubmissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->orderBy('submitted_at', 'desc')
             ->limit(10)
             ->get();
 
-        return view('notifications::dashboard.shoutbomb', compact(
+        return view('notices::dashboard.shoutbomb', compact(
             'days',
             'startDate',
             'endDate',
@@ -289,7 +289,7 @@ class DashboardController extends Controller
             $summary['pending'] = $results->filter(fn($r) => $r['verification']->overall_status === 'pending')->count();
         }
 
-        return view('notifications::dashboard.verification', compact('results', 'summary'));
+        return view('notices::dashboard.verification', compact('results', 'summary'));
     }
 
     /**
@@ -301,7 +301,7 @@ class DashboardController extends Controller
         $service = app(NoticeVerificationService::class);
         $verification = $service->verify($notice);
 
-        return view('notifications::dashboard.verification-timeline', compact('notice', 'verification'));
+        return view('notices::dashboard.verification-timeline', compact('notice', 'verification'));
     }
 
     /**
@@ -345,7 +345,7 @@ class DashboardController extends Controller
             $byType[$typeName]++;
         }
 
-        return view('notifications::dashboard.verification-patron', compact(
+        return view('notices::dashboard.verification-patron', compact(
             'barcode',
             'results',
             'stats',
@@ -383,7 +383,7 @@ class DashboardController extends Controller
         // Get recent failures (limit to 20 for display)
         $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
 
-        return view('notifications::dashboard.troubleshooting', compact(
+        return view('notices::dashboard.troubleshooting', compact(
             'days',
             'startDate',
             'endDate',

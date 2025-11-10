@@ -141,6 +141,6 @@ class ShoutbombDelivery extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notifications\Database\Factories\ShoutbombDeliveryFactory::new();
+        return \Dcplibrary\Notices\Database\Factories\ShoutbombDeliveryFactory::new();
     }
 }

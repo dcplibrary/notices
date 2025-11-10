@@ -117,8 +117,8 @@ class AggregateNotifications extends Command
     protected function aggregateAllWithProgress(NotificationAggregatorService $aggregator): array
     {
         // Get date range from notification_logs
-        $firstDate = \Dcplibrary\Notifications\Models\NotificationLog::min('notification_date');
-        $lastDate = \Dcplibrary\Notifications\Models\NotificationLog::max('notification_date');
+        $firstDate = \Dcplibrary\Notices\Models\NotificationLog::min('notification_date');
+        $lastDate = \Dcplibrary\Notices\Models\NotificationLog::max('notification_date');
 
         if (!$firstDate || !$lastDate) {
             $this->warn('No notification data found to aggregate');
