@@ -30,7 +30,7 @@ class SettingsController extends Controller
             ->get()
             ->groupBy('group');
 
-        return view('notifications::settings.index', compact('settings'));
+        return view('notices::settings.index', compact('settings'));
     }
 
     /**
@@ -44,7 +44,7 @@ class SettingsController extends Controller
             abort(403, 'You do not have permission to view this setting.');
         }
 
-        return view('notifications::settings.show', compact('setting'));
+        return view('notices::settings.show', compact('setting'));
     }
 
     /**
@@ -58,7 +58,7 @@ class SettingsController extends Controller
             abort(403, 'This setting cannot be edited.');
         }
 
-        return view('notifications::settings.edit', compact('setting'));
+        return view('notices::settings.edit', compact('setting'));
     }
 
     /**
@@ -98,7 +98,7 @@ class SettingsController extends Controller
         );
 
         return redirect()
-            ->route('notifications.settings.index')
+            ->route('notices.settings.index')
             ->with('success', "Setting '{$setting->full_key}' updated successfully.");
     }
 
@@ -122,7 +122,7 @@ class SettingsController extends Controller
         );
 
         return redirect()
-            ->route('notifications.settings.index')
+            ->route('notices.settings.index')
             ->with('success', "Setting '{$key}' deleted. Will use config default.");
     }
 
@@ -145,7 +145,7 @@ class SettingsController extends Controller
             ->get()
             ->groupBy('group');
 
-        return view('notifications::settings.scoped', compact('settings', 'scope', 'scopeId'));
+        return view('notices::settings.scoped', compact('settings', 'scope', 'scopeId'));
     }
 
     /**
@@ -185,7 +185,7 @@ class SettingsController extends Controller
         $setting->save();
 
         return redirect()
-            ->route('notifications.settings.index')
+            ->route('notices.settings.index')
             ->with('success', "Setting '{$setting->full_key}' created successfully.");
     }
 
