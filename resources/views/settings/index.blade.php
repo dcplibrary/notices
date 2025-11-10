@@ -1,4 +1,4 @@
-@extends(notices::layouts.app')
+@extends('notices::layouts.app')
 
 @section('title', 'Notification Settings')
 

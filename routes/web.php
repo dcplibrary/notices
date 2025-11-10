@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | These routes provide the default dashboard interface.
-| They are prefixed with the route defined in config/notifications.php
-| (default: notifications)
+| They are prefixed with the route defined in config/notices.php
+| (default: notices)
 |
 */
 

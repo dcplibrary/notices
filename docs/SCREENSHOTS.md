@@ -46,7 +46,7 @@ This guide lists all screenshots needed for the documentation and where to place
 ### Integration Guide (INTEGRATION.md)
 
 8. **Config File** - `images/config-notifications.png`
-   - Show: `config/notifications.php` file in code editor
+   - Show: `config/notices.php` file in code editor
    - Highlight the dashboard and API sections
    - Use syntax highlighting
 

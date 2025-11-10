@@ -132,7 +132,7 @@ git diff
 **Package**: dcplibrary/notices
 **Branch**: claude/composer-package-refactor-011CUuQNMm5JBJfjP7hfrTc3
 **Commands**: notifications:*
-**Config**: config/notifications.php
+**Config**: config/notices.php
 **Key File**: src/NotificationsServiceProvider.php
 
 See SESSION_CONTEXT.md for complete details.

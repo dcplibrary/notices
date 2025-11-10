@@ -33,10 +33,10 @@ composer require dcplibrary/notices
 ### 2. Publish configuration file
 
 ```bash
-php artisan vendor:publish --tag=notifications-config
+php artisan vendor:publish --tag=notices-config
 ```
 
-This creates `config/notifications.php` where you can configure database connections, FTP settings, and other options.
+This creates `config/notices.php` where you can configure database connections, FTP settings, and other options.
 
 ### 3. Configure environment variables
 
@@ -215,7 +215,7 @@ After installation, visit:
 https://yourapp.com/notifications
 ```
 
-**Note:** Dashboard requires authentication by default (configure in `config/notifications.php`).
+**Note:** Dashboard requires authentication by default (configure in `config/notices.php`).
 
 ![Dashboard Overview](docs/images/dashboard-overview.png)
 
@@ -232,7 +232,7 @@ https://yourapp.com/notifications
 
 Publish and modify the views:
 ```bash
-php artisan vendor:publish --tag=notifications-views
+php artisan vendor:publish --tag=notices-views
 ```
 
 Views will be in `resources/views/vendor/notifications/`.
@@ -244,7 +244,7 @@ For detailed dashboard customization, see [docs/DASHBOARD.md](docs/DASHBOARD.md)
 If building a custom UI using the API:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => false,
 ],
@@ -400,7 +400,7 @@ $rhlUsage = ShoutbombKeywordUsage::getTotalUsageByKeyword('RHL', $startDate, $en
 
 ## Configuration
 
-The `config/notifications.php` file contains all configuration options:
+The `config/notices.php` file contains all configuration options:
 
 - **polaris_connection**: MSSQL connection settings
 - **import**: Batch size, default days, duplicate handling

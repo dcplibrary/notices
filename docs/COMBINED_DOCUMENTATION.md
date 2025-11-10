@@ -290,7 +290,7 @@ Create an automated web application to track, log, and verify Polaris ILS (Integ
   - `AnalyticsController` - Trends and statistics
   - `ShoutbombController` - SMS/Voice delivery tracking
 - Implemented Laravel Sanctum authentication for API
-- Created configuration system (`config/notifications.php`)
+- Created configuration system (`config/notices.php`)
 - Set up comprehensive testing suite with PHPUnit
 - **Package Status:** ✅ Fully functional, ready for integration
 
@@ -342,7 +342,7 @@ Create an automated web application to track, log, and verify Polaris ILS (Integ
   - Options: --mark-read, --move-to, --limit
   - Progress reporting and statistics
 - Updated `TestConnections` command to test email IMAP connection
-- Added email configuration to `config/notifications.php`
+- Added email configuration to `config/notices.php`
 - Updated README with email ingester documentation
 - **Package Status:** ✅ Email ingester fully implemented and ready to use
 
@@ -704,7 +704,7 @@ Email Reports → EmailReportService → EmailReportParser → Database Models
    - Orchestrates fetch → parse → import workflow
    - Can be scheduled via Laravel scheduler
 
-4. **Configuration** (add to `config/notifications.php`)
+4. **Configuration** (add to `config/notices.php`)
    ```php
    'email_reports' => [
        'enabled' => env('EMAIL_REPORTS_ENABLED', true),
@@ -757,7 +757,7 @@ $schedule->command('notifications:import-email-reports')
 - [ ] Create `EmailReportService` with IMAP/API connection
 - [ ] Create `EmailReportParser` with format-specific parsing
 - [ ] Create `ImportEmailReports` Artisan command
-- [ ] Add configuration to `config/notifications.php`
+- [ ] Add configuration to `config/notices.php`
 - [ ] Create database migration (if new table needed)
 - [ ] Write unit tests for parser
 - [ ] Write feature tests for import command
@@ -1412,7 +1412,7 @@ class ImportShoutbombReports extends Command
 ## Configuration
 
 ```php
-// config/notifications.php
+// config/notices.php
 <?php
 
 return [

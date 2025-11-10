@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | These routes provide RESTful API access to notification data.
-| They are prefixed with the route defined in config/notifications.php
-| (default: api/notifications)
+| They are prefixed with the route defined in config/notices.php
+| (default: api/notices)
 |
 */
 

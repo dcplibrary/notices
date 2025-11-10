@@ -159,7 +159,7 @@ crontab -e
 If using the built-in dashboard, ensure authentication is configured:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => true,
     'middleware' => ['web', 'auth'],  // Customize as needed
@@ -281,7 +281,7 @@ php artisan schedule:list
    Migrations include indexes on common query fields
 
 2. **Batch Size:**
-   Adjust in `config/notifications.php`:
+   Adjust in `config/notices.php`:
    ```php
    'import' => [
        'batch_size' => 500,  // Increase for better performance
@@ -317,7 +317,7 @@ php artisan schedule:list
 
 2. **Configuration Backups:**
    - `.env` file (store securely)
-   - `config/notifications.php` customizations
+   - `config/notices.php` customizations
 
 ## 📚 Additional Resources
 
