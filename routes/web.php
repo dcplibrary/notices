@@ -20,6 +20,13 @@ Route::get('/list', [DashboardController::class, 'notifications'])->name('list')
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 Route::get('/shoutbomb', [DashboardController::class, 'shoutbomb'])->name('shoutbomb');
 
+// Verification routes
+Route::prefix('verification')->name('verification.')->group(function () {
+    Route::get('/', [DashboardController::class, 'verification'])->name('index');
+    Route::get('/patron/{barcode}', [DashboardController::class, 'patronHistory'])->name('patron');
+    Route::get('/{id}', [DashboardController::class, 'timeline'])->name('timeline');
+});
+
 // Settings management routes
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');

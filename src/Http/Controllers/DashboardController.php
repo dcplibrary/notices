@@ -5,6 +5,7 @@ namespace Dcplibrary\Notices\Http\Controllers;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
@@ -221,6 +222,135 @@ class DashboardController extends Controller
             'submissionTrend',
             'phoneNoticeTrend',
             'recentSubmissions'
+        ));
+    }
+
+    /**
+     * Display verification search page.
+     */
+    public function verification(Request $request): View
+    {
+        $service = app(NoticeVerificationService::class);
+        $results = collect();
+        $summary = [
+            'total' => 0,
+            'verified' => 0,
+            'failed' => 0,
+            'pending' => 0,
+        ];
+
+        // Only run search if filter provided
+        if ($request->hasAny(['patron_barcode', 'phone', 'email', 'item_barcode'])) {
+            $query = NotificationLog::query();
+
+            // Apply filters
+            if ($request->has('patron_barcode')) {
+                $query->where('patron_barcode', $request->patron_barcode);
+            }
+
+            if ($request->has('phone')) {
+                $query->where('phone', 'like', '%' . $request->phone . '%');
+            }
+
+            if ($request->has('email')) {
+                $query->where('email', $request->email);
+            }
+
+            if ($request->has('item_barcode')) {
+                $query->where('item_barcode', $request->item_barcode);
+            }
+
+            // Date range filter
+            if ($request->has('date_from') && $request->has('date_to')) {
+                $query->dateRange(
+                    Carbon::parse($request->date_from),
+                    Carbon::parse($request->date_to)
+                );
+            } else {
+                $query->recent(30);
+            }
+
+            $notices = $query->orderBy('notification_date', 'desc')->limit(100)->get();
+
+            // Verify each notice
+            $results = $notices->map(function ($notice) use ($service) {
+                return [
+                    'notice' => $notice,
+                    'verification' => $service->verify($notice),
+                ];
+            });
+
+            // Calculate summary
+            $summary['total'] = $results->count();
+            $summary['verified'] = $results->filter(fn($r) => $r['verification']->overall_status === 'success')->count();
+            $summary['failed'] = $results->filter(fn($r) => $r['verification']->overall_status === 'failed')->count();
+            $summary['pending'] = $results->filter(fn($r) => $r['verification']->overall_status === 'pending')->count();
+        }
+
+        return view('notifications::dashboard.verification', compact('results', 'summary'));
+    }
+
+    /**
+     * Display timeline for a specific notice.
+     */
+    public function timeline(int $id): View
+    {
+        $notice = NotificationLog::findOrFail($id);
+        $service = app(NoticeVerificationService::class);
+        $verification = $service->verify($notice);
+
+        return view('notifications::dashboard.verification-timeline', compact('notice', 'verification'));
+    }
+
+    /**
+     * Display patron verification history.
+     */
+    public function patronHistory(string $barcode): View
+    {
+        $service = app(NoticeVerificationService::class);
+
+        // Get date range
+        $days = request()->input('days', 90);
+        $startDate = now()->subDays($days);
+        $endDate = now();
+
+        // Get all notices for this patron with verification
+        $results = $service->verifyByPatron($barcode, $startDate, $endDate);
+
+        // Calculate statistics
+        $stats = [
+            'total_notices' => count($results),
+            'success_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'success')->count(),
+            'failed_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'failed')->count(),
+            'pending_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'pending')->count(),
+        ];
+
+        if ($stats['total_notices'] > 0) {
+            $stats['success_rate'] = round(($stats['success_count'] / $stats['total_notices']) * 100, 1);
+        } else {
+            $stats['success_rate'] = 0;
+        }
+
+        // Group by type
+        $byType = [];
+        foreach ($results as $result) {
+            $typeId = $result['notice']->notification_type_id;
+            $typeName = config('notices.notification_types')[$typeId] ?? 'Unknown';
+
+            if (!isset($byType[$typeName])) {
+                $byType[$typeName] = 0;
+            }
+            $byType[$typeName]++;
+        }
+
+        return view('notifications::dashboard.verification-patron', compact(
+            'barcode',
+            'results',
+            'stats',
+            'byType',
+            'days',
+            'startDate',
+            'endDate'
         ));
     }
 }
