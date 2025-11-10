@@ -1,0 +1,4 @@
+OrganizationID	ParentOrganizationID	OrganizationCodeID	Name	Abbreviation	SA_ContactPersonID	CreatorID	ModifierID	CreationDate	ModificationDate	DisplayName
+1		1	Daviess County	DC	3	1	56		2020-07-28 13:00:35.500	Daviess County
+2	1	2	Daviess County Public	DCP	3	1	11		2019-09-25 11:05:49.463	Daviess County Public Library
+3	2	3	Daviess County Public Library	DCPL	3	1	11		2019-09-25 11:07:16.347	Daviess County Public Library

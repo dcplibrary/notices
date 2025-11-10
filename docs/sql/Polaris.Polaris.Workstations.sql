@@ -1,0 +1,21 @@
+CREATE TABLE [Polaris].[Workstations] (
+    [WorkstationID] int IDENTITY,
+    [OrganizationID] int,
+    [DisplayName] nvarchar(80),
+    [ComputerName] nvarchar(32),
+    [CreatorID] int DEFAULT ((1)),
+    [ModifierID] int,
+    [CreationDate] datetime DEFAULT (getdate()),
+    [ModificationDate] datetime,
+    [Enabled] bit DEFAULT (0),
+    [Status] bit DEFAULT ((0)),
+    [StatusDate] datetime,
+    [NetworkDomainID] int,
+    [LeapAllowed] bit DEFAULT ((1)),
+    [TerminalServer] bit DEFAULT ((0)),
+    CONSTRAINT [fk_Workstations_PolarisUsers_ModifierID] FOREIGN KEY ([ModifierID]) REFERENCES [Polaris].[PolarisUsers]([PolarisUserID]),
+    CONSTRAINT [fk_Workstations_NetworkDomainID] FOREIGN KEY ([NetworkDomainID]) REFERENCES [Polaris].[NetworkDomains]([NetworkDomainID]),
+    CONSTRAINT [fk_Workstations_PolarisUsers_CreatorID] FOREIGN KEY ([CreatorID]) REFERENCES [Polaris].[PolarisUsers]([PolarisUserID]),
+    CONSTRAINT [fk_BranchesWS] FOREIGN KEY ([OrganizationID]) REFERENCES [Polaris].[Organizations]([OrganizationID]),
+    PRIMARY KEY ([WorkstationID])
+);

@@ -259,6 +259,12 @@
                                 <span class="text-xs">{{ explode(' ', $notification->delivery_method_name)[0] }}</span>
                             </div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{{ route('notices.notification.detail', $notification->id) }}"
+                               class="text-indigo-600 hover:text-indigo-900">
+                                View Details
+                            </a>
+                        </td>
                     </tr>
                     @empty
                     <tr>

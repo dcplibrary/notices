@@ -1,0 +1,35 @@
+MaterialTypeID	Description	MinimumAge
+1	Books	0
+3	Bulk Loan	0
+4	Equipment	0
+7	ILL	0
+12	Juvenile Audio	0
+13	Juvenile DVD/Video Book	0
+14	Juvenile DVD/Video	0
+15	Kits	0
+16	Magazines	0
+20	Reference	0
+21	CD	0
+22	CD - Restricted	0
+24	DVD/Video	0
+25	DVD/Video Book	0
+26	DVD/Video - Restricted	0
+27	KR DVD	0
+30	Bestseller Xpress	0
+34	Blu-ray Disc	0
+35	Blu-ray Disc - Restricted	0
+36	Juvenile Blu-ray Disc	0
+37	Video Game - E	0
+38	Video Game - Restricted	0
+39	Video Game - Teen	0
+41	Museum Pass	0
+43	Streaming Devices	0
+44	Mobile Hotspot Devices	0
+45	Audiobook CD	0
+47	Edge Ice Pass	0
+48	Kiosk Laptop	0
+49	Juvenile Book	0
+50	Juvenile Magazine	0
+51	Kits - Outreach	0
+52	eBooks	0
+53	eAudioBooks	0
