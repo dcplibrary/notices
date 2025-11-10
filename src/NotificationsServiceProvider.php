@@ -8,6 +8,7 @@ use Dcplibrary\Notifications\Commands\ImportEmailReports;
 use Dcplibrary\Notifications\Commands\AggregateNotifications;
 use Dcplibrary\Notifications\Commands\TestConnections;
 use Dcplibrary\Notifications\Commands\SeedDemoDataCommand;
+use Dcplibrary\Notifications\Services\SettingsManager;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,11 @@ class NotificationsServiceProvider extends ServiceProvider
 
         // Register the Polaris database connection
         $this->registerPolarisConnection();
+
+        // Register SettingsManager as a singleton
+        $this->app->singleton(SettingsManager::class, function ($app) {
+            return new SettingsManager();
+        });
     }
 
     /**
