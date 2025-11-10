@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\PolarisQueryService;
 
 class NotificationLog extends Model
 {
@@ -164,6 +165,90 @@ class NotificationLog extends Model
     public function scopeRecent(Builder $query, int $days = 7): Builder
     {
         return $query->where('notification_date', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Get patron details from Polaris.
+     * Returns cached Polaris patron record with full name, email, phone, etc.
+     *
+     * @return \Dcplibrary\Notices\Models\Polaris\Patron|null
+     */
+    public function getPatronAttribute()
+    {
+        if (!$this->patron_id) {
+            return null;
+        }
+
+        $service = app(PolarisQueryService::class);
+        return $service->getPatron($this->patron_id);
+    }
+
+    /**
+     * Get patron's full name from Polaris.
+     * Convenience accessor for displaying patron names.
+     *
+     * @return string
+     */
+    public function getPatronNameAttribute(): string
+    {
+        $patron = $this->patron;
+
+        if ($patron) {
+            return $patron->FormattedName; // "Last, First"
+        }
+
+        return $this->patron_barcode ?? 'Unknown Patron';
+    }
+
+    /**
+     * Get patron's first name.
+     *
+     * @return string|null
+     */
+    public function getPatronFirstNameAttribute(): ?string
+    {
+        return $this->patron?->NameFirst;
+    }
+
+    /**
+     * Get patron's last name.
+     *
+     * @return string|null
+     */
+    public function getPatronLastNameAttribute(): ?string
+    {
+        return $this->patron?->NameLast;
+    }
+
+    /**
+     * Get link to patron record in Polaris staff interface.
+     *
+     * @return string|null
+     */
+    public function getPatronStaffLinkAttribute(): ?string
+    {
+        return $this->patron_id
+            ? "https://catalog.dcplibrary.org/leapwebapp/staff/default#patrons/{$this->patron_id}/record"
+            : null;
+    }
+
+    /**
+     * Get items associated with this notification from Polaris.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getItemsAttribute()
+    {
+        if (!$this->patron_id || !$this->notification_type_id) {
+            return collect();
+        }
+
+        $service = app(PolarisQueryService::class);
+        return $service->getNotificationItems(
+            $this->patron_id,
+            $this->notification_type_id,
+            $this->notification_date
+        );
     }
 
     /**

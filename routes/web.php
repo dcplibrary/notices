@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/list', [DashboardController::class, 'notifications'])->name('list');
+Route::get('/list/{id}', [DashboardController::class, 'notificationDetail'])->name('notification.detail');
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 Route::get('/shoutbomb', [DashboardController::class, 'shoutbomb'])->name('shoutbomb');
 Route::get('/troubleshooting', [DashboardController::class, 'troubleshooting'])->name('troubleshooting');
