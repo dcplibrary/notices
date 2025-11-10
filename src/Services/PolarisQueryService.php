@@ -140,8 +140,8 @@ class PolarisQueryService
                 $holds = \DB::connection('polaris')
                     ->table('Polaris.Polaris.SysHoldRequests')
                     ->where('PatronID', $patronId)
-                    ->whereDate('PickupBranchID', '>=', $notificationDate->copy()->subDays(3))
-                    ->whereDate('PickupBranchID', '<=', $notificationDate->copy()->addDays(1))
+                    ->where('ActivationDate', '>=', $notificationDate->copy()->subDays(3))
+                    ->where('ActivationDate', '<=', $notificationDate->copy()->addDays(1))
                     ->get();
 
                 foreach ($holds as $hold) {
@@ -157,9 +157,9 @@ class PolarisQueryService
             // For overdue notifications (type 1, 12, 13), query overdue items
             if (in_array($notificationTypeId, [1, 12, 13])) {
                 $overdues = \DB::connection('polaris')
-                    ->table('Polaris.Polaris.CirculationCheckOutItems')
+                    ->table('Polaris.Polaris.CircItemRecords')
                     ->where('PatronID', $patronId)
-                    ->where('CheckOutDate', '<', $notificationDate)
+                    ->where('DueDate', '<', $notificationDate)
                     ->whereNull('CheckInDate')
                     ->get();
 
