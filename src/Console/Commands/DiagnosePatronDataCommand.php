@@ -13,89 +13,120 @@ class DiagnosePatronDataCommand extends Command
 
     public function handle()
     {
-        $this->info('Checking recent notifications and Shoutbomb data...');
+        $this->info('=== PATRON DATA DIAGNOSIS ===');
         $this->newLine();
 
-        // Get a recent notification
-        $notification = NotificationLog::orderBy('notification_date', 'desc')->first();
+        // Check date ranges
+        $this->info('Date Range Analysis:');
 
-        if (!$notification) {
-            $this->error('No notifications found in database');
-            return 1;
-        }
+        $notificationRange = [
+            'min' => NotificationLog::min('notification_date'),
+            'max' => NotificationLog::max('notification_date'),
+            'count' => NotificationLog::count(),
+        ];
 
-        $this->info("Sample Notification:");
-        $this->line("  ID: {$notification->id}");
-        $this->line("  Date: {$notification->notification_date}");
-        $this->line("  Patron Barcode: {$notification->patron_barcode}");
-        $this->line("  Patron ID: {$notification->patron_id}");
-        $this->line("  Type: {$notification->notification_type_name}");
+        $shoutbombRange = [
+            'min' => ShoutbombPhoneNotice::min('notice_date'),
+            'max' => ShoutbombPhoneNotice::max('notice_date'),
+            'count' => ShoutbombPhoneNotice::count(),
+        ];
+
+        $this->table(
+            ['Source', 'Earliest', 'Latest', 'Count'],
+            [
+                ['notification_logs', $notificationRange['min'], $notificationRange['max'], $notificationRange['count']],
+                ['shoutbomb_phone_notices', $shoutbombRange['min'], $shoutbombRange['max'], $shoutbombRange['count']],
+            ]
+        );
+
         $this->newLine();
 
-        // Check if Shoutbomb data exists for this notification
-        $this->info("Checking ShoutbombPhoneNotice for this patron...");
-
-        $phoneNotices = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+        // Find overlapping date
+        $overlapDate = ShoutbombPhoneNotice::whereBetween('notice_date', [$notificationRange['min'], $notificationRange['max']])
             ->orderBy('notice_date', 'desc')
-            ->limit(5)
-            ->get();
+            ->value('notice_date');
 
-        if ($phoneNotices->isEmpty()) {
-            $this->error("  ✗ No ShoutbombPhoneNotice records found for barcode: {$notification->patron_barcode}");
+        if ($overlapDate) {
+            $this->info("✓ Found overlapping date: {$overlapDate}");
 
-            // Check if ANY Shoutbomb data exists
-            $totalShoutbomb = ShoutbombPhoneNotice::count();
-            $this->warn("  Total ShoutbombPhoneNotice records in database: {$totalShoutbomb}");
-
-            if ($totalShoutbomb > 0) {
-                $sample = ShoutbombPhoneNotice::first();
-                $this->info("  Sample record - Barcode: {$sample->patron_barcode}, Date: {$sample->notice_date}");
-            }
-        } else {
-            $this->info("  ✓ Found {$phoneNotices->count()} ShoutbombPhoneNotice records:");
-            foreach ($phoneNotices as $pn) {
-                $this->line("    - Date: {$pn->notice_date}, Name: {$pn->first_name} {$pn->last_name}, Title: " . substr($pn->title, 0, 40));
-            }
-        }
-
-        $this->newLine();
-
-        // Test the accessor
-        $this->info("Testing patron_name accessor:");
-        $patronName = $notification->patron_name;
-        $this->line("  Result: {$patronName}");
-
-        if ($patronName === $notification->patron_barcode || $patronName === 'Unknown Patron') {
-            $this->error("  ✗ Accessor returned barcode/unknown instead of name");
-
-            // Check date matching
-            $exactMatch = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
-                ->whereDate('notice_date', $notification->notification_date->format('Y-m-d'))
+            // Get a notification from that date
+            $notification = NotificationLog::whereDate('notification_date', $overlapDate)
                 ->first();
 
-            if ($exactMatch) {
-                $this->info("  ✓ Exact date match found: {$exactMatch->first_name} {$exactMatch->last_name}");
-            } else {
-                $this->warn("  ✗ No exact date match found");
-                $this->line("    Looking for: " . $notification->notification_date->format('Y-m-d'));
+            if ($notification) {
+                $this->newLine();
+                $this->info("Sample Notification from overlapping date:");
+                $this->line("  ID: {$notification->id}");
+                $this->line("  Date: {$notification->notification_date}");
+                $this->line("  Patron Barcode: {$notification->patron_barcode}");
+                $this->line("  Patron ID: {$notification->patron_id}");
+                $this->line("  Type: {$notification->notification_type_name}");
+                $this->newLine();
+
+                // Check for matching Shoutbomb data
+                $phoneNotice = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+                    ->whereDate('notice_date', $overlapDate)
+                    ->first();
+
+                if ($phoneNotice) {
+                    $this->info("✓ MATCH FOUND!");
+                    $this->line("  Name: {$phoneNotice->first_name} {$phoneNotice->last_name}");
+                    $this->line("  Title: " . substr($phoneNotice->title, 0, 50));
+
+                    // Test accessor
+                    $patronName = $notification->patron_name;
+                    $this->newLine();
+                    $this->info("Accessor Result: '{$patronName}'");
+
+                    if (empty($patronName)) {
+                        $this->error("✗ Accessor returned empty string!");
+                        $this->warn("Debugging accessor...");
+
+                        // Check Polaris connection
+                        try {
+                            $patron = $notification->patron;
+                            if ($patron) {
+                                $this->line("  Polaris patron found: {$patron->FormattedName}");
+                            } else {
+                                $this->line("  Polaris patron: NULL");
+                            }
+                        } catch (\Exception $e) {
+                            $this->error("  Polaris error: {$e->getMessage()}");
+                        }
+                    } else {
+                        $this->info("✓ Accessor working correctly!");
+                    }
+                } else {
+                    $this->error("✗ No matching ShoutbombPhoneNotice for this barcode");
+
+                    // Show what barcodes exist for this date
+                    $this->newLine();
+                    $this->info("Barcodes in shoutbomb_phone_notices for {$overlapDate}:");
+                    $barcodes = ShoutbombPhoneNotice::whereDate('notice_date', $overlapDate)
+                        ->limit(10)
+                        ->get(['patron_barcode', 'first_name', 'last_name']);
+
+                    foreach ($barcodes as $bc) {
+                        $this->line("  {$bc->patron_barcode} - {$bc->first_name} {$bc->last_name}");
+                    }
+                }
             }
         } else {
-            $this->info("  ✓ Accessor returned proper name: {$patronName}");
+            $this->error("✗ No overlapping dates between notification_logs and shoutbomb_phone_notices");
+            $this->warn("The data imports are from completely different date ranges!");
         }
 
         $this->newLine();
+        $this->info('Checking for other matching strategies...');
 
-        // Test items accessor
-        $this->info("Testing items accessor:");
-        $items = $notification->items;
-        $this->line("  Items found: {$items->count()}");
+        // Check if we should match on patron_id instead
+        $notificationWithId = NotificationLog::whereNotNull('patron_id')
+            ->whereNotNull('patron_barcode')
+            ->first();
 
-        if ($items->isNotEmpty()) {
-            $firstItem = $items->first();
-            $title = $firstItem->bibliographic->Title ?? $firstItem->title ?? 'No title';
-            $this->info("  ✓ First item: " . substr($title, 0, 60));
-        } else {
-            $this->warn("  ✗ No items found");
+        if ($notificationWithId) {
+            $this->line("Sample patron_id: {$notificationWithId->patron_id}");
+            $this->line("Sample patron_barcode: {$notificationWithId->patron_barcode}");
         }
 
         return 0;
