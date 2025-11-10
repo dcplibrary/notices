@@ -62,61 +62,66 @@
                 </h2>
             </div>
             <div class="px-6 py-4">
-                @if($notification->patron)
-                    <dl class="space-y-3">
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Name</dt>
-                            <dd class="mt-1 text-sm text-gray-900">
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Name</dt>
+                        <dd class="mt-1 text-sm">
+                            @if($notification->patron)
                                 <a href="{{ $notification->patron_staff_link }}"
                                    target="_blank"
-                                   class="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                                   class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
                                     {{ $notification->patron->FormattedName }}
-                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                     </svg>
                                 </a>
-                            </dd>
-                        </div>
+                            @else
+                                <span class="text-gray-900">{{ $notification->patron_name }}</span>
+                                <span class="text-xs text-gray-400 ml-2">(Polaris data not available)</span>
+                            @endif
+                        </dd>
+                    </div>
 
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Patron ID</dt>
-                            <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_id }}</dd>
-                        </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Patron ID</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_id }}</dd>
+                    </div>
 
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Barcode</dt>
-                            <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_barcode }}</dd>
-                        </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Barcode</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_barcode ?? 'N/A' }}</dd>
+                    </div>
 
-                        @if($notification->patron->EmailAddress)
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Email</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->EmailAddress }}</dd>
-                        </div>
-                        @endif
+                    @if($notification->patron && $notification->patron->EmailAddress)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Email</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->EmailAddress }}</dd>
+                    </div>
+                    @endif
 
-                        @if($notification->patron->PhoneVoice1)
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Primary Phone</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->PhoneVoice1 }}</dd>
-                        </div>
-                        @endif
+                    @if($notification->patron && $notification->patron->PhoneVoice1)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->PhoneVoice1 }}</dd>
+                    </div>
+                    @endif
 
-                        @if($notification->patron->ExpirationDate)
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Card Expires</dt>
-                            <dd class="mt-1 text-sm text-gray-900">
-                                {{ $notification->patron->ExpirationDate->format('F j, Y') }}
-                            </dd>
-                        </div>
-                        @endif
-                    </dl>
-                @else
-                    <p class="text-sm text-gray-500">
-                        <span class="font-mono">{{ $notification->patron_barcode ?? 'N/A' }}</span>
-                        <span class="text-xs text-gray-400 ml-2">(Patron details not available)</span>
-                    </p>
-                @endif
+                    @if($notification->delivery_string && in_array($notification->delivery_option_id, [2, 3, 8]))
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Delivery Address</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->delivery_string }}</dd>
+                    </div>
+                    @endif
+
+                    @if($notification->patron && $notification->patron->ExpirationDate)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Card Expires</dt>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            {{ $notification->patron->ExpirationDate->format('F j, Y') }}
+                        </dd>
+                    </div>
+                    @endif
+                </dl>
             </div>
         </div>
 
@@ -314,19 +319,108 @@
                         @endif
                     </div>
 
-                    <div class="mt-2">
+                    <div class="mt-2 flex items-center space-x-4 text-xs">
+                        @if($item->ItemRecordID)
+                        <div class="text-gray-500">
+                            <span class="font-medium">Item ID:</span>
+                            <span class="font-mono">{{ $item->ItemRecordID }}</span>
+                        </div>
+                        @endif
                         <a href="{{ $item->staff_link }}"
                            target="_blank"
-                           class="text-xs text-blue-600 hover:text-blue-800 flex items-center">
+                           class="text-blue-600 hover:text-blue-800 inline-flex items-center">
                             View in Polaris
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                             </svg>
                         </a>
                     </div>
                 </div>
                 @endforeach
             </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Related Shoutbomb Records -->
+    @if($notification->shoutbomb_phone_notices->count() > 0 || $notification->shoutbomb_submissions->count() > 0 || $notification->shoutbomb_deliveries->count() > 0)
+    <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+                </svg>
+                Related Shoutbomb Records
+            </h2>
+        </div>
+        <div class="px-6 py-4 space-y-6">
+            <!-- Phone Notices -->
+            @if($notification->shoutbomb_phone_notices->count() > 0)
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">PhoneNotices.csv Records ({{ $notification->shoutbomb_phone_notices->count() }})</h3>
+                <div class="space-y-2">
+                    @foreach($notification->shoutbomb_phone_notices as $phoneNotice)
+                    <div class="bg-gray-50 rounded p-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($phoneNotice->delivery_type) }}</div>
+                            <div><span class="font-medium text-gray-600">Date:</span> {{ $phoneNotice->notice_date->format('M d, Y') }}</div>
+                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $phoneNotice->phone_number }}</span></div>
+                            <div><span class="font-medium text-gray-600">Library:</span> {{ $phoneNotice->library_name }}</div>
+                            @if($phoneNotice->title)
+                            <div class="col-span-2"><span class="font-medium text-gray-600">Title:</span> {{ Str::limit($phoneNotice->title, 80) }}</div>
+                            @endif
+                            @if($phoneNotice->source_file)
+                            <div class="col-span-2"><span class="font-medium text-gray-600">Source:</span> <span class="font-mono">{{ $phoneNotice->source_file }}</span></div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Submissions -->
+            @if($notification->shoutbomb_submissions->count() > 0)
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Submission Records ({{ $notification->shoutbomb_submissions->count() }})</h3>
+                <div class="space-y-2">
+                    @foreach($notification->shoutbomb_submissions as $submission)
+                    <div class="bg-gray-50 rounded p-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($submission->notification_type) }}</div>
+                            <div><span class="font-medium text-gray-600">Delivery:</span> {{ ucfirst($submission->delivery_type) }}</div>
+                            <div><span class="font-medium text-gray-600">Submitted:</span> {{ $submission->submitted_at->format('M d, Y g:i A') }}</div>
+                            @if($submission->phone)
+                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $submission->phone }}</span></div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Deliveries -->
+            @if($notification->shoutbomb_deliveries->count() > 0)
+            <div>
+                <h3 class="text-sm font-semibold text-gray-700 mb-3">Delivery Reports ({{ $notification->shoutbomb_deliveries->count() }})</h3>
+                <div class="space-y-2">
+                    @foreach($notification->shoutbomb_deliveries as $delivery)
+                    <div class="bg-gray-50 rounded p-3 text-xs">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($delivery->delivery_type) }}</div>
+                            <div><span class="font-medium text-gray-600">Status:</span> <span class="@if($delivery->status == 'delivered') text-green-700 @else text-red-700 @endif font-medium">{{ ucfirst($delivery->status) }}</span></div>
+                            <div><span class="font-medium text-gray-600">Delivered:</span> {{ $delivery->delivered_at?->format('M d, Y g:i A') ?? 'N/A' }}</div>
+                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $delivery->phone }}</span></div>
+                            @if($delivery->message)
+                            <div class="col-span-2"><span class="font-medium text-gray-600">Message:</span> {{ $delivery->message }}</div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
     @endif
