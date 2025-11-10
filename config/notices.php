@@ -267,13 +267,13 @@ return [
     'delivery_options' => [
         1 => 'Mail',
         2 => 'Email',
-        3 => 'Phone 1 (Voice)',
-        4 => 'Phone 2 (Voice)',
-        5 => 'Phone 3 (Voice)',
-        6 => 'FAX',
-        7 => 'EDI',
-        8 => 'SMS',
-        9 => 'Mobile App',
+        3 => 'Voice',           // PhoneVoice1 - Primary phone field (used for voice calls)
+        4 => 'Phone 2 (Voice)', // PhoneVoice2 - Not used at DCPL
+        5 => 'Phone 3 (Voice)', // PhoneVoice3 - Not used at DCPL
+        6 => 'FAX',             // Not used at DCPL
+        7 => 'EDI',             // Not used at DCPL
+        8 => 'SMS',             // PhoneVoice1 - Same phone field as Voice (used for text messages)
+        9 => 'Mobile App',      // Not active in Polaris
     ],
 
     'notification_statuses' => [

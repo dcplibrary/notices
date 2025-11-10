@@ -99,7 +99,14 @@ php artisan notices:sync-shoutbomb-to-logs --days=7 --dry-run
 
 ## Notes
 
-- Phone delivery options: Polaris has 3 separate phone fields (Phone 1, Phone 2, Phone 3) all with ID 3, 4, 5
-- Voice/SMS from Shoutbomb uses delivery_option_id 3 (Voice) and 8 (SMS)
+- **DCPL Phone Configuration**: Only PhoneVoice1 (primary phone field) is used for notifications
+  - Voice calls: delivery_option_id **3** (Voice) → uses PhoneVoice1
+  - Text messages: delivery_option_id **8** (SMS) → uses PhoneVoice1 (same field)
+  - Phone 2, Phone 3 (IDs 4, 5) exist in Polaris but are not used at DCPL
+- **Shoutbomb Mapping**: PhoneNotices.csv delivery type markers
+  - `'V'` = Voice → maps to delivery_option_id 3
+  - `'T'` = Text → maps to delivery_option_id 8
+- **Active Delivery Methods at DCPL**: Mail (1), Email (2), Voice (3), SMS (8)
+- **Inactive/Unused**: Phone 2 (4), Phone 3 (5), FAX (6), EDI (7), Mobile App (9)
 - Status ID 12 is used for successful notifications (both email and voice/SMS)
 - The NotificationLog table in PolarisTransactions is the authoritative source for sent notifications
