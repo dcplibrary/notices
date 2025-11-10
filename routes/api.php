@@ -4,6 +4,7 @@ use Dcplibrary\Notices\Http\Controllers\Api\NotificationController;
 use Dcplibrary\Notices\Http\Controllers\Api\SummaryController;
 use Dcplibrary\Notices\Http\Controllers\Api\AnalyticsController;
 use Dcplibrary\Notices\Http\Controllers\Api\ShoutbombController;
+use Dcplibrary\Notices\Http\Controllers\Api\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,4 +52,13 @@ Route::prefix('shoutbomb')->name('shoutbomb.')->group(function () {
 
     Route::get('/registrations', [ShoutbombController::class, 'registrations'])->name('registrations');
     Route::get('/registrations/latest', [ShoutbombController::class, 'latestRegistration'])->name('registrations.latest');
+});
+
+// Verification
+Route::prefix('verification')->name('verification.')->group(function () {
+    Route::get('/', [VerificationController::class, 'verify'])->name('verify');
+    Route::get('/search', [VerificationController::class, 'search'])->name('search');
+    Route::get('/patron/{barcode}', [VerificationController::class, 'patron'])->name('patron');
+    Route::get('/failures', [VerificationController::class, 'failures'])->name('failures');
+    Route::get('/{id}/timeline', [VerificationController::class, 'timeline'])->name('timeline');
 });
