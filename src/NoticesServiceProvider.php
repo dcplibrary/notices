@@ -105,6 +105,7 @@ class NoticesServiceProvider extends ServiceProvider
                 SeedDemoDataCommand::class,
                 Commands\ImportShoutbombSubmissions::class,
                 Commands\ImportShoutbombPhoneNotices::class,
+                Commands\ListShoutbombFiles::class,
             ]);
         }
 
