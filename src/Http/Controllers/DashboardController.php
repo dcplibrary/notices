@@ -218,6 +218,11 @@ class DashboardController extends Controller
         // Get latest Shoutbomb registration stats
         $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
 
+        // Get registration history for trend chart
+        $registrationHistory = ShoutbombRegistration::orderBy('snapshot_date', 'asc')
+            ->limit(30)
+            ->get();
+
         return view('notices::dashboard.shoutbomb', compact(
             'days',
             'startDate',
@@ -227,7 +232,8 @@ class DashboardController extends Controller
             'submissionTrend',
             'phoneNoticeTrend',
             'recentSubmissions',
-            'latestRegistration'
+            'latestRegistration',
+            'registrationHistory'
         ));
     }
 
