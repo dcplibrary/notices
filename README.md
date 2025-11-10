@@ -1,6 +1,6 @@
 [![PHP Composer](https://github.com/dcplibrary/notices/actions/workflows/php.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/php.yml) [![Semantic-Release](https://github.com/dcplibrary/notices/actions/workflows/semantic-release.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/semantic-release.yml)
 
-# Polaris Notifications Package
+# Polaris Notices Package
 
 A Laravel package for tracking and analyzing Polaris ILS notification delivery across multiple channels (Email, SMS, Voice, Mail) with Shoutbomb integration.
 
