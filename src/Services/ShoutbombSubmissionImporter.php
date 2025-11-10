@@ -86,10 +86,23 @@ class ShoutbombSubmissionImporter
             $pattern = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
             $files = $this->ftpService->listFiles('/');
 
+            Log::info("Looking for patron list", [
+                'pattern' => $pattern,
+                'files_found' => count($files),
+            ]);
+
             foreach ($files as $file) {
-                if (str_contains($file, $pattern)) {
-                    $localPath = $this->ftpService->downloadFile('/' . $file);
+                $basename = basename($file);
+
+                if (str_contains($basename, $pattern)) {
+                    // Use basename to avoid path issues
+                    $localPath = $this->ftpService->downloadFile('/' . $basename);
                     if ($localPath) {
+                        Log::info("Found and downloaded patron list", [
+                            'type' => $type,
+                            'file' => $basename,
+                            'records' => count($this->parser->parsePatronList($localPath)),
+                        ]);
                         return $this->parser->parsePatronList($localPath);
                     }
                 }
@@ -98,6 +111,8 @@ class ShoutbombSubmissionImporter
             Log::warning("Patron list file not found", [
                 'type' => $type,
                 'date' => $date->format('Y-m-d'),
+                'pattern' => $pattern,
+                'total_files' => count($files),
             ]);
 
             return [];
@@ -127,20 +142,36 @@ class ShoutbombSubmissionImporter
             $pattern = "{$type}_submitted_{$date->format('Y-m-d')}";
             $files = $this->ftpService->listFiles('/');
 
+            Log::info("Looking for submission files", [
+                'type' => $type,
+                'pattern' => $pattern,
+                'files_found' => count($files),
+            ]);
+
             foreach ($files as $file) {
-                if (str_contains($file, $pattern)) {
-                    $localPath = $this->ftpService->downloadFile('/' . $file);
+                $basename = basename($file);
+
+                if (str_contains($basename, $pattern)) {
+                    // Use basename to avoid path issues
+                    $localPath = $this->ftpService->downloadFile('/' . $basename);
 
                     if ($localPath) {
-                        $count = $this->processSubmissionFile($localPath, $file, $type, $voicePatrons, $textPatrons);
+                        $count = $this->processSubmissionFile($localPath, $basename, $type, $voicePatrons, $textPatrons);
                         $imported += $count;
 
                         Log::info("Imported {$type} submissions", [
-                            'file' => $file,
+                            'file' => $basename,
                             'count' => $count,
                         ]);
                     }
                 }
+            }
+
+            if ($imported === 0) {
+                Log::warning("No {$type} submission files found", [
+                    'pattern' => $pattern,
+                    'total_files' => count($files),
+                ]);
             }
 
         } catch (\Exception $e) {

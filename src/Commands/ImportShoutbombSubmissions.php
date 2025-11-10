@@ -37,9 +37,15 @@ class ImportShoutbombSubmissions extends Command
     {
         $date = $this->option('date')
             ? Carbon::parse($this->option('date'))
-            : now()->subDays($this->option('days'));
+            : now();
 
         $this->line("📥 Importing submissions from: {$date->format('Y-m-d')}");
+
+        if ($this->option('verbose')) {
+            $this->line("   (Use --date=YYYY-MM-DD to import from a specific date)");
+            $this->line("   FTP Host: " . config('notices.shoutbomb.ftp.host'));
+        }
+
         $this->newLine();
 
         // Show progress as we go

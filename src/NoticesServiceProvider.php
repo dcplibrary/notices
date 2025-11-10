@@ -105,6 +105,7 @@ class NoticesServiceProvider extends ServiceProvider
                 SeedDemoDataCommand::class,
                 Commands\ImportShoutbombSubmissions::class,
                 Commands\ImportShoutbombPhoneNotices::class,
+                Commands\ListShoutbombFiles::class,
             ]);
         }
 
@@ -180,6 +181,14 @@ class NoticesServiceProvider extends ServiceProvider
             if ($settings->get('scheduler.import_shoutbomb_enabled', true)) {
                 $time = $settings->get('scheduler.import_shoutbomb_time', '09:00');
                 $schedule->command('notices:import-shoutbomb')
+                    ->dailyAt($time)
+                    ->withoutOverlapping();
+            }
+
+            // Import Shoutbomb submissions daily at 5:30 AM
+            if ($settings->get('scheduler.import_submissions_enabled', true)) {
+                $time = $settings->get('scheduler.import_submissions_time', '05:30');
+                $schedule->command('notices:import-shoutbomb-submissions')
                     ->dailyAt($time)
                     ->withoutOverlapping();
             }
