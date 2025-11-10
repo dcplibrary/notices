@@ -95,10 +95,25 @@ class DashboardController extends Controller
         // Apply search filter
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
+
+            // Find patron barcodes from Shoutbomb phone notices that match the search term
+            $matchingBarcodes = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%");
+            })
+            ->pluck('patron_barcode')
+            ->unique()
+            ->toArray();
+
+            $query->where(function ($q) use ($search, $matchingBarcodes) {
                 $q->where('patron_barcode', 'like', "%{$search}%")
                   ->orWhere('patron_id', $search)
                   ->orWhere('delivery_string', 'like', "%{$search}%");
+
+                // Also search by patron name from imported data
+                if (!empty($matchingBarcodes)) {
+                    $q->orWhereIn('patron_barcode', $matchingBarcodes);
+                }
             });
         }
 
