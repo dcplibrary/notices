@@ -11,7 +11,7 @@ class ImportEmailReports extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'notifications:import-email-reports
+    protected $signature = 'notices:import-email-reports
                             {--mark-read : Mark imported emails as read}
                             {--move-to= : Move imported emails to specified folder}
                             {--limit=50 : Maximum number of emails to process per run}';

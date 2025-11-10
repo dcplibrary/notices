@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class ImportShoutbombPhoneNotices extends Command
 {
-    protected $signature = 'notifications:import-phone-notices
+    protected $signature = 'notices:import-phone-notices
                             {--file= : Import from local file instead of FTP}';
 
     protected $description = 'Import PhoneNotices.csv for verification/confirmation of notices sent to Shoutbomb';

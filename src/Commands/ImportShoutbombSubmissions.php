@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class ImportShoutbombSubmissions extends Command
 {
-    protected $signature = 'notifications:import-shoutbomb-submissions
+    protected $signature = 'notices:import-shoutbomb-submissions
                             {--days=1 : Number of days to import}
                             {--date= : Specific date to import (Y-m-d format)}
                             {--file= : Import from local file instead of FTP}

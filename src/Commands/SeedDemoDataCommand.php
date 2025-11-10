@@ -15,7 +15,7 @@ class SeedDemoDataCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'notifications:seed-demo
+    protected $signature = 'notices:seed-demo
                             {--days=30 : Number of days of historical data to generate}
                             {--fresh : Truncate existing data before seeding}';
 

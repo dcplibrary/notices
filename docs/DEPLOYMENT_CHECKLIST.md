@@ -75,12 +75,12 @@ php artisan tinker
 
 ```bash
 # Test all connections
-php artisan notifications:test-connections
+php artisan notices:test-connections
 
 # Test individually
-php artisan notifications:test-connections --polaris
-php artisan notifications:test-connections --shoutbomb
-php artisan notifications:test-connections --email
+php artisan notices:test-connections --polaris
+php artisan notices:test-connections --shoutbomb
+php artisan notices:test-connections --email
 ```
 
 **Expected output for Polaris:**
@@ -95,13 +95,13 @@ If you see errors, refer to the [Troubleshooting](#troubleshooting) section.
 
 ```bash
 # Import last 7 days of notifications
-php artisan notifications:import-notifications --days=7
+php artisan notices:import --days=7
 
 # Import Shoutbomb reports (if enabled)
-php artisan notifications:import-shoutbomb
+php artisan notices:import-shoutbomb
 
 # Generate daily summaries
-php artisan notifications:aggregate
+php artisan notices:aggregate
 
 # Verify data
 php artisan tinker
@@ -117,22 +117,22 @@ Add to your `app/Console/Kernel.php`:
 protected function schedule(Schedule $schedule)
 {
     // Import notifications daily at 2 AM
-    $schedule->command('notifications:import-notifications --days=1')
+    $schedule->command('notices:import --days=1')
         ->dailyAt('02:00')
         ->withoutOverlapping();
 
     // Aggregate summaries daily at 3 AM
-    $schedule->command('notifications:aggregate')
+    $schedule->command('notices:aggregate')
         ->dailyAt('03:00');
 
     // Import Shoutbomb reports weekly
-    $schedule->command('notifications:import-shoutbomb')
+    $schedule->command('notices:import-shoutbomb')
         ->weekly()
         ->sundays()
         ->at('04:00');
 
     // Import email reports hourly (if enabled)
-    $schedule->command('notifications:import-email-reports')
+    $schedule->command('notices:import-email-reports')
         ->hourly();
 }
 ```
@@ -179,21 +179,21 @@ After deployment, verify everything works:
 
 1. **Connection Test:**
    ```bash
-   php artisan notifications:test-connections
+   php artisan notices:test-connections
    ```
 
 2. **Data Import:**
    ```bash
-   php artisan notifications:import-notifications --days=1
+   php artisan notices:import --days=1
    ```
 
 3. **Dashboard Access:**
-   Visit: `https://yourapp.com/notifications`
+   Visit: `https://yourapp.com/notices`
 
 4. **API Test:**
    ```bash
    curl -H "Authorization: Bearer YOUR_TOKEN" \
-     https://yourapp.com/api/notifications/notifications/stats?days=7
+     https://yourapp.com/api/notices/logs/stats?days=7
    ```
 
 5. **Check Logs:**
@@ -235,7 +235,7 @@ php -m | grep pdo
 
 **Debug:**
 ```bash
-php artisan notifications:import-notifications --days=30 -vvv
+php artisan notices:import --days=30 -vvv
 tail -f storage/logs/laravel.log
 ```
 

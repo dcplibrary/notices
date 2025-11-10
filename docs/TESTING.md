@@ -234,13 +234,13 @@ To visualize what the data looks like in your application, use the demo seeder:
 
 ```bash
 # Generate 30 days of demo data (default)
-php artisan notifications:seed-demo
+php artisan notices:seed-demo
 
 # Generate 60 days of data
-php artisan notifications:seed-demo --days=60
+php artisan notices:seed-demo --days=60
 
 # Clear existing data and seed fresh
-php artisan notifications:seed-demo --fresh
+php artisan notices:seed-demo --fresh
 ```
 
 This will create:

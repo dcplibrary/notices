@@ -278,9 +278,9 @@ Create an automated web application to track, log, and verify Polaris ILS (Integ
   - `DailyNotificationSummary` - Aggregated metrics
   - `ShoutbombDelivery`, `ShoutbombKeywordUsage`, `ShoutbombRegistration` - SMS/Voice tracking
 - Implemented 5 Artisan commands:
-  - `notifications:import-notifications` - Polaris import
-  - `notifications:import-shoutbomb` - Shoutbomb FTP import
-  - `notifications:aggregate-notifications` - Daily aggregation
+  - `notices:import` - Polaris import
+  - `notices:import-shoutbomb` - Shoutbomb FTP import
+  - `notices:aggregate-notifications` - Daily aggregation
   - `notifications:test-connections` - Connection validation
   - `notifications:seed-demo` - Demo data generation
 - Created database migrations for all 5 tables
@@ -700,7 +700,7 @@ Email Reports → EmailReportService → EmailReportParser → Database Models
    - Returns structured data for import
 
 3. **ImportEmailReports Command** (`src/Commands/ImportEmailReports.php`)
-   - Artisan command: `php artisan notifications:import-email-reports`
+   - Artisan command: `php artisan notices:import-email-reports`
    - Orchestrates fetch → parse → import workflow
    - Can be scheduled via Laravel scheduler
 
@@ -740,7 +740,7 @@ Email Reports → EmailReportService → EmailReportParser → Database Models
 **Scheduled Import:**
 ```php
 // app/Console/Kernel.php
-$schedule->command('notifications:import-email-reports')
+$schedule->command('notices:import-email-reports')
     ->dailyAt('10:00')  // After email reports arrive
     ->withoutOverlapping();
 ```
@@ -1306,17 +1306,17 @@ packages/dcplibrary/notices/
 protected function schedule(Schedule $schedule)
 {
     // Import Polaris notifications every hour
-    $schedule->command('notifications:import-notifications')
+    $schedule->command('notices:import')
         ->hourly()
         ->runInBackground();
 
     // Import Shoutbomb files daily at 9 AM
-    $schedule->command('notifications:import-shoutbomb')
+    $schedule->command('notices:import-shoutbomb')
         ->dailyAt('09:00')
         ->runInBackground();
 
     // Aggregate daily summaries at 11 PM
-    $schedule->command('notifications:aggregate-notifications')
+    $schedule->command('notices:aggregate-notifications')
         ->dailyAt('23:00')
         ->runInBackground();
 }
@@ -1335,7 +1335,7 @@ use Dcplibrary\Notices\Services\PolarisImportService;
 
 class ImportNotifications extends Command
 {
-    protected $signature = 'notifications:import-notifications
+    protected $signature = 'notices:import
                             {--days=1 : Number of days to import}
                             {--full : Full historical import}';
 
@@ -1373,7 +1373,7 @@ use Dcplibrary\Notices\Services\ShoutbombFileParser;
 
 class ImportShoutbombReports extends Command
 {
-    protected $signature = 'notifications:import-shoutbomb
+    protected $signature = 'notices:import-shoutbomb
                             {--path= : Path to report files}';
 
     protected $description = 'Import Shoutbomb reports from FTP directory';
