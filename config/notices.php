@@ -56,6 +56,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scheduler Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure scheduled task execution times and enabled status.
+    | These can be overridden via database settings for dynamic control.
+    |
+    */
+
+    'scheduler' => [
+        // Polaris notification import (hourly)
+        'import_polaris_enabled' => env('SCHEDULER_IMPORT_POLARIS_ENABLED', true),
+
+        // Shoutbomb report import
+        'import_shoutbomb_enabled' => env('SCHEDULER_IMPORT_SHOUTBOMB_ENABLED', true),
+        'import_shoutbomb_time' => env('SCHEDULER_IMPORT_SHOUTBOMB_TIME', '09:00'),
+
+        // Email report import
+        'import_email_enabled' => env('SCHEDULER_IMPORT_EMAIL_ENABLED', true),
+        'import_email_time' => env('SCHEDULER_IMPORT_EMAIL_TIME', '09:30'),
+
+        // Data aggregation
+        'aggregate_enabled' => env('SCHEDULER_AGGREGATE_ENABLED', true),
+        'aggregate_time' => env('SCHEDULER_AGGREGATE_TIME', '00:30'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Shoutbomb FTP Settings
     |--------------------------------------------------------------------------
     |
