@@ -17,7 +17,7 @@ class NotificationApiTest extends TestCase
         // Create test notifications
         NotificationLog::factory()->count(10)->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.index'));
+        $response = $this->getJson(route('notices.api.logs.index'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -43,7 +43,7 @@ class NotificationApiTest extends TestCase
         NotificationLog::factory()->count(5)->create(['notification_type_id' => 4]); // Holds
         NotificationLog::factory()->count(3)->create(['notification_type_id' => 5]); // Overdues
 
-        $response = $this->getJson(route('notifications.api.notifications.index', ['type_id' => 4]));
+        $response = $this->getJson(route('notices.api.logs.index', ['type_id' => 4]));
 
         $response->assertStatus(200);
         $this->assertEquals(5, count($response->json('data')));
@@ -62,7 +62,7 @@ class NotificationApiTest extends TestCase
             'notification_date' => Carbon::parse('2025-11-30'),
         ]);
 
-        $response = $this->getJson(route('notifications.api.notifications.index', [
+        $response = $this->getJson(route('notices.api.logs.index', [
             'start_date' => '2025-11-10',
             'end_date' => '2025-11-20',
         ]));
@@ -77,7 +77,7 @@ class NotificationApiTest extends TestCase
         NotificationLog::factory()->count(7)->successful()->create();
         NotificationLog::factory()->count(3)->failed()->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.index', ['successful' => true]));
+        $response = $this->getJson(route('notices.api.logs.index', ['successful' => true]));
 
         $response->assertStatus(200);
         $this->assertEquals(7, count($response->json('data')));
@@ -91,7 +91,7 @@ class NotificationApiTest extends TestCase
             'notification_type_id' => 4,
         ]);
 
-        $response = $this->getJson(route('notifications.api.notifications.show', $notification));
+        $response = $this->getJson(route('notices.api.logs.show', $notification));
 
         $response->assertStatus(200)
             ->assertJson([
@@ -108,7 +108,7 @@ class NotificationApiTest extends TestCase
         NotificationLog::factory()->count(10)->successful()->create();
         NotificationLog::factory()->count(2)->failed()->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.stats'));
+        $response = $this->getJson(route('notices.api.logs.stats'));
 
         $response->assertStatus(200)
             ->assertJson([
@@ -127,15 +127,15 @@ class NotificationApiTest extends TestCase
         NotificationLog::factory()->count(50)->create();
 
         // Test default pagination
-        $response = $this->getJson(route('notifications.api.notifications.index'));
+        $response = $this->getJson(route('notices.api.logs.index'));
         $this->assertLessThanOrEqual(20, count($response->json('data')));
 
         // Test custom pagination
-        $response = $this->getJson(route('notifications.api.notifications.index', ['per_page' => 10]));
+        $response = $this->getJson(route('notices.api.logs.index', ['per_page' => 10]));
         $this->assertEquals(10, count($response->json('data')));
 
         // Test max pagination limit
-        $response = $this->getJson(route('notifications.api.notifications.index', ['per_page' => 200]));
+        $response = $this->getJson(route('notices.api.logs.index', ['per_page' => 200]));
         $this->assertLessThanOrEqual(100, count($response->json('data')));
     }
 }

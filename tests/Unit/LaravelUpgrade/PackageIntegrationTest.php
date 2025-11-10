@@ -158,7 +158,7 @@ class PackageIntegrationTest extends TestCase
         $notification = \Dcplibrary\Notifications\Models\NotificationLog::factory()->create();
 
         $response = $this->getJson(
-            route('notifications.api.notifications.show', $notification)
+            route('notices.api.logs.show', $notification)
         );
 
         $response->assertStatus(200);

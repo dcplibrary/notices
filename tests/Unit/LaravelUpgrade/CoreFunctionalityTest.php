@@ -69,12 +69,12 @@ class CoreFunctionalityTest extends TestCase
         }
         
         // Verify key API routes are registered
-        $this->assertContains('notifications.api.notifications.index', $routeNames);
-        $this->assertContains('notifications.api.notifications.show', $routeNames);
-        $this->assertContains('notifications.api.notifications.stats', $routeNames);
-        $this->assertContains('notifications.api.summaries.index', $routeNames);
-        $this->assertContains('notifications.api.analytics.overview', $routeNames);
-        $this->assertContains('notifications.api.shoutbomb.deliveries', $routeNames);
+        $this->assertContains('notices.api.logs.index', $routeNames);
+        $this->assertContains('notices.api.logs.show', $routeNames);
+        $this->assertContains('notices.api.logs.stats', $routeNames);
+        $this->assertContains('notices.api.summaries.index', $routeNames);
+        $this->assertContains('notices.api.analytics.overview', $routeNames);
+        $this->assertContains('notices.api.shoutbomb.deliveries', $routeNames);
     }
 
     /** @test */
@@ -113,7 +113,7 @@ class CoreFunctionalityTest extends TestCase
     /** @test */
     public function it_verifies_middleware_stack_is_functioning()
     {
-        $response = $this->getJson(route('notifications.api.notifications.index'));
+        $response = $this->getJson(route('notices.api.logs.index'));
         
         // Verify middleware is applied (headers, JSON response, etc.)
         $response->assertHeader('Content-Type', 'application/json');
