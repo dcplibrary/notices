@@ -6,7 +6,9 @@ use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Dcplibrary\Notices\Services\NoticeExportService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
 use Carbon\Carbon;
@@ -391,5 +393,102 @@ class DashboardController extends Controller
             'mismatches',
             'recentFailures'
         ));
+    }
+
+    /**
+     * Export verification results to CSV.
+     */
+    public function exportVerification(Request $request): Response
+    {
+        $service = app(NoticeVerificationService::class);
+        $exportService = app(NoticeExportService::class);
+
+        $query = NotificationLog::query();
+
+        // Apply same filters as verification page
+        if ($request->has('patron_barcode')) {
+            $query->where('patron_barcode', $request->patron_barcode);
+        }
+
+        if ($request->has('phone')) {
+            $query->where('phone', 'like', '%' . $request->phone . '%');
+        }
+
+        if ($request->has('email')) {
+            $query->where('email', $request->email);
+        }
+
+        if ($request->has('item_barcode')) {
+            $query->where('item_barcode', $request->item_barcode);
+        }
+
+        // Date range
+        if ($request->has('date_from') && $request->has('date_to')) {
+            $query->dateRange(
+                Carbon::parse($request->date_from),
+                Carbon::parse($request->date_to)
+            );
+        } else {
+            $query->recent(30);
+        }
+
+        $notices = $query->orderBy('notification_date', 'desc')->limit(1000)->get();
+
+        $csv = $exportService->exportVerificationToCSV($notices);
+
+        $filename = 'notice-verification-' . now()->format('Y-m-d-His') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Export patron history to CSV.
+     */
+    public function exportPatronHistory(Request $request, string $barcode): Response
+    {
+        $service = app(NoticeVerificationService::class);
+        $exportService = app(NoticeExportService::class);
+
+        $days = $request->input('days', 90);
+        $startDate = now()->subDays($days);
+        $endDate = now();
+
+        $results = $service->verifyByPatron($barcode, $startDate, $endDate);
+
+        $csv = $exportService->exportPatronHistoryToCSV($results);
+
+        $filename = "patron-{$barcode}-verification-" . now()->format('Y-m-d-His') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Export troubleshooting failures to CSV.
+     */
+    public function exportFailures(Request $request): Response
+    {
+        $service = app(NoticeVerificationService::class);
+        $exportService = app(NoticeExportService::class);
+
+        $days = $request->input('days', 7);
+        $startDate = now()->subDays($days);
+        $endDate = now();
+
+        $failures = $service->getFailedNotices($startDate, $endDate);
+
+        $csv = $exportService->exportFailuresToCSV($failures);
+
+        $filename = 'notice-failures-' . now()->format('Y-m-d-His') . '.csv';
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 }

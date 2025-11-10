@@ -20,11 +20,14 @@ Route::get('/list', [DashboardController::class, 'notifications'])->name('list')
 Route::get('/analytics', [DashboardController::class, 'analytics'])->name('analytics');
 Route::get('/shoutbomb', [DashboardController::class, 'shoutbomb'])->name('shoutbomb');
 Route::get('/troubleshooting', [DashboardController::class, 'troubleshooting'])->name('troubleshooting');
+Route::get('/troubleshooting/export', [DashboardController::class, 'exportFailures'])->name('troubleshooting.export');
 
 // Verification routes
 Route::prefix('verification')->name('verification.')->group(function () {
     Route::get('/', [DashboardController::class, 'verification'])->name('index');
+    Route::get('/export', [DashboardController::class, 'exportVerification'])->name('export');
     Route::get('/patron/{barcode}', [DashboardController::class, 'patronHistory'])->name('patron');
+    Route::get('/patron/{barcode}/export', [DashboardController::class, 'exportPatronHistory'])->name('patron.export');
     Route::get('/{id}', [DashboardController::class, 'timeline'])->name('timeline');
 });
 

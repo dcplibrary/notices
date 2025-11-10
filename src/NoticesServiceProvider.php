@@ -10,6 +10,7 @@ use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\PluginRegistry;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Illuminate\Support\ServiceProvider;
@@ -47,6 +48,11 @@ class NoticesServiceProvider extends ServiceProvider
             $service = new NoticeVerificationService();
             $service->setPluginRegistry($app->make(PluginRegistry::class));
             return $service;
+        });
+
+        // Register NoticeExportService as a singleton
+        $this->app->singleton(NoticeExportService::class, function ($app) {
+            return new NoticeExportService($app->make(NoticeVerificationService::class));
         });
     }
 
