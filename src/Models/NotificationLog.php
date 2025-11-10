@@ -252,6 +252,63 @@ class NotificationLog extends Model
     }
 
     /**
+     * Get related Shoutbomb phone notice records.
+     * Matches by patron barcode and notification date.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getShoutbombPhoneNoticesAttribute()
+    {
+        if (!$this->patron_barcode) {
+            return collect();
+        }
+
+        return \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+            ->get();
+    }
+
+    /**
+     * Get related Shoutbomb submission records.
+     * Matches by patron barcode and submitted date.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getShoutbombSubmissionsAttribute()
+    {
+        if (!$this->patron_barcode) {
+            return collect();
+        }
+
+        return \Dcplibrary\Notices\Models\ShoutbombSubmission::where('patron_barcode', $this->patron_barcode)
+            ->whereDate('submitted_at', $this->notification_date->format('Y-m-d'))
+            ->get();
+    }
+
+    /**
+     * Get related Shoutbomb delivery records.
+     * Matches by patron barcode and delivery string (phone).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getShoutbombDeliveriesAttribute()
+    {
+        if (!$this->delivery_string || !in_array($this->delivery_option_id, [3, 8])) {
+            return collect();
+        }
+
+        // Clean phone number for comparison
+        $cleanPhone = preg_replace('/[^0-9]/', '', $this->delivery_string);
+
+        return \Dcplibrary\Notices\Models\ShoutbombDelivery::where(function ($query) use ($cleanPhone) {
+            $query->where('phone', 'LIKE', "%{$cleanPhone}%")
+                  ->orWhere('phone', 'LIKE', "%{$this->delivery_string}%");
+        })
+        ->whereDate('delivered_at', $this->notification_date->format('Y-m-d'))
+        ->get();
+    }
+
+    /**
      * Provide the model factory for package context.
      */
     protected static function newFactory()

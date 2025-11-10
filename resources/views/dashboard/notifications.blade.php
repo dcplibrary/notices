@@ -13,8 +13,8 @@
         <div class="mt-4 sm:mt-0">
             <button @click="showFilters = !showFilters"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                <svg class="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
                 </svg>
                 <span x-text="showFilters ? 'Hide Filters' : 'Show Filters'">Show Filters</span>
             </button>
@@ -29,8 +29,8 @@
                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                         </svg>
                     </div>
                     <input type="text"
@@ -38,7 +38,7 @@
                            id="search"
                            value="{{ request('search') }}"
                            class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md"
-                           placeholder="Search by patron barcode, patron ID, or delivery email/phone...">
+                           placeholder="Search by patron name, barcode, or delivery email/phone...">
                 </div>
             </div>
 
@@ -154,15 +154,9 @@
             <!-- Action Buttons -->
             <div class="flex items-center space-x-3">
                 <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
                     Apply Filters
                 </button>
                 <a href="{{ route('notices.list') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
                     Clear
                 </a>
             </div>
@@ -175,20 +169,43 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th scope="col" class="w-8 px-3 py-3"></th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patron</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item / Notice</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($notifications as $notification)
-                    <tr class="hover:bg-gray-50">
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('notices.notification.detail', $notification->id) }}'">
+                        <td class="px-3 py-4 whitespace-nowrap">
+                            @php
+                                // Status dot colors
+                                $statusDotColors = [
+                                    1 => 'bg-green-500',   // Voice completed
+                                    2 => 'bg-green-500',   // Answering machine
+                                    12 => 'bg-green-500',  // Email completed
+                                    15 => 'bg-green-500',  // Mail printed
+                                    16 => 'bg-green-500',  // Sent
+                                    3 => 'bg-yellow-500',  // Hang up
+                                    4 => 'bg-yellow-500',  // Busy
+                                    5 => 'bg-yellow-500',  // No answer
+                                    6 => 'bg-yellow-500',  // No ring
+                                    7 => 'bg-red-500',     // No dial tone
+                                    8 => 'bg-red-500',     // Intercept
+                                    9 => 'bg-red-500',     // Bad number
+                                    10 => 'bg-red-500',    // Max retries
+                                    11 => 'bg-red-500',    // Error
+                                    13 => 'bg-red-500',    // Email failed invalid
+                                    14 => 'bg-red-500',    // Email failed
+                                ];
+                                $dotColor = $statusDotColors[$notification->notification_status_id] ?? 'bg-gray-400';
+                            @endphp
+                            <span class="inline-block w-2.5 h-2.5 rounded-full {{ $dotColor }}" title="{{ $notification->notification_status_name }}"></span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $notification->notification_date->format('M d, Y') }}
+                            <div>{{ $notification->notification_date->format('M d, Y') }}</div>
                             <div class="text-xs text-gray-500">{{ $notification->notification_date->format('g:i A') }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -199,74 +216,55 @@
                                 {{ $notification->patron_barcode ?? 'ID: ' . $notification->patron_id }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <td class="px-6 py-4">
                             @php
-                                $typeIcons = [
-                                    1 => '📕', 7 => '⏰', 12 => '📕', 13 => '📕',  // Overdue types
-                                    2 => '📦', 18 => '📦',                        // Hold types
-                                    3 => '🚫',                                    // Cancel
-                                    8 => '💵', 21 => '💵',                        // Fine types
-                                ];
-                                $typeIcon = $typeIcons[$notification->notification_type_id] ?? '📄';
+                                $items = $notification->items;
+                                $firstItem = $items->first();
                             @endphp
-                            <span class="mr-1">{{ $typeIcon }}</span>
-                            <span class="text-gray-900">{{ $notification->notification_type_name }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            @php
-                                $deliveryIcons = [
-                                    1 => '📬',  // Mail
-                                    2 => '📧',  // Email
-                                    3 => '📞',  // Voice
-                                    8 => '💬',  // SMS
-                                ];
-                                $deliveryIcon = $deliveryIcons[$notification->delivery_option_id] ?? '📤';
-                            @endphp
-                            <span class="mr-1">{{ $deliveryIcon }}</span>
-                            <span class="text-gray-900">{{ $notification->delivery_method_name }}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                            @if($notification->total_items > 0)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ $notification->total_items }}
-                                </span>
+                            @if($firstItem && $firstItem->bibliographic)
+                                <div class="text-sm text-gray-900">
+                                    {{ Str::limit($firstItem->bibliographic->Title ?? 'Unknown Title', 60) }}
+                                </div>
+                                @if($items->count() > 1)
+                                    <div class="text-xs text-gray-500">+{{ $items->count() - 1 }} more item(s)</div>
+                                @endif
                             @else
-                                <span class="text-gray-400">-</span>
+                                <div class="text-sm text-gray-900">{{ $notification->notification_type_name }}</div>
                             @endif
+                            <div class="text-xs text-gray-500 mt-1">
+                                @if($notification->total_items > 0)
+                                    {{ $notification->total_items }} item{{ $notification->total_items != 1 ? 's' : '' }}
+                                @endif
+                            </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClasses = [
-                                    1 => 'bg-green-100 text-green-800',
-                                    2 => 'bg-green-100 text-green-800',
-                                    12 => 'bg-green-100 text-green-800',
-                                    15 => 'bg-green-100 text-green-800',
-                                    16 => 'bg-green-100 text-green-800',
-                                    3 => 'bg-yellow-100 text-yellow-800',
-                                    4 => 'bg-yellow-100 text-yellow-800',
-                                    5 => 'bg-yellow-100 text-yellow-800',
-                                    6 => 'bg-yellow-100 text-yellow-800',
-                                    13 => 'bg-red-100 text-red-800',
-                                    14 => 'bg-red-100 text-red-800',
-                                ];
-                                $statusClass = $statusClasses[$notification->notification_status_id] ?? 'bg-gray-100 text-gray-800';
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ $notification->notification_status_name }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('notices.notification.detail', $notification->id) }}"
-                               class="text-indigo-600 hover:text-indigo-900">
-                                View Details
-                            </a>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div class="flex items-center space-x-1">
+                                @if(in_array($notification->delivery_option_id, [1]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [2]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [3, 4, 5]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [8]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                                    </svg>
+                                @endif
+                                <span class="text-xs">{{ explode(' ', $notification->delivery_method_name)[0] }}</span>
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        <td colspan="5" class="px-6 py-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                             </svg>
                             <p class="mt-2 text-sm text-gray-500">No notifications found</p>
                             <p class="mt-1 text-xs text-gray-400">Try adjusting your filters or search term</p>
