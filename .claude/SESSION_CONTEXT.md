@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-**Name**: dcplibrary/notifications
+**Name**: dcplibrary/notices
 **Type**: Laravel Composer Package
 **Purpose**: Track and analyze Polaris ILS notifications with Shoutbomb SMS/Voice integration
 **Author**: Brian Lashbrook - Daviess County Public Library
-**Repository**: https://github.com/dcplibrary/notifications
+**Repository**: https://github.com/dcplibrary/notices
 
 ## What This Package Does
 
@@ -21,7 +21,7 @@ This Laravel package provides a complete solution for tracking library notificat
 ## Current State (as of 2025-11-07)
 
 ### Package Configuration
-- **Package Name**: `dcplibrary/notifications`
+- **Package Name**: `dcplibrary/notices`
 - **Command Prefix**: `notifications:*`
 - **Config File**: `config/notifications.php`
 - **PHP Version**: 8.1+
@@ -66,7 +66,7 @@ This is a feature branch for Claude-assisted development. All work should be com
 ## Important Notes for Future Sessions
 
 ### Naming Convention
-- The package was recently renamed from `dcplibrary/polaris-notifications` to `dcplibrary/notifications`
+- The package was recently renamed from `dcplibrary/polaris-notifications` to `dcplibrary/notices`
 - All commands changed from `polaris:*` to `notifications:*`
 - Config file changed from `polaris-notifications.php` to `notifications.php`
 - Config key changed from `polaris-notifications` to `notifications`
@@ -80,7 +80,7 @@ The ServiceProvider (`NotificationsServiceProvider`) is configured to auto-load:
 This means users can install the package and immediately run:
 - `php artisan migrate` (migrations auto-discovered)
 - `notifications:*` commands (commands auto-registered)
-- Access config via `config('notifications.*')` (config auto-merged)
+- Access config via `config('notices.*')` (config auto-merged)
 
 Optionally, users can publish config with:
 ```bash
@@ -102,7 +102,7 @@ This validates Polaris MSSQL and Shoutbomb FTP connectivity before attempting im
 ## File Structure
 
 ```
-dcplibrary/notifications/
+dcplibrary/notices/
 ├── .claude/                    # Claude session documentation
 │   ├── SESSION_CONTEXT.md     # This file - current state
 │   └── DEVELOPMENT_TIMELINE.md # Project history
@@ -141,13 +141,13 @@ dcplibrary/notifications/
 
 ### Adding a New Config Option
 1. Update `config/notifications.php`
-2. Access via `config('notifications.key')`
+2. Access via `config('notices.key')`
 3. Update README.md configuration section
 
 ### Testing Changes Locally
 When users install this package in their Laravel app:
 ```bash
-composer require dcplibrary/notifications
+composer require dcplibrary/notices
 php artisan migrate
 php artisan notifications:test-connections
 ```
@@ -158,6 +158,6 @@ See `DEVELOPMENT_TIMELINE.md` for planned features and upcoming work.
 
 ## Getting Help
 
-- **GitHub Issues**: https://github.com/dcplibrary/notifications/issues
+- **GitHub Issues**: https://github.com/dcplibrary/notices/issues
 - **Documentation**: See `docs/` directory for detailed analysis
 - **README**: User-facing documentation with examples

@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notifications\Models;
+namespace Dcplibrary\Notices\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;

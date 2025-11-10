@@ -397,7 +397,7 @@ Here's a complete workflow from scratch:
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/dcplibrary/notifications.git
+git clone https://github.com/dcplibrary/notices.git
 cd notifications
 
 # 2. Create .env file

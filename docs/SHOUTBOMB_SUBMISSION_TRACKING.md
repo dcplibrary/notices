@@ -145,7 +145,7 @@ CSV format with 22+ fields from Polaris native export:
 
 ### Comparison Example
 ```php
-use Dcplibrary\Notifications\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
 use Carbon\Carbon;
 
 $importer = app(ShoutbombPhoneNoticeImporter::class);
@@ -161,7 +161,7 @@ $comparison = $importer->compareWithSubmissions(Carbon::parse('2025-01-15'));
 
 ### Official Submissions
 ```php
-use Dcplibrary\Notifications\Models\ShoutbombSubmission;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 
 // Get all hold notifications for a patron
 $holds = ShoutbombSubmission::holds()
@@ -182,7 +182,7 @@ $submissions = ShoutbombSubmission::dateRange(
 
 ### Verification Data
 ```php
-use Dcplibrary\Notifications\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
 
 // Get all notices for a patron (from Polaris export)
 $notices = ShoutbombPhoneNotice::forPatron('11677')
@@ -203,7 +203,7 @@ $textNotices = ShoutbombPhoneNotice::text()->count();
 
 ### Official Submission Stats
 ```php
-use Dcplibrary\Notifications\Services\ShoutbombSubmissionImporter;
+use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
 
 $importer = app(ShoutbombSubmissionImporter::class);
 $stats = $importer->getStats(
@@ -220,7 +220,7 @@ $stats = $importer->getStats(
 
 ### Verification Stats
 ```php
-use Dcplibrary\Notifications\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
 
 $importer = app(ShoutbombPhoneNoticeImporter::class);
 $stats = $importer->getStats(

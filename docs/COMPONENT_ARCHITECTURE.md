@@ -16,7 +16,7 @@ dcplibrary/
 └── notifications               (Meta-package - Installs common set)
 ```
 
-## 1. Core Package (`dcplibrary/notifications-core`)
+## 1. Core Package (`dcplibrary/notices-core`)
 
 **Purpose**: Foundation package with base interfaces and shared logic
 
@@ -57,7 +57,7 @@ notifications-core/
 ```php
 <?php
 
-namespace Dcplibrary\Notifications\Contracts;
+namespace Dcplibrary\Notices\Contracts;
 
 interface NotificationChannel
 {
@@ -92,12 +92,12 @@ interface SettingsRepository
 
 **Installation**:
 ```bash
-composer require dcplibrary/notifications-core
+composer require dcplibrary/notices-core
 ```
 
 ---
 
-## 2. Shoutbomb Package (`dcplibrary/notifications-shoutbomb`)
+## 2. Shoutbomb Package (`dcplibrary/notices-shoutbomb`)
 
 **Purpose**: Shoutbomb voice/text channel implementation
 
@@ -132,7 +132,7 @@ notifications-shoutbomb/
 └── composer.json
     {
       "require": {
-        "dcplibrary/notifications-core": "^1.0"
+        "dcplibrary/notices-core": "^1.0"
       }
     }
 ```
@@ -152,12 +152,12 @@ public function register()
 
 **Installation**:
 ```bash
-composer require dcplibrary/notifications-shoutbomb
+composer require dcplibrary/notices-shoutbomb
 ```
 
 ---
 
-## 3. Email Package (`dcplibrary/notifications-email`)
+## 3. Email Package (`dcplibrary/notices-email`)
 
 **Purpose**: Email notification channel
 
@@ -181,14 +181,14 @@ notifications-email/
 └── composer.json
     {
       "require": {
-        "dcplibrary/notifications-core": "^1.0"
+        "dcplibrary/notices-core": "^1.0"
       }
     }
 ```
 
 ---
 
-## 4. Dashboard Package (`dcplibrary/notifications-dashboard`)
+## 4. Dashboard Package (`dcplibrary/notices-dashboard`)
 
 **Purpose**: Web UI for viewing and managing notifications
 
@@ -224,11 +224,11 @@ notifications-dashboard/
 └── composer.json
     {
       "require": {
-        "dcplibrary/notifications-core": "^1.0"
+        "dcplibrary/notices-core": "^1.0"
       },
       "suggest": {
-        "dcplibrary/notifications-shoutbomb": "For Shoutbomb widgets",
-        "dcplibrary/notifications-email": "For Email widgets"
+        "dcplibrary/notices-shoutbomb": "For Shoutbomb widgets",
+        "dcplibrary/notices-email": "For Email widgets"
       }
     }
 ```
@@ -243,7 +243,7 @@ notifications-dashboard/
 
 ---
 
-## 5. API Package (`dcplibrary/notifications-api`)
+## 5. API Package (`dcplibrary/notices-api`)
 
 **Purpose**: RESTful API for programmatic access
 
@@ -270,7 +270,7 @@ notifications-api/
 └── composer.json
     {
       "require": {
-        "dcplibrary/notifications-core": "^1.0"
+        "dcplibrary/notices-core": "^1.0"
       }
     }
 ```
@@ -292,27 +292,27 @@ public function boot()
 
 ---
 
-## 6. Meta Package (`dcplibrary/notifications`)
+## 6. Meta Package (`dcplibrary/notices`)
 
 **Purpose**: Convenience package that installs common components
 
 ```json
 {
-  "name": "dcplibrary/notifications",
+  "name": "dcplibrary/notices",
   "description": "Complete notification system for libraries",
   "require": {
-    "dcplibrary/notifications-core": "^1.0",
-    "dcplibrary/notifications-shoutbomb": "^1.0",
-    "dcplibrary/notifications-email": "^1.0",
-    "dcplibrary/notifications-dashboard": "^1.0",
-    "dcplibrary/notifications-api": "^1.0"
+    "dcplibrary/notices-core": "^1.0",
+    "dcplibrary/notices-shoutbomb": "^1.0",
+    "dcplibrary/notices-email": "^1.0",
+    "dcplibrary/notices-dashboard": "^1.0",
+    "dcplibrary/notices-api": "^1.0"
   }
 }
 ```
 
 **Installation** (All-in-one):
 ```bash
-composer require dcplibrary/notifications
+composer require dcplibrary/notices
 ```
 
 ---
@@ -384,7 +384,7 @@ Schema::create('patron_preferences', function (Blueprint $table) {
 ```php
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
 class SettingsManager implements SettingsRepository
 {
@@ -460,7 +460,7 @@ class SettingsManager implements SettingsRepository
 ```php
 <?php
 
-namespace Dcplibrary\NotificationsDashboard\Http\Controllers;
+namespace Dcplibrary\NoticesDashboard\Http\Controllers;
 
 class SettingsController extends Controller
 {
@@ -576,26 +576,26 @@ if ($prefs && $prefs->opt_out_text) {
 
 ### Scenario 1: Full Installation
 ```bash
-composer require dcplibrary/notifications
+composer require dcplibrary/notices
 ```
 Gets: Core, Shoutbomb, Email, Dashboard, API
 
 ### Scenario 2: Core + Shoutbomb Only
 ```bash
-composer require dcplibrary/notifications-core
-composer require dcplibrary/notifications-shoutbomb
+composer require dcplibrary/notices-core
+composer require dcplibrary/notices-shoutbomb
 ```
 No dashboard, no API - just data collection and verification
 
 ### Scenario 3: Add Dashboard Later
 ```bash
-composer require dcplibrary/notifications-dashboard
+composer require dcplibrary/notices-dashboard
 ```
 Dashboard automatically discovers installed channels
 
 ### Scenario 4: Custom Channel
 ```bash
-composer require dcplibrary/notifications-core
+composer require dcplibrary/notices-core
 composer require yourcompany/notifications-twilio  # Your custom package
 ```
 

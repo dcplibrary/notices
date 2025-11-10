@@ -389,7 +389,7 @@ Run: `composer dump-autoload`
 
 Ensure TestCase loads the config:
 ```php
-$app['config']->set('notifications', require __DIR__ . '/../config/notifications.php');
+$app['config']->set('notices', require __DIR__ . '/../config/notifications.php');
 ```
 
 ## Next Steps

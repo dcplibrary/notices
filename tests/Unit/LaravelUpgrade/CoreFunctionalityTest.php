@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\LaravelUpgrade;
+namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
-use Dcplibrary\Notifications\NotificationsServiceProvider;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\NotificationsServiceProvider;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;

@@ -1,4 +1,4 @@
-[![PHP Composer](https://github.com/dcplibrary/notifications/actions/workflows/php.yml/badge.svg)](https://github.com/dcplibrary/notifications/actions/workflows/php.yml) [![Semantic-Release](https://github.com/dcplibrary/notifications/actions/workflows/semantic-release.yml/badge.svg)](https://github.com/dcplibrary/notifications/actions/workflows/semantic-release.yml)
+[![PHP Composer](https://github.com/dcplibrary/notices/actions/workflows/php.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/php.yml) [![Semantic-Release](https://github.com/dcplibrary/notices/actions/workflows/semantic-release.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/semantic-release.yml)
 
 # Polaris Notifications Package
 
@@ -27,7 +27,7 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 #### 1. Install the package via Composer
 
 ```bash
-composer require dcplibrary/notifications
+composer require dcplibrary/notices
 ```
 
 ### 2. Publish configuration file
@@ -323,7 +323,7 @@ This creates sample notifications, summaries, Shoutbomb deliveries, keyword usag
 Main notification tracking model with scopes for common queries:
 
 ```php
-use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notices\Models\NotificationLog;
 
 // Get recent notifications
 $recent = NotificationLog::recent(7)->get();
@@ -345,7 +345,7 @@ $holds = NotificationLog::ofType(2)->get(); // 2 = Hold Ready
 Aggregated data for dashboard queries:
 
 ```php
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Carbon\Carbon;
 
 // Get summary for date range
@@ -372,7 +372,7 @@ $deliveryBreakdown = DailyNotificationSummary::getBreakdownByDelivery(
 SMS/Voice delivery tracking:
 
 ```php
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
 
 // Get failed SMS deliveries
 $failed = ShoutbombDelivery::sms()->failed()->get();
@@ -389,7 +389,7 @@ $voice = ShoutbombDelivery::voice()->recent(7)->get();
 Track patron keyword interactions (RHL, RA, OI, etc.):
 
 ```php
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
 
 // Get keyword statistics
 $stats = ShoutbombKeywordUsage::getKeywordStats($startDate, $endDate);

@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;

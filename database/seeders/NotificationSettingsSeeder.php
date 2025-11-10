@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Dcplibrary\Notifications\Models\NotificationSetting;
+use Dcplibrary\Notices\Models\NotificationSetting;
 use Illuminate\Database\Seeder;
 
 class NotificationSettingsSeeder extends Seeder
@@ -17,7 +17,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'enabled',
-                'value' => config('notifications.shoutbomb.enabled', true),
+                'value' => config('notices.shoutbomb.enabled', true),
                 'type' => 'boolean',
                 'description' => 'Enable Shoutbomb voice/SMS notifications',
                 'is_public' => true,
@@ -27,7 +27,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.host',
-                'value' => config('notifications.shoutbomb.ftp.host', ''),
+                'value' => config('notices.shoutbomb.ftp.host', ''),
                 'type' => 'string',
                 'description' => 'Shoutbomb FTP server hostname',
                 'is_public' => false,
@@ -38,7 +38,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.port',
-                'value' => config('notifications.shoutbomb.ftp.port', 21),
+                'value' => config('notices.shoutbomb.ftp.port', 21),
                 'type' => 'integer',
                 'description' => 'Shoutbomb FTP server port',
                 'is_public' => false,
@@ -49,7 +49,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.username',
-                'value' => config('notifications.shoutbomb.ftp.username', ''),
+                'value' => config('notices.shoutbomb.ftp.username', ''),
                 'type' => 'string',
                 'description' => 'Shoutbomb FTP username',
                 'is_public' => false,
@@ -60,7 +60,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.password',
-                'value' => config('notifications.shoutbomb.ftp.password', ''),
+                'value' => config('notices.shoutbomb.ftp.password', ''),
                 'type' => 'encrypted',
                 'description' => 'Shoutbomb FTP password',
                 'is_public' => false,
@@ -71,7 +71,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.passive',
-                'value' => config('notifications.shoutbomb.ftp.passive', true),
+                'value' => config('notices.shoutbomb.ftp.passive', true),
                 'type' => 'boolean',
                 'description' => 'Use passive mode for FTP connection',
                 'is_public' => false,
@@ -81,7 +81,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.ssl',
-                'value' => config('notifications.shoutbomb.ftp.ssl', false),
+                'value' => config('notices.shoutbomb.ftp.ssl', false),
                 'type' => 'boolean',
                 'description' => 'Use SSL/TLS for FTP connection',
                 'is_public' => false,
@@ -91,7 +91,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'shoutbomb',
                 'key' => 'ftp.timeout',
-                'value' => config('notifications.shoutbomb.ftp.timeout', 30),
+                'value' => config('notices.shoutbomb.ftp.timeout', 30),
                 'type' => 'integer',
                 'description' => 'FTP connection timeout in seconds',
                 'is_public' => false,
@@ -104,7 +104,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'import',
                 'key' => 'default_days',
-                'value' => config('notifications.import.default_days', 1),
+                'value' => config('notices.import.default_days', 1),
                 'type' => 'integer',
                 'description' => 'Default number of days to import',
                 'is_public' => true,
@@ -115,7 +115,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'import',
                 'key' => 'batch_size',
-                'value' => config('notifications.import.batch_size', 500),
+                'value' => config('notices.import.batch_size', 500),
                 'type' => 'integer',
                 'description' => 'Number of records to insert per batch',
                 'is_public' => false,
@@ -126,7 +126,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'import',
                 'key' => 'skip_duplicates',
-                'value' => config('notifications.import.skip_duplicates', true),
+                'value' => config('notices.import.skip_duplicates', true),
                 'type' => 'boolean',
                 'description' => 'Skip duplicate records during import',
                 'is_public' => false,
@@ -138,7 +138,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'dashboard',
                 'key' => 'enabled',
-                'value' => config('notifications.dashboard.enabled', true),
+                'value' => config('notices.dashboard.enabled', true),
                 'type' => 'boolean',
                 'description' => 'Enable the web dashboard interface',
                 'is_public' => true,
@@ -148,7 +148,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'dashboard',
                 'key' => 'default_date_range',
-                'value' => config('notifications.dashboard.default_date_range', 30),
+                'value' => config('notices.dashboard.default_date_range', 30),
                 'type' => 'integer',
                 'description' => 'Default date range in days for dashboard views',
                 'is_public' => true,
@@ -159,7 +159,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'dashboard',
                 'key' => 'enable_realtime',
-                'value' => config('notifications.dashboard.enable_realtime', false),
+                'value' => config('notices.dashboard.enable_realtime', false),
                 'type' => 'boolean',
                 'description' => 'Enable real-time auto-refresh on dashboard',
                 'is_public' => true,
@@ -169,7 +169,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'dashboard',
                 'key' => 'refresh_interval',
-                'value' => config('notifications.dashboard.refresh_interval', 300),
+                'value' => config('notices.dashboard.refresh_interval', 300),
                 'type' => 'integer',
                 'description' => 'Dashboard auto-refresh interval in seconds',
                 'is_public' => true,
@@ -182,7 +182,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'api',
                 'key' => 'enabled',
-                'value' => config('notifications.api.enabled', true),
+                'value' => config('notices.api.enabled', true),
                 'type' => 'boolean',
                 'description' => 'Enable API endpoints',
                 'is_public' => true,
@@ -192,7 +192,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'api',
                 'key' => 'rate_limit',
-                'value' => config('notifications.api.rate_limit', 60),
+                'value' => config('notices.api.rate_limit', 60),
                 'type' => 'integer',
                 'description' => 'API rate limit (requests per minute)',
                 'is_public' => false,
@@ -203,7 +203,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'api',
                 'key' => 'per_page',
-                'value' => config('notifications.api.per_page', 20),
+                'value' => config('notices.api.per_page', 20),
                 'type' => 'integer',
                 'description' => 'Default number of results per page',
                 'is_public' => true,
@@ -214,7 +214,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'api',
                 'key' => 'max_per_page',
-                'value' => config('notifications.api.max_per_page', 100),
+                'value' => config('notices.api.max_per_page', 100),
                 'type' => 'integer',
                 'description' => 'Maximum number of results per page',
                 'is_public' => true,
@@ -227,7 +227,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'enabled',
-                'value' => config('notifications.email_reports.enabled', false),
+                'value' => config('notices.email_reports.enabled', false),
                 'type' => 'boolean',
                 'description' => 'Enable importing reports from email',
                 'is_public' => true,
@@ -237,7 +237,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'connection.host',
-                'value' => config('notifications.email_reports.connection.host', ''),
+                'value' => config('notices.email_reports.connection.host', ''),
                 'type' => 'string',
                 'description' => 'Email server hostname',
                 'is_public' => false,
@@ -248,7 +248,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'connection.port',
-                'value' => config('notifications.email_reports.connection.port', 993),
+                'value' => config('notices.email_reports.connection.port', 993),
                 'type' => 'integer',
                 'description' => 'Email server port',
                 'is_public' => false,
@@ -259,7 +259,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'connection.username',
-                'value' => config('notifications.email_reports.connection.username', ''),
+                'value' => config('notices.email_reports.connection.username', ''),
                 'type' => 'string',
                 'description' => 'Email account username',
                 'is_public' => false,
@@ -270,7 +270,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'connection.password',
-                'value' => config('notifications.email_reports.connection.password', ''),
+                'value' => config('notices.email_reports.connection.password', ''),
                 'type' => 'encrypted',
                 'description' => 'Email account password',
                 'is_public' => false,
@@ -281,7 +281,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'email_reports',
                 'key' => 'max_emails_per_run',
-                'value' => config('notifications.email_reports.max_emails_per_run', 50),
+                'value' => config('notices.email_reports.max_emails_per_run', 50),
                 'type' => 'integer',
                 'description' => 'Maximum emails to process per run',
                 'is_public' => false,
@@ -294,7 +294,7 @@ class NotificationSettingsSeeder extends Seeder
             [
                 'group' => 'general',
                 'key' => 'reporting_org_id',
-                'value' => config('notifications.reporting_org_id', 3),
+                'value' => config('notices.reporting_org_id', 3),
                 'type' => 'integer',
                 'description' => 'Default library reporting organization ID',
                 'is_public' => true,

@@ -1,7 +1,7 @@
 <?php
 
-use Dcplibrary\Notifications\Http\Controllers\DashboardController;
-use Dcplibrary\Notifications\Http\Controllers\SettingsController;
+use Dcplibrary\Notices\Http\Controllers\DashboardController;
+use Dcplibrary\Notices\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*

@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\ShoutbombSubmissionImporter;
+use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notifications\Services\NotificationAggregatorService;
+use Dcplibrary\Notices\Services\NotificationAggregatorService;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 

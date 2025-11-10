@@ -1,12 +1,12 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\Services;
+namespace Dcplibrary\Notices\Tests\Unit\Services;
 
-use Dcplibrary\Notifications\Services\ShoutbombFileParser;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Services\ShoutbombFileParser;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;

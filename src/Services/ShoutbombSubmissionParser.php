@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;

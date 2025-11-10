@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers;
+namespace Dcplibrary\Notices\Http\Controllers;
 
-use Dcplibrary\Notifications\Models\NotificationSetting;
-use Dcplibrary\Notifications\Services\SettingsManager;
+use Dcplibrary\Notices\Models\NotificationSetting;
+use Dcplibrary\Notices\Services\SettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;

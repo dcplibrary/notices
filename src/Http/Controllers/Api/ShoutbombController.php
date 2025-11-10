@@ -1,13 +1,13 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers\Api;
+namespace Dcplibrary\Notices\Http\Controllers\Api;
 
-use Dcplibrary\Notifications\Http\Resources\ShoutbombDeliveryResource;
-use Dcplibrary\Notifications\Http\Resources\ShoutbombKeywordUsageResource;
-use Dcplibrary\Notifications\Http\Resources\ShoutbombRegistrationResource;
-use Dcplibrary\Notifications\Models\ShoutbombDelivery;
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Http\Resources\ShoutbombDeliveryResource;
+use Dcplibrary\Notices\Http\Resources\ShoutbombKeywordUsageResource;
+use Dcplibrary\Notices\Http\Resources\ShoutbombRegistrationResource;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
@@ -22,8 +22,8 @@ class ShoutbombController extends Controller
     public function deliveries(Request $request): AnonymousResourceCollection
     {
         $perPage = min(
-            $request->input('per_page', config('notifications.api.per_page', 20)),
-            config('notifications.api.max_per_page', 100)
+            $request->input('per_page', config('notices.api.per_page', 20)),
+            config('notices.api.max_per_page', 100)
         );
 
         $query = ShoutbombDelivery::query();
@@ -60,8 +60,8 @@ class ShoutbombController extends Controller
     public function keywordUsage(Request $request): AnonymousResourceCollection
     {
         $perPage = min(
-            $request->input('per_page', config('notifications.api.per_page', 20)),
-            config('notifications.api.max_per_page', 100)
+            $request->input('per_page', config('notices.api.per_page', 20)),
+            config('notices.api.max_per_page', 100)
         );
 
         $query = ShoutbombKeywordUsage::query();
@@ -110,8 +110,8 @@ class ShoutbombController extends Controller
     public function registrations(Request $request): AnonymousResourceCollection
     {
         $perPage = min(
-            $request->input('per_page', config('notifications.api.per_page', 20)),
-            config('notifications.api.max_per_page', 100)
+            $request->input('per_page', config('notices.api.per_page', 20)),
+            config('notices.api.max_per_page', 100)
         );
 
         $query = ShoutbombRegistration::query();

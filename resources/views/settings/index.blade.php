@@ -1,4 +1,4 @@
-@extends('notifications::layouts.app')
+@extends(notices::layouts.app')
 
 @section('title', 'Notification Settings')
 
@@ -111,11 +111,11 @@
                                         </div>
                                         <div class="ml-5 flex-shrink-0 flex space-x-2">
                                             @if($setting->is_editable)
-                                                <a href="{{ route('notifications.settings.edit', $setting->id) }}"
+                                                <a href="{{ route('notices.settings.edit', $setting->id) }}"
                                                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('notifications.settings.destroy', $setting->id) }}"
+                                                <form action="{{ route('notices.settings.destroy', $setting->id) }}"
                                                       method="POST"
                                                       class="inline"
                                                       onsubmit="return confirm('Delete this setting? It will revert to config default.');">

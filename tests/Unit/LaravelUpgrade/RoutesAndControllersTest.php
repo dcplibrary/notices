@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Unit\LaravelUpgrade;
+namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 

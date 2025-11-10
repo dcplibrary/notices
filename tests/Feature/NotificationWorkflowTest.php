@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests\Feature;
+namespace Dcplibrary\Notices\Tests\Feature;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
-use Dcplibrary\Notifications\Tests\TestCase;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 

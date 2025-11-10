@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notifications\Models\PolarisNotificationLog;
-use Dcplibrary\Notifications\Models\NotificationLog;
+use Dcplibrary\Notices\Models\PolarisNotificationLog;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +21,7 @@ class PolarisImportService
             $startDate = now()->subDays($days);
         } elseif (!$startDate || !$endDate) {
             // Default to yesterday's data
-            $days = config('notifications.import.default_days', 1);
+            $days = config('notices.import.default_days', 1);
             $endDate = now();
             $startDate = now()->subDays($days);
         }
@@ -37,7 +37,7 @@ class PolarisImportService
 
         try {
             // Get organization ID from config
-            $orgId = config('notifications.reporting_org_id');
+            $orgId = config('notices.reporting_org_id');
 
             // Query Polaris database
             $query = PolarisNotificationLog::dateRange($startDate, $endDate);
@@ -50,8 +50,8 @@ class PolarisImportService
 
             Log::info("Found {$notifications->count()} notifications to import");
 
-            $batchSize = config('notifications.import.batch_size', 500);
-            $skipDuplicates = config('notifications.import.skip_duplicates', true);
+            $batchSize = config('notices.import.batch_size', 500);
+            $skipDuplicates = config('notices.import.skip_duplicates', true);
 
             // Process in batches
             foreach ($notifications->chunk($batchSize) as $batch) {
@@ -200,7 +200,7 @@ class PolarisImportService
         } catch (\PDOException $e) {
             // Check if this is a driver issue
             if (str_contains($e->getMessage(), 'could not find driver')) {
-                $driver = config('notifications.polaris_connection.driver', 'sqlsrv');
+                $driver = config('notices.polaris_connection.driver', 'sqlsrv');
                 $errorMessage = $this->getDriverInstallationHelp($driver);
 
                 return [

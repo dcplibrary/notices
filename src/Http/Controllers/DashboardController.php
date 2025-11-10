@@ -1,10 +1,10 @@
 <?php
 
-namespace Dcplibrary\Notifications\Http\Controllers;
+namespace Dcplibrary\Notices\Http\Controllers;
 
-use Dcplibrary\Notifications\Models\NotificationLog;
-use Dcplibrary\Notifications\Models\DailyNotificationSummary;
-use Dcplibrary\Notifications\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
@@ -17,7 +17,7 @@ class DashboardController extends Controller
      */
     public function index(Request $request): View
     {
-        $days = $request->input('days', config('notifications.dashboard.default_date_range', 30));
+        $days = $request->input('days', config('notices.dashboard.default_date_range', 30));
         $startDate = now()->subDays($days);
         $endDate = now();
 
@@ -92,9 +92,9 @@ class DashboardController extends Controller
         $notifications = $query->paginate(50);
 
         // Get filter options
-        $notificationTypes = config('notifications.notification_types', []);
-        $deliveryOptions = config('notifications.delivery_options', []);
-        $notificationStatuses = config('notifications.notification_statuses', []);
+        $notificationTypes = config('notices.notification_types', []);
+        $deliveryOptions = config('notices.delivery_options', []);
+        $notificationStatuses = config('notices.notification_statuses', []);
 
         return view('notifications::dashboard.notifications', compact(
             'notifications',

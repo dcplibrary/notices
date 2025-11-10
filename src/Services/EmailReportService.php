@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -12,7 +12,7 @@ class EmailReportService
 
     public function __construct()
     {
-        $this->config = config('notifications.email_reports');
+        $this->config = config('notices.email_reports');
     }
 
     /**

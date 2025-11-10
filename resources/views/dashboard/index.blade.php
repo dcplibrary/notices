@@ -1,4 +1,4 @@
-@extends('notifications::layouts.app')
+@extends(notices::layouts.app')
 
 @section('title', 'Dashboard Overview')
 
@@ -171,7 +171,7 @@ new Chart(trendCtx, {
 // Type Distribution Chart
 const typeCtx = document.getElementById('typeChart').getContext('2d');
 const typeLabels = @json(collect($byType)->map(function($item) {
-    return config('notifications.notification_types')[$item['notification_type_id']] ?? 'Unknown';
+    return config('notices.notification_types')[$item['notification_type_id']] ?? 'Unknown';
 }));
 const typeData = @json(collect($byType)->pluck('total_sent'));
 
@@ -205,7 +205,7 @@ new Chart(typeCtx, {
 // Delivery Method Chart
 const deliveryCtx = document.getElementById('deliveryChart').getContext('2d');
 const deliveryLabels = @json(collect($byDelivery)->map(function($item) {
-    return config('notifications.delivery_options')[$item['delivery_option_id']] ?? 'Unknown';
+    return config('notices.delivery_options')[$item['delivery_option_id']] ?? 'Unknown';
 }));
 const deliveryData = @json(collect($byDelivery)->pluck('total_sent'));
 

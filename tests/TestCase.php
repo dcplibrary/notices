@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Tests;
+namespace Dcplibrary\Notices\Tests;
 
-use Dcplibrary\Notifications\NotificationsServiceProvider;
+use Dcplibrary\Notices\NotificationsServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra

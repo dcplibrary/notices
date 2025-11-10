@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Database\Factories;
+namespace Dcplibrary\Notices\Database\Factories;
 
-use Dcplibrary\Notifications\Models\ShoutbombKeywordUsage;
+use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ShoutbombKeywordUsageFactory extends Factory

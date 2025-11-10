@@ -551,7 +551,7 @@ class NotificationVerificationService
 Example: SMS Direct Plugin
 
 ```php
-namespace Dcplibrary\Notifications\Plugins;
+namespace Dcplibrary\Notices\Plugins;
 
 class SmsDirectPlugin implements NotificationPlugin
 {

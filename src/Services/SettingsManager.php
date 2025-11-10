@@ -1,9 +1,9 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notifications\Models\NotificationSetting;
-use Dcplibrary\Notifications\Models\PatronPreference;
+use Dcplibrary\Notices\Models\NotificationSetting;
+use Dcplibrary\Notices\Models\PatronPreference;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 

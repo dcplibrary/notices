@@ -1,8 +1,8 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notifications\Models\ShoutbombSubmission;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notifications\Services;
+namespace Dcplibrary\Notices\Services;
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -20,12 +20,12 @@ class ShoutbombFTPService
      */
     public function connect(): bool
     {
-        if (!config('notifications.shoutbomb.enabled')) {
+        if (!config('notices.shoutbomb.enabled')) {
             Log::info('Shoutbomb FTP is disabled');
             return false;
         }
 
-        $config = config('notifications.shoutbomb.ftp');
+        $config = config('notices.shoutbomb.ftp');
 
         try {
             if ($config['ssl']) {
@@ -80,7 +80,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('notifications.shoutbomb.paths.monthly_reports');
+            $remotePath = config('notices.shoutbomb.paths.monthly_reports');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -129,7 +129,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('notifications.shoutbomb.paths.weekly_reports');
+            $remotePath = config('notices.shoutbomb.paths.weekly_reports');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -177,7 +177,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('notifications.shoutbomb.paths.daily_invalid');
+            $remotePath = config('notices.shoutbomb.paths.daily_invalid');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -225,7 +225,7 @@ class ShoutbombFTPService
         }
 
         try {
-            $remotePath = config('notifications.shoutbomb.paths.daily_undelivered');
+            $remotePath = config('notices.shoutbomb.paths.daily_undelivered');
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
@@ -269,7 +269,7 @@ class ShoutbombFTPService
     public function downloadFile(string $remoteFile): ?string
     {
         try {
-            $localDir = config('notifications.shoutbomb.local_storage_path');
+            $localDir = config('notices.shoutbomb.local_storage_path');
 
             if (!is_dir($localDir)) {
                 mkdir($localDir, 0755, true);
