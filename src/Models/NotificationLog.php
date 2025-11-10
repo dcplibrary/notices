@@ -192,9 +192,14 @@ class NotificationLog extends Model
     public function getPatronNameAttribute(): string
     {
         // First try Shoutbomb phone notices (already imported data)
+        // Use a date range (±3 days) to account for timing differences
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->first();
 
             if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
@@ -220,7 +225,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->first();
 
             if ($phoneNotice && $phoneNotice->first_name) {
@@ -240,7 +249,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->first();
 
             if ($phoneNotice && $phoneNotice->last_name) {
@@ -260,7 +273,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->first();
 
             if ($phoneNotice && $phoneNotice->email) {
@@ -280,7 +297,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->first();
 
             if ($phoneNotice && $phoneNotice->phone_number) {
@@ -306,6 +327,7 @@ class NotificationLog extends Model
     /**
      * Get items associated with this notification from imported data.
      * Uses Shoutbomb phone notices first, falls back to Polaris if available.
+     * Uses a ±3 day window to account for timing differences.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -314,7 +336,11 @@ class NotificationLog extends Model
         // First try to get items from imported Shoutbomb data
         if ($this->patron_barcode) {
             $phoneNotices = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereBetween('notice_date', [
+                    $this->notification_date->copy()->subDays(3),
+                    $this->notification_date->copy()->addDays(3)
+                ])
+                ->orderBy('notice_date', 'desc')
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
