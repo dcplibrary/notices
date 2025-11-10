@@ -66,43 +66,44 @@
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Name</dt>
                         <dd class="mt-1 text-sm">
-                            @if($notification->patron)
+                            @if($notification->patron_staff_link)
                                 <a href="{{ $notification->patron_staff_link }}"
                                    target="_blank"
                                    class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center">
-                                    {{ $notification->patron->FormattedName }}
+                                    {{ $notification->patron_name }}
                                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                     </svg>
                                 </a>
                             @else
                                 <span class="text-gray-900">{{ $notification->patron_name }}</span>
-                                <span class="text-xs text-gray-400 ml-2">(Polaris data not available)</span>
                             @endif
                         </dd>
                     </div>
 
+                    @if($notification->patron_id)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Patron ID</dt>
                         <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_id }}</dd>
                     </div>
+                    @endif
 
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Barcode</dt>
                         <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->patron_barcode ?? 'N/A' }}</dd>
                     </div>
 
-                    @if($notification->patron && $notification->patron->EmailAddress)
+                    @if($notification->patron_email)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Email</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->EmailAddress }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron_email }}</dd>
                     </div>
                     @endif
 
-                    @if($notification->patron && $notification->patron->PhoneVoice1)
+                    @if($notification->patron_phone)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Phone</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron->PhoneVoice1 }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $notification->patron_phone }}</dd>
                     </div>
                     @endif
 
