@@ -24,7 +24,7 @@ class ShoutbombPhoneNoticeImporter
      * PhoneNotices.csv is a Polaris native export that serves as
      * VERIFICATION/CORROBORATION of the official SQL-generated submissions.
      */
-    public function importFromFTP(?callable $progressCallback = null): array
+    public function importFromFTP(?callable $progressCallback = null, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         Log::info("Starting PhoneNotices.csv import for verification/corroboration");
 
@@ -36,6 +36,13 @@ class ShoutbombPhoneNoticeImporter
         ];
 
         try {
+            // Use default date window if none provided to align with Polaris import
+            if (!$startDate || !$endDate) {
+                $days = config('notices.import.default_days', 1);
+                $endDate = now()->endOfDay();
+                $startDate = now()->subDays($days)->startOfDay();
+            }
+
             // Connect to FTP
             if (!$this->ftpService->connect()) {
                 throw new \Exception('Failed to connect to FTP');
@@ -50,12 +57,14 @@ class ShoutbombPhoneNoticeImporter
                     $localPath = $this->ftpService->downloadFile('/' . $file);
 
                     if ($localPath) {
-                        $count = $this->importPhoneNoticesFile($localPath, basename($file), $progressCallback);
+                        $count = $this->importPhoneNoticesFile($localPath, basename($file), $progressCallback, $startDate, $endDate);
                         $results['imported'] = $count;
 
                         Log::info("Imported PhoneNotices.csv", [
                             'file' => basename($file),
                             'count' => $count,
+                            'start' => $startDate->format('Y-m-d'),
+                            'end' => $endDate->format('Y-m-d'),
                         ]);
 
                         // Only process first PhoneNotices.csv found
@@ -87,7 +96,7 @@ class ShoutbombPhoneNoticeImporter
      * Note: Using individual inserts instead of bulk for reliable parameter binding
      * across all database drivers (SQLite, MySQL, etc.)
      */
-    protected function importPhoneNoticesFile(string $filePath, string $filename, ?callable $progressCallback = null): int
+    protected function importPhoneNoticesFile(string $filePath, string $filename, ?callable $progressCallback = null, ?Carbon $startDate = null, ?Carbon $endDate = null): int
     {
         $notices = $this->parser->parsePhoneNoticesCSV($filePath);
         $imported = 0;
@@ -96,6 +105,26 @@ class ShoutbombPhoneNoticeImporter
 
         foreach ($notices as $index => $notice) {
             try {
+                // Filter by date range if provided
+                if ($startDate && $endDate && !empty($notice['notice_date'])) {
+                    try {
+                        $nd = Carbon::parse($notice['notice_date'])->startOfDay();
+                        if ($nd->lt($startDate->copy()->startOfDay()) || $nd->gt($endDate->copy()->endOfDay())) {
+                            // Outside desired window; skip
+                            if ($progressCallback) {
+                                $progressCallback($index + 1, $total);
+                            }
+                            continue;
+                        }
+                    } catch (\Exception $e) {
+                        // If date parsing fails, skip record
+                        if ($progressCallback) {
+                            $progressCallback($index + 1, $total);
+                        }
+                        continue;
+                    }
+                }
+
                 // Add metadata
                 $notice['source_file'] = $filename;
                 $notice['imported_at'] = $timestamp;
@@ -130,15 +159,17 @@ class ShoutbombPhoneNoticeImporter
     /**
      * Import from local file (for testing).
      */
-    public function importFromFile(string $filePath): array
+    public function importFromFile(string $filePath, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         $filename = basename($filePath);
 
         Log::info("Importing PhoneNotices.csv from local file", [
             'file' => $filename,
+            'start' => $startDate?->format('Y-m-d'),
+            'end' => $endDate?->format('Y-m-d'),
         ]);
 
-        $imported = $this->importPhoneNoticesFile($filePath, $filename);
+        $imported = $this->importPhoneNoticesFile($filePath, $filename, null, $startDate, $endDate);
 
         return [
             'imported' => $imported,

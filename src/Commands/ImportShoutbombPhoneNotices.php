@@ -4,11 +4,15 @@ namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
 use Illuminate\Console\Command;
+use Carbon\Carbon;
 
 class ImportShoutbombPhoneNotices extends Command
 {
     protected $signature = 'notices:import-phone-notices
-                            {--file= : Import from local file instead of FTP}';
+                            {--file= : Import from local file instead of FTP}
+                            {--days= : Number of days back to import (defaults to notices.import.default_days)}
+                            {--start-date= : Start date (Y-m-d)}
+                            {--end-date= : End date (Y-m-d)}';
 
     protected $description = 'Import PhoneNotices.csv for verification/confirmation of notices sent to Shoutbomb';
 
@@ -17,21 +21,27 @@ class ImportShoutbombPhoneNotices extends Command
         $this->info('🔍 Starting PhoneNotices.csv import (Verification/Confirmation)...');
         $this->newLine();
 
+        // Resolve date range
+        [$startDate, $endDate] = $this->resolveDateRange();
+
         // Import from local file (for testing)
         if ($this->option('file')) {
-            return $this->importFromFile($importer);
+            return $this->importFromFile($importer, $startDate, $endDate);
         }
 
         // Import from FTP
-        return $this->importFromFTP($importer);
+        return $this->importFromFTP($importer, $startDate, $endDate);
     }
 
     /**
      * Import from FTP.
      */
-    protected function importFromFTP(ShoutbombPhoneNoticeImporter $importer): int
+    protected function importFromFTP(ShoutbombPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
     {
         $this->line("📥 Importing PhoneNotices.csv from FTP...");
+        if ($startDate && $endDate) {
+            $this->line("   Date filter: {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}");
+        }
         $this->newLine();
 
         // Create progress bar (will be initialized when we know the total)
@@ -46,7 +56,7 @@ class ImportShoutbombPhoneNotices extends Command
                 $progressBar->start();
             }
             $progressBar->setProgress($current);
-        });
+        }, $startDate, $endDate);
 
         if ($progressBar) {
             $progressBar->finish();
@@ -80,7 +90,7 @@ class ImportShoutbombPhoneNotices extends Command
     /**
      * Import from local file.
      */
-    protected function importFromFile(ShoutbombPhoneNoticeImporter $importer): int
+    protected function importFromFile(ShoutbombPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
     {
         $filePath = $this->option('file');
 
@@ -90,10 +100,13 @@ class ImportShoutbombPhoneNotices extends Command
         }
 
         $this->line("📥 Importing from file: {$filePath}");
+        if ($startDate && $endDate) {
+            $this->line("   Date filter: {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}");
+        }
         $this->newLine();
 
         try {
-            $results = $importer->importFromFile($filePath);
+            $results = $importer->importFromFile($filePath, $startDate, $endDate);
 
             $this->info("✅ Imported {$results['imported']} phone notices");
             $this->line("   File: {$results['file']}");
@@ -104,5 +117,25 @@ class ImportShoutbombPhoneNotices extends Command
             $this->error("Import failed: {$e->getMessage()}");
             return Command::FAILURE;
         }
+    }
+
+    /**
+     * Resolve the desired date range based on options.
+     */
+    protected function resolveDateRange(): array
+    {
+        $startDate = null;
+        $endDate = null;
+
+        if ($this->option('start-date') && $this->option('end-date')) {
+            $startDate = Carbon::parse($this->option('start-date'))->startOfDay();
+            $endDate = Carbon::parse($this->option('end-date'))->endOfDay();
+        } elseif ($this->option('days')) {
+            $days = (int) $this->option('days');
+            $endDate = now()->endOfDay();
+            $startDate = now()->subDays($days)->startOfDay();
+        }
+
+        return [$startDate, $endDate];
     }
 }

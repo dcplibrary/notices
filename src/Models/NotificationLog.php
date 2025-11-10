@@ -199,8 +199,13 @@ class NotificationLog extends Model
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
                 ])
-                ->orderBy('notice_date', 'desc')
-        if ($this->patron_barcode) {
+                ->orderBy('notice_date', 'desc')->first();
+
+            if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
+                return "{$phoneNotice->last_name}, {$phoneNotice->first_name}";
+            }
+
+            // Second attempt: Exact date match if the first one failed
             $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
@@ -208,7 +213,6 @@ class NotificationLog extends Model
             if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
                 return "{$phoneNotice->last_name}, {$phoneNotice->first_name}";
             }
-        }
 
         // Fall back to Polaris if connected
         $patron = $this->patron;
@@ -217,6 +221,7 @@ class NotificationLog extends Model
         }
 
         return $this->patron_barcode ?? 'Unknown Patron';
+     }
     }
 
     /**
