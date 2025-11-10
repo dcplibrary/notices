@@ -72,6 +72,10 @@ return [
         'import_shoutbomb_enabled' => env('SCHEDULER_IMPORT_SHOUTBOMB_ENABLED', true),
         'import_shoutbomb_time' => env('SCHEDULER_IMPORT_SHOUTBOMB_TIME', '09:00'),
 
+        // Shoutbomb submission import
+        'import_submissions_enabled' => env('SCHEDULER_IMPORT_SUBMISSIONS_ENABLED', true),
+        'import_submissions_time' => env('SCHEDULER_IMPORT_SUBMISSIONS_TIME', '05:30'),
+
         // Email report import
         'import_email_enabled' => env('SCHEDULER_IMPORT_EMAIL_ENABLED', true),
         'import_email_time' => env('SCHEDULER_IMPORT_EMAIL_TIME', '09:30'),

@@ -185,6 +185,14 @@ class NoticesServiceProvider extends ServiceProvider
                     ->withoutOverlapping();
             }
 
+            // Import Shoutbomb submissions daily at 5:30 AM
+            if ($settings->get('scheduler.import_submissions_enabled', true)) {
+                $time = $settings->get('scheduler.import_submissions_time', '05:30');
+                $schedule->command('notices:import-shoutbomb-submissions')
+                    ->dailyAt($time)
+                    ->withoutOverlapping();
+            }
+
             // Import email reports daily at 9:30 AM
             if ($settings->get('scheduler.import_email_enabled', true)) {
                 $time = $settings->get('scheduler.import_email_time', '09:30');
