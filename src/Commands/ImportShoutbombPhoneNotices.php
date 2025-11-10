@@ -34,7 +34,24 @@ class ImportShoutbombPhoneNotices extends Command
         $this->line("📥 Importing PhoneNotices.csv from FTP...");
         $this->newLine();
 
-        $results = $importer->importFromFTP();
+        // Create progress bar (will be initialized when we know the total)
+        $progressBar = null;
+
+        $results = $importer->importFromFTP(function ($current, $total) use (&$progressBar) {
+            if (!$progressBar) {
+                // Initialize progress bar on first call
+                $this->newLine();
+                $progressBar = $this->output->createProgressBar($total);
+                $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% - Importing records');
+                $progressBar->start();
+            }
+            $progressBar->setProgress($current);
+        });
+
+        if ($progressBar) {
+            $progressBar->finish();
+            $this->newLine(2);
+        }
 
         // Display results
         $this->line('─────────────────────────────────────────');
