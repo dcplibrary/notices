@@ -67,13 +67,13 @@ Created 4 Artisan commands:
    - `polaris:aggregate-notifications` → `notifications:aggregate-notifications`
 
 3. **Configuration Refactoring**
-   - Renamed: `config/polaris-notifications.php` → `config/notifications.php`
+   - Renamed: `config/polaris-notifications.php` → `config/notices.php`
    - Config key: `polaris-notifications` → `notifications`
    - Updated 21 references across codebase
 
 4. **Files Modified** (13 total)
    - `composer.json`
-   - `config/polaris-notifications.php` → `config/notifications.php`
+   - `config/polaris-notifications.php` → `config/notices.php`
    - `README.md` (all examples updated)
    - `docs/COMBINED_DOCUMENTATION.md` (all examples updated)
    - `src/NotificationsServiceProvider.php`
@@ -96,7 +96,7 @@ Created 4 Artisan commands:
 ✅ **Optional Publishing**
 Users can still publish config if they want to customize:
 ```bash
-php artisan vendor:publish --tag=notifications-config
+php artisan vendor:publish --tag=notices-config
 ```
 
 ✅ **Documentation Updated**

@@ -1,11 +1,11 @@
 <?php
 
-namespace Database\Seeders;
+namespace Dcplibrary\Notices\Database\Seeders;
 
 use Dcplibrary\Notices\Models\NotificationSetting;
 use Illuminate\Database\Seeder;
 
-class NotificationSettingsSeeder extends Seeder
+class NoticesSettingsSeeder extends Seeder
 {
     /**
      * Seed the notification settings table with default values.

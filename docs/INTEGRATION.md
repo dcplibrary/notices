@@ -18,7 +18,7 @@ This guide shows how to integrate the Polaris Notifications package with various
 The package works out-of-the-box with Laravel's default authentication:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => true,
     'route_prefix' => 'notices',
@@ -38,7 +38,7 @@ The package is authentication-agnostic. It simply uses Laravel's middleware syst
 **Step 2:** Configure the notifications middleware to use your auth system
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth:your-guard-name'],
 ],
@@ -59,7 +59,7 @@ Or use custom middleware from your auth package:
 If using an Entra ID/Azure AD SSO package:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => true,
     'route_prefix' => 'notices',
@@ -102,7 +102,7 @@ If using Socialite for Azure AD:
 ### Example with LdapRecord-Laravel
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth:ldap'],  // Use LDAP guard
 ],
@@ -121,7 +121,7 @@ Or combine with role checks:
 ### Example with Laravel-SAML2
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'saml'],  // Use SAML middleware
 ],
@@ -155,7 +155,7 @@ public function boot(): void
 Use the gate:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth', 'can:view-notifications'],
 ],
@@ -221,7 +221,7 @@ Register it:
 Use it:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth', 'notifications.authorize'],
 ],
@@ -233,7 +233,7 @@ Use it:
 
 **App 1 (Staff Portal - Uses SSO):**
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => true,
     'route_prefix' => 'admin/notifications',
@@ -243,7 +243,7 @@ Use it:
 
 **App 2 (Public Portal - Uses Sanctum):**
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => false,  // No dashboard in public app
 ],
@@ -279,7 +279,7 @@ Route::middleware(['web', 'auth', 'role:staff'])
     });
 
 // Disable default package routes
-// config/notifications.php: 'dashboard' => ['enabled' => false]
+// config/notices.php: 'dashboard' => ['enabled' => false]
 ```
 
 ## API Integration
@@ -289,7 +289,7 @@ Route::middleware(['web', 'auth', 'role:staff'])
 For public read-only access:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'api' => [
     'enabled' => true,
     'middleware' => ['api'],  // No auth required
@@ -360,7 +360,7 @@ $token = $user->createToken('notifications-api')->plainTextToken;
 Use environment variables for flexibility:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => env('NOTIFICATIONS_DASHBOARD_ENABLED', true),
     'middleware' => explode(',', env('NOTIFICATIONS_DASHBOARD_MIDDLEWARE', 'web,auth')),

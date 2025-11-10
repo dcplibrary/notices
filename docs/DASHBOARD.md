@@ -19,7 +19,7 @@ https://yourapp.com/notifications
 
 ## Configuration
 
-Dashboard settings can be configured in `config/notifications.php`:
+Dashboard settings can be configured in `config/notices.php`:
 
 ```php
 'dashboard' => [
@@ -155,7 +155,7 @@ The default dashboard uses:
 Publish the views to your application:
 
 ```bash
-php artisan vendor:publish --tag=notifications-views
+php artisan vendor:publish --tag=notices-views
 ```
 
 Views will be copied to:
@@ -187,7 +187,7 @@ Create your own layout that extends the package layout:
 Change authentication or add custom middleware:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth', 'role:admin'],  // Add role check
 ],
@@ -198,7 +198,7 @@ Change authentication or add custom middleware:
 Move the dashboard to a different URL:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'route_prefix' => 'admin/notifications',
 ],
@@ -211,7 +211,7 @@ Now accessible at: `/admin/notifications`
 If you're building a completely custom UI using the API:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => false,  // Disable default dashboard
 ],
@@ -307,7 +307,7 @@ Route::get('/notifications/custom', [CustomDashboardController::class, 'customPa
 To enable auto-refresh (useful for monitoring):
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enable_realtime' => true,
     'refresh_interval' => 300,  // 5 minutes
@@ -333,7 +333,7 @@ To restrict dashboard access to specific users:
 ### Option 1: Middleware
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'middleware' => ['web', 'auth', 'can:view-notifications'],
 ],
@@ -352,7 +352,7 @@ Gate::define('view-notifications', function ($user) {
 Disable the package routes and define your own:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'dashboard' => [
     'enabled' => false,
 ],

@@ -23,7 +23,7 @@ This Laravel package provides a complete solution for tracking library notificat
 ### Package Configuration
 - **Package Name**: `dcplibrary/notices`
 - **Command Prefix**: `notifications:*`
-- **Config File**: `config/notifications.php`
+- **Config File**: `config/notices.php`
 - **PHP Version**: 8.1+
 - **Laravel Version**: 10.x or 11.x
 
@@ -84,7 +84,7 @@ This means users can install the package and immediately run:
 
 Optionally, users can publish config with:
 ```bash
-php artisan vendor:publish --tag=notifications-config
+php artisan vendor:publish --tag=notices-config
 ```
 
 ### External Dependencies
@@ -140,7 +140,7 @@ dcplibrary/notices/
 3. No need to register - auto-loaded by ServiceProvider
 
 ### Adding a New Config Option
-1. Update `config/notifications.php`
+1. Update `config/notices.php`
 2. Access via `config('notices.key')`
 3. Update README.md configuration section
 

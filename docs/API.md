@@ -7,7 +7,7 @@ The Polaris Notifications package provides a RESTful API for accessing notificat
 API routes are enabled by default but can be disabled in config:
 
 ```php
-// config/notifications.php
+// config/notices.php
 'api' => [
     'enabled' => true,  // Set to false to disable API
     'route_prefix' => 'api/notifications',
@@ -388,7 +388,7 @@ All API responses follow Laravel's JSON Resource format:
 
 ## Rate Limiting
 
-API requests are rate-limited to 60 requests per minute by default. This can be configured in `config/notifications.php`.
+API requests are rate-limited to 60 requests per minute by default. This can be configured in `config/notices.php`.
 
 ## Pagination
 
