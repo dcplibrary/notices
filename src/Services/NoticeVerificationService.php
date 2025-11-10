@@ -12,9 +12,21 @@ use Carbon\Carbon;
  * Service for verifying the complete lifecycle of a notice.
  *
  * Tracks: Created → Submitted → Verified → Delivered
+ *
+ * Uses the plugin system to delegate verification to channel-specific plugins.
  */
 class NoticeVerificationService
 {
+    protected ?PluginRegistry $pluginRegistry = null;
+
+    /**
+     * Set the plugin registry.
+     */
+    public function setPluginRegistry(PluginRegistry $registry): void
+    {
+        $this->pluginRegistry = $registry;
+    }
+
     /**
      * Verify a single notice log entry.
      */
@@ -38,7 +50,17 @@ class NoticeVerificationService
             ]
         );
 
-        // Only verify Shoutbomb deliveries (voice/text)
+        // Try plugin-based verification first
+        if ($this->pluginRegistry) {
+            $plugin = $this->pluginRegistry->findPluginForNotice($log);
+            if ($plugin) {
+                $result = $plugin->verify($log, $result);
+                $result->determineOverallStatus();
+                return $result;
+            }
+        }
+
+        // Fallback to legacy Shoutbomb verification (for backward compatibility)
         if ($this->isShoutbombDelivery($log)) {
             $this->verifySubmission($log, $result);
             $this->verifyPhoneNotice($log, $result);

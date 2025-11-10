@@ -10,6 +10,8 @@ use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Dcplibrary\Notices\Services\PluginRegistry;
+use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
@@ -35,10 +37,34 @@ class NoticesServiceProvider extends ServiceProvider
             return new SettingsManager();
         });
 
-        // Register NoticeVerificationService as a singleton
-        $this->app->singleton(NoticeVerificationService::class, function ($app) {
-            return new NoticeVerificationService();
+        // Register PluginRegistry as a singleton
+        $this->app->singleton(PluginRegistry::class, function ($app) {
+            return $this->createPluginRegistry();
         });
+
+        // Register NoticeVerificationService as a singleton with plugin support
+        $this->app->singleton(NoticeVerificationService::class, function ($app) {
+            $service = new NoticeVerificationService();
+            $service->setPluginRegistry($app->make(PluginRegistry::class));
+            return $service;
+        });
+    }
+
+    /**
+     * Create and configure the plugin registry.
+     */
+    protected function createPluginRegistry(): PluginRegistry
+    {
+        $registry = new PluginRegistry();
+
+        // Register Shoutbomb plugin
+        $registry->register(new ShoutbombPlugin());
+
+        // Register additional plugins here as they are created
+        // $registry->register(new EmailPlugin());
+        // $registry->register(new SmsDirectPlugin());
+
+        return $registry;
     }
 
     /**
