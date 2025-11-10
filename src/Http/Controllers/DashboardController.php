@@ -353,4 +353,43 @@ class DashboardController extends Controller
             'endDate'
         ));
     }
+
+    /**
+     * Display troubleshooting dashboard.
+     */
+    public function troubleshooting(Request $request): View
+    {
+        $service = app(NoticeVerificationService::class);
+
+        // Get date range
+        $days = $request->input('days', 7);
+        $startDate = now()->subDays($days);
+        $endDate = now();
+
+        // Get troubleshooting summary
+        $summary = $service->getTroubleshootingSummary($startDate, $endDate);
+
+        // Get failures grouped by reason
+        $failuresByReason = $service->getFailuresByReason($startDate, $endDate);
+
+        // Get failures grouped by type
+        $failuresByType = $service->getFailuresByType($startDate, $endDate);
+
+        // Get mismatches
+        $mismatches = $service->getMismatches($startDate, $endDate);
+
+        // Get recent failures (limit to 20 for display)
+        $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
+
+        return view('notifications::dashboard.troubleshooting', compact(
+            'days',
+            'startDate',
+            'endDate',
+            'summary',
+            'failuresByReason',
+            'failuresByType',
+            'mismatches',
+            'recentFailures'
+        ));
+    }
 }

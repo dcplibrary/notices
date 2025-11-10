@@ -46,6 +46,10 @@
                            class="@if(request()->routeIs('notices.verification.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Verification
                         </a>
+                        <a href="{{ route('notices.troubleshooting') }}"
+                           class="@if(request()->routeIs('notices.troubleshooting')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Troubleshooting
+                        </a>
                         <a href="{{ route('notices.settings.index') }}"
                            class="@if(request()->routeIs('notices.settings.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Settings

@@ -266,4 +266,184 @@ class NoticeVerificationService
             ->get()
             ->toArray();
     }
+
+    /**
+     * Get failure statistics grouped by reason.
+     */
+    public function getFailuresByReason(?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? now()->subDays(7);
+        $endDate = $endDate ?? now();
+
+        $failures = ShoutbombDelivery::failed()
+            ->dateRange($startDate, $endDate)
+            ->selectRaw('
+                failure_reason,
+                COUNT(*) as count
+            ')
+            ->whereNotNull('failure_reason')
+            ->groupBy('failure_reason')
+            ->orderBy('count', 'desc')
+            ->get();
+
+        $total = $failures->sum('count');
+
+        return $failures->map(function($failure) use ($total) {
+            return [
+                'reason' => $failure->failure_reason,
+                'count' => $failure->count,
+                'percentage' => $total > 0 ? round(($failure->count / $total) * 100, 1) : 0,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Get failure statistics grouped by notification type.
+     */
+    public function getFailuresByType(?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? now()->subDays(7);
+        $endDate = $endDate ?? now();
+
+        // Get failed deliveries with their associated submissions
+        $failures = ShoutbombDelivery::failed()
+            ->dateRange($startDate, $endDate)
+            ->get();
+
+        // Group by notification type from submissions
+        $byType = [];
+        foreach ($failures as $delivery) {
+            // Find matching submission to get notification type
+            $submission = ShoutbombSubmission::where('phone_number', $delivery->phone_number)
+                ->whereDate('submitted_at', $delivery->sent_date->format('Y-m-d'))
+                ->first();
+
+            if ($submission) {
+                $type = $submission->notification_type;
+                if (!isset($byType[$type])) {
+                    $byType[$type] = 0;
+                }
+                $byType[$type]++;
+            }
+        }
+
+        arsort($byType);
+
+        $total = array_sum($byType);
+
+        return array_map(function($type, $count) use ($total) {
+            return [
+                'type' => ucfirst($type),
+                'count' => $count,
+                'percentage' => $total > 0 ? round(($count / $total) * 100, 1) : 0,
+            ];
+        }, array_keys($byType), $byType);
+    }
+
+    /**
+     * Detect verification mismatches.
+     *
+     * Returns:
+     * - submitted_not_verified: Notices submitted to Shoutbomb but missing from PhoneNotices
+     * - verified_not_delivered: Notices in PhoneNotices but no delivery report
+     */
+    public function getMismatches(?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? now()->subDays(1);
+        $endDate = $endDate ?? now();
+
+        // Find submissions without matching phone notices
+        $submissions = ShoutbombSubmission::dateRange($startDate, $endDate)->get();
+        $submittedNotVerified = [];
+
+        foreach ($submissions as $submission) {
+            // Check if there's a matching phone notice
+            $phoneNotice = ShoutbombPhoneNotice::where('patron_barcode', $submission->patron_barcode)
+                ->whereDate('notice_date', Carbon::parse($submission->submitted_at)->format('Y-m-d'))
+                ->first();
+
+            if (!$phoneNotice) {
+                $submittedNotVerified[] = [
+                    'id' => $submission->id,
+                    'patron_barcode' => $submission->patron_barcode,
+                    'phone' => $submission->phone_number,
+                    'type' => $submission->notification_type,
+                    'submitted_at' => $submission->submitted_at,
+                    'source_file' => $submission->source_file,
+                ];
+            }
+
+            // Limit results
+            if (count($submittedNotVerified) >= 50) {
+                break;
+            }
+        }
+
+        // Find phone notices without matching deliveries
+        $phoneNotices = ShoutbombPhoneNotice::dateRange($startDate, $endDate)->get();
+        $verifiedNotDelivered = [];
+
+        foreach ($phoneNotices as $phoneNotice) {
+            // Check if there's a matching delivery
+            $delivery = ShoutbombDelivery::where('phone_number', $phoneNotice->phone_number)
+                ->whereDate('sent_date', Carbon::parse($phoneNotice->notice_date)->format('Y-m-d'))
+                ->first();
+
+            if (!$delivery) {
+                $verifiedNotDelivered[] = [
+                    'id' => $phoneNotice->id,
+                    'patron_barcode' => $phoneNotice->patron_barcode,
+                    'phone' => $phoneNotice->phone_number,
+                    'item_barcode' => $phoneNotice->item_barcode,
+                    'notice_date' => $phoneNotice->notice_date,
+                    'delivery_type' => $phoneNotice->delivery_type,
+                ];
+            }
+
+            // Limit results
+            if (count($verifiedNotDelivered) >= 50) {
+                break;
+            }
+        }
+
+        return [
+            'submitted_not_verified' => $submittedNotVerified,
+            'verified_not_delivered' => $verifiedNotDelivered,
+            'summary' => [
+                'submitted_not_verified_count' => count($submittedNotVerified),
+                'verified_not_delivered_count' => count($verifiedNotDelivered),
+            ],
+        ];
+    }
+
+    /**
+     * Get troubleshooting summary statistics.
+     */
+    public function getTroubleshootingSummary(?Carbon $startDate = null, ?Carbon $endDate = null): array
+    {
+        $startDate = $startDate ?? now()->subDays(7);
+        $endDate = $endDate ?? now();
+
+        // Total notices
+        $totalNotices = NotificationLog::dateRange($startDate, $endDate)->count();
+
+        // Failed deliveries
+        $failedCount = ShoutbombDelivery::failed()
+            ->dateRange($startDate, $endDate)
+            ->count();
+
+        // Success rate
+        $successRate = $totalNotices > 0 ? round((($totalNotices - $failedCount) / $totalNotices) * 100, 2) : 0;
+
+        // Get mismatches
+        $mismatches = $this->getMismatches($startDate, $endDate);
+
+        return [
+            'total_notices' => $totalNotices,
+            'failed_count' => $failedCount,
+            'success_rate' => $successRate,
+            'submitted_not_verified' => $mismatches['summary']['submitted_not_verified_count'],
+            'verified_not_delivered' => $mismatches['summary']['verified_not_delivered_count'],
+        ];
+    }
 }

@@ -61,4 +61,12 @@ Route::prefix('verification')->name('verification.')->group(function () {
     Route::get('/patron/{barcode}', [VerificationController::class, 'patron'])->name('patron');
     Route::get('/failures', [VerificationController::class, 'failures'])->name('failures');
     Route::get('/{id}/timeline', [VerificationController::class, 'timeline'])->name('timeline');
+
+    // Troubleshooting routes
+    Route::prefix('troubleshooting')->name('troubleshooting.')->group(function () {
+        Route::get('/summary', [VerificationController::class, 'troubleshootingSummary'])->name('summary');
+        Route::get('/by-reason', [VerificationController::class, 'failuresByReason'])->name('by-reason');
+        Route::get('/by-type', [VerificationController::class, 'failuresByType'])->name('by-type');
+        Route::get('/mismatches', [VerificationController::class, 'mismatches'])->name('mismatches');
+    });
 });
