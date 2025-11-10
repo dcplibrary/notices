@@ -15,8 +15,8 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_all_notification_routes_are_accessible()
     {
         $routes = [
-            'notifications.api.notifications.index' => 'get',
-            'notifications.api.notifications.stats' => 'get',
+            'notices.api.logs.index' => 'get',
+            'notices.api.logs.stats' => 'get',
         ];
 
         foreach ($routes as $routeName => $method) {
@@ -31,7 +31,7 @@ class RoutesAndControllersTest extends TestCase
     {
         NotificationLog::factory()->count(5)->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.index'));
+        $response = $this->getJson(route('notices.api.logs.index'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -46,7 +46,7 @@ class RoutesAndControllersTest extends TestCase
     {
         $notification = NotificationLog::factory()->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.show', $notification));
+        $response = $this->getJson(route('notices.api.logs.show', $notification));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -59,7 +59,7 @@ class RoutesAndControllersTest extends TestCase
     {
         NotificationLog::factory()->count(10)->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.stats'));
+        $response = $this->getJson(route('notices.api.logs.stats'));
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -127,7 +127,7 @@ class RoutesAndControllersTest extends TestCase
         $notification = NotificationLog::factory()->create();
 
         $response = $this->getJson(
-            route('notifications.api.notifications.show', ['notification' => $notification->id])
+            route('notices.api.logs.show', ['notification' => $notification->id])
         );
 
         $response->assertStatus(200);
@@ -138,7 +138,7 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_route_parameter_binding_handles_not_found()
     {
         $response = $this->getJson(
-            route('notifications.api.notifications.show', ['notification' => 99999])
+            route('notices.api.logs.show', ['notification' => 99999])
         );
 
         $response->assertStatus(404);
@@ -151,7 +151,7 @@ class RoutesAndControllersTest extends TestCase
         NotificationLog::factory()->count(3)->create(['notification_type_id' => 5]);
 
         $response = $this->getJson(
-            route('notifications.api.notifications.index', ['type_id' => 4])
+            route('notices.api.logs.index', ['type_id' => 4])
         );
 
         $response->assertStatus(200);
@@ -164,7 +164,7 @@ class RoutesAndControllersTest extends TestCase
         NotificationLog::factory()->count(50)->create();
 
         $response = $this->getJson(
-            route('notifications.api.notifications.index', ['per_page' => 10])
+            route('notices.api.logs.index', ['per_page' => 10])
         );
 
         $response->assertStatus(200);
@@ -177,7 +177,7 @@ class RoutesAndControllersTest extends TestCase
     {
         $notification = NotificationLog::factory()->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.show', $notification));
+        $response = $this->getJson(route('notices.api.logs.show', $notification));
 
         $response->assertStatus(200);
         $this->assertIsArray($response->json('data'));
@@ -198,7 +198,7 @@ class RoutesAndControllersTest extends TestCase
         ]);
 
         $response = $this->getJson(
-            route('notifications.api.notifications.index', [
+            route('notices.api.logs.index', [
                 'start_date' => now()->subDays(6)->format('Y-m-d'),
                 'end_date' => now()->format('Y-m-d'),
             ])
@@ -216,7 +216,7 @@ class RoutesAndControllersTest extends TestCase
         NotificationLog::factory()->create(['patron_id' => 200]);
 
         $response = $this->getJson(
-            route('notifications.api.notifications.index', [
+            route('notices.api.logs.index', [
                 'sort_by' => 'patron_id',
                 'sort_dir' => 'asc',
             ])
@@ -232,7 +232,7 @@ class RoutesAndControllersTest extends TestCase
     /** @test */
     public function it_verifies_route_prefixes_are_correct()
     {
-        $notificationRoute = Route::getRoutes()->getByName('notifications.api.notifications.index');
+        $notificationRoute = Route::getRoutes()->getByName('notices.api.logs.index');
         
         $this->assertNotNull($notificationRoute);
         $this->assertStringContainsString('notifications', $notificationRoute->uri());
@@ -243,7 +243,7 @@ class RoutesAndControllersTest extends TestCase
     {
         $notification = NotificationLog::factory()->create();
 
-        $response = $this->getJson(route('notifications.api.notifications.show', $notification));
+        $response = $this->getJson(route('notices.api.logs.show', $notification));
 
         $response->assertStatus(200);
         
