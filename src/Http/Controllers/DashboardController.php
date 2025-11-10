@@ -215,6 +215,9 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Get latest Shoutbomb registration stats
+        $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
+
         return view('notices::dashboard.shoutbomb', compact(
             'days',
             'startDate',
@@ -223,7 +226,8 @@ class DashboardController extends Controller
             'phoneNoticeStats',
             'submissionTrend',
             'phoneNoticeTrend',
-            'recentSubmissions'
+            'recentSubmissions',
+            'latestRegistration'
         ));
     }
 
