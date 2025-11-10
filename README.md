@@ -7,6 +7,10 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 ## Features
 
 - ✅ **Built-in Dashboard**: Visualize notification data out-of-the-box with charts and metrics
+- ✅ **Verification System**: Track complete notice lifecycle from creation to delivery
+- ✅ **Troubleshooting Dashboard**: Analyze failures and detect verification gaps
+- ✅ **Plugin Architecture**: Modular design for easy channel additions
+- ✅ **CSV Export**: Export verification data, patron history, and failure reports
 - ✅ **RESTful API**: Access data programmatically for custom integrations
 - ✅ **Direct MSSQL Connection**: Connect to Polaris ILS database
 - ✅ **Shoutbomb Integration**: Import SMS/Voice delivery reports via FTP
@@ -227,6 +231,8 @@ https://yourapp.com/notices
 - **Notifications List**: Filterable table of individual notifications
 - **Analytics**: Success rates, detailed breakdowns, performance metrics
 - **Shoutbomb**: Subscriber statistics and growth trends
+- **Verification**: Search notices, view timelines, patron history
+- **Troubleshooting**: Analyze failures, detect verification gaps
 
 ### Customization
 
@@ -298,6 +304,77 @@ $stats = $response->json();
 ```
 
 For complete API documentation, see [docs/API.md](docs/API.md).
+
+## Verification System
+
+The package includes a comprehensive **verification system** to track every notice through its complete lifecycle and troubleshoot delivery issues.
+
+### Verification Features
+
+**Search & Timeline**
+- Search by patron barcode, phone, email, or item barcode
+- Visual timeline showing all verification steps
+- Detailed failure information with troubleshooting tips
+- Patron-specific history with success rates
+
+**4-Step Verification Lifecycle**
+1. ✅ **Created** - Notice created in notification_logs
+2. ✅ **Submitted** - Submitted to delivery service (Shoutbomb, email, etc.)
+3. ✅ **Verified** - Confirmed in verification reports (PhoneNotices.csv, etc.)
+4. ✅ **Delivered** - Delivery confirmation received
+
+**Troubleshooting Dashboard**
+- Failure analysis by reason and type
+- Mismatch detection (submitted but not verified, verified but not delivered)
+- Recent failures with detailed information
+- Configurable date ranges (7/14/30 days)
+
+**CSV Export**
+- Export verification search results
+- Export patron history
+- Export troubleshooting data
+- UTF-8 BOM for Excel compatibility
+
+### Verification API
+
+Access verification data programmatically:
+
+```bash
+# Verify specific notice
+GET /api/notices/verification/verify?patron_barcode=123456
+
+# Get patron history
+GET /api/notices/verification/patron/123456
+
+# Get failures
+GET /api/notices/verification/failures?days=7
+
+# Get troubleshooting summary
+GET /api/notices/verification/troubleshooting/summary
+```
+
+### Plugin Architecture
+
+The verification system uses a modular plugin architecture for easy channel additions:
+
+```php
+// Each notification channel is a plugin
+interface NotificationPlugin {
+    public function getName(): string;
+    public function canVerify(NotificationLog $log): bool;
+    public function verify(NotificationLog $log, VerificationResult $result): VerificationResult;
+    public function getStatistics(Carbon $startDate, Carbon $endDate): array;
+}
+```
+
+**Current Plugins:**
+- **ShoutbombPlugin** - Voice and SMS via Shoutbomb
+
+**Future Plugins:**
+- **EmailPlugin** - Email delivery verification
+- **SmsDirectPlugin** - Direct SMS (non-Shoutbomb)
+
+> See [docs/VERIFICATION_SYSTEM_DESIGN.md](docs/VERIFICATION_SYSTEM_DESIGN.md) for complete architecture details and plugin development guide.
 
 ## Demo Data
 
