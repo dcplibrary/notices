@@ -1,7 +1,7 @@
 {
-  "name": "notifications",
+  "name": "notices",
   "version": "1.0.0",
-  "description": "Notication Monitor and Logger for Polaris ILS",
+  "description": "Notification Monitor and Logger for Polaris ILS",
   "private": true,
   "author": "Brian Lashbrook",
   "license": "MIT",
