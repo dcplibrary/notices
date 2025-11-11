@@ -45,8 +45,52 @@ class DashboardController extends Controller
             ->orderBy('summary_date')
             ->get();
 
-        // Get latest Shoutbomb registration stats
-        $latestRegistration = ShoutbombRegistration::orderBy('snapshot_date', 'desc')->first();
+        // Success rate trend (from analytics)
+        $successRateTrend = DailyNotificationSummary::dateRange($startDate, $endDate)
+            ->selectRaw('
+                summary_date,
+                SUM(total_sent) as total_sent,
+                SUM(total_success) as total_success,
+                SUM(total_failed) as total_failed,
+                CASE
+                    WHEN SUM(total_sent) > 0
+                    THEN ROUND((SUM(total_success) * 100.0 / SUM(total_sent)), 2)
+                    ELSE 0
+                END as success_rate
+            ')
+            ->groupBy('summary_date')
+            ->orderBy('summary_date')
+            ->get();
+
+        // Type distribution with detailed breakdown (from analytics)
+        $typeDistribution = DailyNotificationSummary::dateRange($startDate, $endDate)
+            ->selectRaw('
+                notification_type_id,
+                SUM(total_sent) as total_sent
+            ')
+            ->groupBy('notification_type_id')
+            ->orderBy('total_sent', 'desc')
+            ->get();
+
+        // Delivery method distribution with detailed breakdown (from analytics)
+        $deliveryDistribution = DailyNotificationSummary::dateRange($startDate, $endDate)
+            ->selectRaw('
+                delivery_option_id,
+                SUM(total_sent) as total_sent
+            ')
+            ->groupBy('delivery_option_id')
+            ->orderBy('total_sent', 'desc')
+            ->get();
+
+        // Get unique patrons by delivery method
+        $patronsByDelivery = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+            ->selectRaw('
+                delivery_option_id,
+                COUNT(DISTINCT patron_barcode) as unique_patrons
+            ')
+            ->groupBy('delivery_option_id')
+            ->orderBy('unique_patrons', 'desc')
+            ->get();
 
         return view('notices::dashboard.index', compact(
             'days',
@@ -56,7 +100,10 @@ class DashboardController extends Controller
             'byType',
             'byDelivery',
             'trendData',
-            'latestRegistration'
+            'successRateTrend',
+            'typeDistribution',
+            'deliveryDistribution',
+            'patronsByDelivery'
         ));
     }
 

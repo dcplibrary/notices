@@ -3,14 +3,56 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
-<div class="px-4 sm:px-0">
+<div class="px-4 sm:px-0" x-data="{ showDatePicker: false }">
     <!-- Header -->
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p class="mt-1 text-sm text-gray-600">
-            Showing data for the last {{ $days }} days
-            ({{ $startDate->format('M d, Y') }} - {{ $endDate->format('M d, Y') }})
-        </p>
+    <div class="sm:flex sm:items-center sm:justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+            <p class="mt-1 text-sm text-gray-600">
+                {{ $startDate->format('M d, Y') }} - {{ $endDate->format('M d, Y') }}
+            </p>
+        </div>
+        <div class="mt-4 sm:mt-0 relative">
+            <button @click="showDatePicker = !showDatePicker"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <svg class="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+                {{ $days }} Days
+                <svg class="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div x-show="showDatePicker" 
+                 @click.away="showDatePicker = false"
+                 x-cloak
+                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <div class="py-1">
+                    <a href="{{ route('notices.dashboard', ['days' => 7]) }}" 
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 7 ? 'bg-gray-50 font-semibold' : '' }}">
+                        Last 7 Days
+                    </a>
+                    <a href="{{ route('notices.dashboard', ['days' => 30]) }}" 
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 30 ? 'bg-gray-50 font-semibold' : '' }}">
+                        Last 30 Days
+                    </a>
+                    <a href="{{ route('notices.dashboard', ['days' => 90]) }}" 
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 90 ? 'bg-gray-50 font-semibold' : '' }}">
+                        Last 90 Days
+                    </a>
+                    <a href="{{ route('notices.dashboard', ['days' => 180]) }}" 
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 180 ? 'bg-gray-50 font-semibold' : '' }}">
+                        Last 180 Days
+                    </a>
+                    <a href="{{ route('notices.dashboard', ['days' => 365]) }}" 
+                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 365 ? 'bg-gray-50 font-semibold' : '' }}">
+                        Last 365 Days
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Stats Grid -->
@@ -64,65 +106,90 @@
         <!-- Trend Chart -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Notification Trend</h3>
-            <div style="height: 300px;">
+            <div style="height: 250px;">
                 <canvas id="trendChart"></canvas>
             </div>
         </div>
 
+        <!-- Success Rate Trend -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Success Rate Trend</h3>
+            <div style="height: 250px;">
+                <canvas id="successRateChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Sections -->
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 mb-8">
         <!-- Type Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">By Notification Type</h3>
             <div style="height: 300px;">
                 <canvas id="typeChart"></canvas>
             </div>
+            <div class="mt-4 space-y-2">
+                @foreach($typeDistribution as $type)
+                <a href="{{ route('notices.list', ['type_id' => $type->notification_type_id]) }}"
+                   class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
+                    <span class="text-gray-600 group-hover:text-indigo-600">
+                        {{ config('notices.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
+                    </span>
+                    <span class="font-semibold text-gray-900 group-hover:text-indigo-600">
+                        {{ number_format($type->total_sent) }}
+                    </span>
+                </a>
+                @endforeach
+            </div>
         </div>
-    </div>
 
-    <!-- Delivery Methods -->
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 mb-8">
         <!-- Delivery Distribution -->
         <div class="bg-white shadow rounded-lg p-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">By Delivery Method</h3>
             <div style="height: 300px;">
                 <canvas id="deliveryChart"></canvas>
             </div>
-        </div>
-
-        @if($latestRegistration)
-        <!-- Shoutbomb Stats -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Shoutbomb Subscribers</h3>
-            <div class="space-y-4">
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">Total Subscribers</dt>
-                    <dd class="mt-1 text-2xl font-semibold text-gray-900">
-                        {{ number_format($latestRegistration->total_subscribers) }}
-                    </dd>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Text</dt>
-                        <dd class="mt-1 text-lg font-semibold text-gray-900">
-                            {{ number_format($latestRegistration->total_text_subscribers) }}
-                            <span class="text-sm text-gray-500">({{ $latestRegistration->text_percentage }}%)</span>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Voice</dt>
-                        <dd class="mt-1 text-lg font-semibold text-gray-900">
-                            {{ number_format($latestRegistration->total_voice_subscribers) }}
-                            <span class="text-sm text-gray-500">({{ $latestRegistration->voice_percentage }}%)</span>
-                        </dd>
-                    </div>
-                </div>
-                <p class="text-xs text-gray-500">
-                    Last updated: {{ $latestRegistration->snapshot_date->format('M d, Y') }}
-                </p>
+            <div class="mt-4 space-y-2">
+                @foreach($deliveryDistribution as $delivery)
+                <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+                   class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
+                    <span class="text-gray-600 group-hover:text-indigo-600">
+                        {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
+                    </span>
+                    <span class="font-semibold text-gray-900 group-hover:text-indigo-600">
+                        {{ number_format($delivery->total_sent) }}
+                    </span>
+                </a>
+                @endforeach
             </div>
         </div>
-        @endif
+    </div>
+
+    <!-- Patron Delivery Breakdown -->
+    <div class="bg-white shadow rounded-lg p-6 mb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Unique Patrons by Delivery Method</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            @foreach($patronsByDelivery as $delivery)
+            <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+               class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <dt class="text-sm font-medium text-gray-500">
+                    {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
+                </dt>
+                <dd class="mt-1 text-2xl font-semibold text-gray-900">
+                    {{ number_format($delivery->unique_patrons) }}
+                </dd>
+                <dd class="text-xs text-gray-500 mt-1">patrons</dd>
+            </a>
+            @endforeach
+        </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -163,6 +230,43 @@ new Chart(trendCtx, {
         scales: {
             y: {
                 beginAtZero: true
+            }
+        }
+    }
+});
+
+// Success Rate Trend Chart
+const successRateCtx = document.getElementById('successRateChart').getContext('2d');
+new Chart(successRateCtx, {
+    type: 'line',
+    data: {
+        labels: @json($successRateTrend->pluck('summary_date')->map(fn($d) => $d->format('M d'))),
+        datasets: [{
+            label: 'Success Rate (%)',
+            data: @json($successRateTrend->pluck('success_rate')),
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
             }
         }
     }
