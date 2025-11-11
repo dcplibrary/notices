@@ -272,6 +272,8 @@ class SyncController extends Controller
      */
     private function runImportPolaris(): array
     {
+        \Log::info('All available commands: ' . json_encode(array_keys(Artisan::all())));
+        \Log::info('Notices commands: ' . json_encode(array_filter(array_keys(Artisan::all()), fn($k) => str_starts_with($k, 'notices:'))));
         $exitCode = Artisan::call('notices:import-polaris');
         $output = Artisan::output();
 
