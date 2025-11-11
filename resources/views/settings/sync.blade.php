@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <!-- Primary Action: Sync All -->\
+    <!-- Primary Action: Sync All -->
     <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 mb-6">
         <div class="flex items-center justify-between">
             <div class="text-white">
