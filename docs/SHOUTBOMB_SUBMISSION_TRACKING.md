@@ -20,7 +20,7 @@ Polaris native export that serves as **corroboration** to verify the SQL submiss
 
 - `PhoneNotices.csv` - Polaris export with full patron and item details
 
-**Database Table**: `shoutbomb_phone_notices`
+**Database Table**: `polaris_phone_notices`
 
 ## Import Commands
 
@@ -42,10 +42,10 @@ php artisan notices:import-shoutbomb-submissions --file=/path/to/holds_submitted
 ### Verification/Corroboration
 ```bash
 # Import PhoneNotices.csv for verification
-php artisan notices:import-phone-notices
+php artisan notices:import-polaris-phone-notices
 
 # Import from local file
-php artisan notices:import-phone-notices --file=/path/to/PhoneNotices.csv
+php artisan notices:import-polaris-phone-notices --file=/path/to/PhoneNotices.csv
 ```
 
 ## Database Schema
@@ -70,7 +70,7 @@ Tracks what was officially submitted to Shoutbomb via SQL-generated files:
 - created_at, updated_at
 ```
 
-### shoutbomb_phone_notices (Verification)
+### polaris_phone_notices (Verification)
 Polaris export for corroboration with full details:
 
 ```sql
@@ -145,10 +145,10 @@ CSV format with 22+ fields from Polaris native export:
 
 ### Comparison Example
 ```php
-use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 use Carbon\Carbon;
 
-$importer = app(ShoutbombPhoneNoticeImporter::class);
+$importer = app(PolarisPhoneNoticeImporter::class);
 $comparison = $importer->compareWithSubmissions(Carbon::parse('2025-01-15'));
 
 // Results show:
@@ -182,21 +182,21 @@ $submissions = ShoutbombSubmission::dateRange(
 
 ### Verification Data
 ```php
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 
 // Get all notices for a patron (from Polaris export)
-$notices = ShoutbombPhoneNotice::forPatron('11677')
+$notices = PolarisPhoneNotice::forPatron('11677')
     ->recent(30)
     ->get();
 
 // Compare by library
-$byLibrary = ShoutbombPhoneNotice::forLibrary('MAIN')
+$byLibrary = PolarisPhoneNotice::forLibrary('MAIN')
     ->whereDate('notice_date', '2025-01-15')
     ->count();
 
 // Voice vs text from verification
-$voiceNotices = ShoutbombPhoneNotice::voice()->count();
-$textNotices = ShoutbombPhoneNotice::text()->count();
+$voiceNotices = PolarisPhoneNotice::voice()->count();
+$textNotices = PolarisPhoneNotice::text()->count();
 ```
 
 ## Statistics
@@ -220,9 +220,9 @@ $stats = $importer->getStats(
 
 ### Verification Stats
 ```php
-use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 
-$importer = app(ShoutbombPhoneNoticeImporter::class);
+$importer = app(PolarisPhoneNoticeImporter::class);
 $stats = $importer->getStats(
     Carbon::parse('2025-01-01'),
     Carbon::parse('2025-01-31')
@@ -247,7 +247,7 @@ $stats = $importer->getStats(
 php artisan notices:import-shoutbomb-submissions --days=1
 
 # Import PhoneNotices.csv for verification
-php artisan notices:import-phone-notices
+php artisan notices:import-polaris-phone-notices
 
 # Import delivery reports (what Shoutbomb actually delivered)
 php artisan notices:import-shoutbomb-reports --days=1
@@ -259,7 +259,7 @@ php artisan notices:import-shoutbomb-reports --days=1
 0 2 * * * cd /var/www && php artisan notices:import-shoutbomb-submissions --days=1
 
 # Import PhoneNotices.csv for verification at 2:30 AM
-30 2 * * * cd /var/www && php artisan notices:import-phone-notices
+30 2 * * * cd /var/www && php artisan notices:import-polaris-phone-notices
 
 # Import delivery reports at 3 AM
 0 3 * * * cd /var/www && php artisan notices:import-shoutbomb-reports --days=1
@@ -301,7 +301,7 @@ php artisan notices:import-shoutbomb-reports --days=1
 │  │  (Primary tracking)            │  │
 │  └────────────────────────────────┘  │
 │  ┌────────────────────────────────┐  │
-│  │  shoutbomb_phone_notices       │  │ ← Verification
+│  │  polaris_phone_notices       │  │ ← Verification
 │  │  (Corroboration)               │  │
 │  └────────────────────────────────┘  │
 └──────────────────────────────────────┘
@@ -317,7 +317,7 @@ php artisan notices:import-shoutbomb-reports --days=1
 
 ### Discrepancies Between Systems
 
-If you find differences between `shoutbomb_submissions` and `shoutbomb_phone_notices`:
+If you find differences between `shoutbomb_submissions` and `polaris_phone_notices`:
 
 1. **Check import dates** - Ensure you're comparing the same date range
 2. **Verify patron lists** - Voice/text assignments may differ

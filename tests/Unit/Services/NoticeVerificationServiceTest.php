@@ -4,7 +4,7 @@ namespace Dcplibrary\Notices\Tests\Unit\Services;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\ShoutbombSubmission;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\VerificationResult;
@@ -53,7 +53,7 @@ class NoticeVerificationServiceTest extends TestCase
         ]);
 
         // Create phone notice (Step 3: Verified)
-        ShoutbombPhoneNotice::create([
+        PolarisPhoneNotice::create([
             'patron_barcode' => '23307013757366',
             'phone_number' => '555-123-4567',
             'item_barcode' => '810045',
@@ -412,7 +412,7 @@ class NoticeVerificationServiceTest extends TestCase
         ]);
 
         // Matching phone notice
-        ShoutbombPhoneNotice::create([
+        PolarisPhoneNotice::create([
             'patron_barcode' => '12345',
             'phone_number' => '555-123-4567',
             'item_barcode' => '810045',

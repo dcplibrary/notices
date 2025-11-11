@@ -104,7 +104,7 @@ class NoticesServiceProvider extends ServiceProvider
                 TestConnections::class,
                 SeedDemoDataCommand::class,
                 Commands\ImportShoutbombSubmissions::class,
-                Commands\ImportShoutbombPhoneNotices::class,
+                Commands\ImportPolarisPhoneNotices::class,
                 Commands\ListShoutbombFiles::class,
                 Commands\InspectDeliveryMethods::class,
                 Commands\DiagnoseDataIssues::class,

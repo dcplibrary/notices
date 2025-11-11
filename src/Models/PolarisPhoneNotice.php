@@ -2,12 +2,32 @@
 
 namespace Dcplibrary\Notices\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Database\Factories\PolarisPhoneNoticeFactory;
 
-class ShoutbombPhoneNotice extends Model
+/**
+ * PolarisPhoneNotice Model
+ * 
+ * Represents data from PhoneNotices.csv - a Polaris-generated export file
+ * used for VERIFICATION of notices sent to Shoutbomb.
+ * 
+ * This is NOT Shoutbomb data - it's a Polaris export that serves as the
+ * authoritative source for what SHOULD have been sent to Shoutbomb.
+ */
+class PolarisPhoneNotice extends Model
 {
-    protected $table = 'shoutbomb_phone_notices';
+    use HasFactory;
+    protected $table = 'polaris_phone_notices';
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return PolarisPhoneNoticeFactory::new();
+    }
 
     protected $fillable = [
         'delivery_type',

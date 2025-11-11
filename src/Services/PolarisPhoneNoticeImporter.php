@@ -2,12 +2,18 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-class ShoutbombPhoneNoticeImporter
+/**
+ * PolarisPhoneNoticeImporter
+ * 
+ * Imports PhoneNotices.csv - a Polaris-generated export file used for
+ * VERIFICATION/CORROBORATION of notices sent to Shoutbomb.
+ */
+class PolarisPhoneNoticeImporter
 {
     protected ShoutbombSubmissionParser $parser;
     protected ShoutbombFTPService $ftpService;
@@ -137,7 +143,7 @@ class ShoutbombPhoneNoticeImporter
                 }
 
                 // Insert individual record - this ensures proper PDO parameter binding
-                ShoutbombPhoneNotice::create($notice);
+                PolarisPhoneNotice::create($notice);
                 $imported++;
 
                 // Call progress callback if provided
@@ -182,7 +188,7 @@ class ShoutbombPhoneNoticeImporter
      */
     public function getStats(?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        $query = ShoutbombPhoneNotice::query();
+        $query = PolarisPhoneNotice::query();
 
         if ($startDate && $endDate) {
             $query->whereBetween('notice_date', [$startDate, $endDate]);
@@ -217,7 +223,7 @@ class ShoutbombPhoneNoticeImporter
      */
     public function compareWithSubmissions(Carbon $date): array
     {
-        $phoneNotices = ShoutbombPhoneNotice::whereDate('notice_date', $date)->get();
+        $phoneNotices = PolarisPhoneNotice::whereDate('notice_date', $date)->get();
         $submissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereDate('submitted_at', $date)->get();
 
         return [

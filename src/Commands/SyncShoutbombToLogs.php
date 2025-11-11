@@ -3,7 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +35,7 @@ class SyncShoutbombToLogs extends Command
         $this->newLine();
 
         // Get Shoutbomb phone notices that aren't already in notification_logs
-        $phoneNotices = ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNotices = PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->get();
 
         if ($phoneNotices->isEmpty()) {
@@ -158,7 +158,7 @@ class SyncShoutbombToLogs extends Command
      * Map PhoneNotice to notification type ID.
      * Since PhoneNotices.csv doesn't include type info, we use a default.
      */
-    protected function mapNotificationType(ShoutbombPhoneNotice $phoneNotice): int
+    protected function mapNotificationType(PolarisPhoneNotice $phoneNotice): int
     {
         // PhoneNotices.csv doesn't specify notification type
         // Could be holds, overdues, or other types

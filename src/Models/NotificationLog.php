@@ -73,10 +73,22 @@ class NotificationLog extends Model
     }
 
     /**
+     * Relationship: Get the delivery method for this notification.
+     */
+    public function deliveryMethod()
+    {
+        return $this->belongsTo(DeliveryMethod::class, 'delivery_option_id', 'delivery_option_id');
+    }
+
+    /**
      * Get the delivery method name.
+     * Falls back to config if deliveryMethod relationship is not loaded.
      */
     public function getDeliveryMethodNameAttribute(): string
     {
+        if ($this->relationLoaded('deliveryMethod') && $this->deliveryMethod) {
+            return $this->deliveryMethod->name;
+        }
         return config("notices.delivery_options.{$this->delivery_option_id}", 'Unknown');
     }
 
@@ -194,7 +206,7 @@ class NotificationLog extends Model
         // First try Shoutbomb phone notices (already imported data)
         // Use a 60-minute window to account for timing differences
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
@@ -206,7 +218,7 @@ class NotificationLog extends Model
             }
 
             // Second attempt: Exact date match if the first one failed
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -232,7 +244,7 @@ class NotificationLog extends Model
     public function getPatronFirstNameAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
@@ -257,7 +269,7 @@ class NotificationLog extends Model
     public function getPatronLastNameAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
@@ -282,7 +294,7 @@ class NotificationLog extends Model
     public function getPatronEmailAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
@@ -307,7 +319,7 @@ class NotificationLog extends Model
     public function getPatronPhoneAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereBetween('notice_date', [
                     $this->notification_date->copy()->subMinutes(60),
                     $this->notification_date->copy()->addMinutes(60)
@@ -339,7 +351,6 @@ class NotificationLog extends Model
     /**
      * Get items associated with this notification from imported data.
      * Uses Shoutbomb phone notices first, falls back to Polaris if available.
-     * Uses a ±60 minute window to account for timing differences.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -347,13 +358,9 @@ class NotificationLog extends Model
     {
         // First try to get items from imported Shoutbomb data
         if ($this->patron_barcode) {
-            $phoneNotices = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')
+            $phoneNotices = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->orderBy('notice_date', 'desc')
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
@@ -400,15 +407,26 @@ class NotificationLog extends Model
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getShoutbombPhoneNoticesAttribute()
+    public function getPolarisPhoneNoticesAttribute()
     {
         if (!$this->patron_barcode) {
             return collect();
         }
 
-        return \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where('patron_barcode', $this->patron_barcode)
+        return \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
             ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
             ->get();
+    }
+
+    /**
+     * Alias for getPolarisPhoneNoticesAttribute().
+     * Matches by patron barcode and notification date.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getShoutbombPhoneNoticesAttribute()
+    {
+        return $this->polaris_phone_notices;
     }
 
     /**

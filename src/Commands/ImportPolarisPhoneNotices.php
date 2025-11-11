@@ -2,23 +2,29 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Services\ShoutbombPhoneNoticeImporter;
+use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
-class ImportShoutbombPhoneNotices extends Command
+/**
+ * Import Polaris PhoneNotices.csv
+ * 
+ * This command imports PhoneNotices.csv, which is a Polaris-generated export
+ * used for verification of notices sent to Shoutbomb.
+ */
+class ImportPolarisPhoneNotices extends Command
 {
-    protected $signature = 'notices:import-phone-notices
+    protected $signature = 'notices:import-polaris-phone-notices
                             {--file= : Import from local file instead of FTP}
                             {--days= : Number of days back to import (defaults to notices.import.default_days)}
                             {--start-date= : Start date (Y-m-d)}
                             {--end-date= : End date (Y-m-d)}';
 
-    protected $description = 'Import PhoneNotices.csv for verification/confirmation of notices sent to Shoutbomb';
+    protected $description = 'Import Polaris PhoneNotices.csv for verification of notices sent to Shoutbomb';
 
-    public function handle(ShoutbombPhoneNoticeImporter $importer): int
+    public function handle(PolarisPhoneNoticeImporter $importer): int
     {
-        $this->info('🔍 Starting PhoneNotices.csv import (Verification/Confirmation)...');
+        $this->info('🔍 Starting Polaris PhoneNotices.csv import (Verification)...');
         $this->newLine();
 
         // Resolve date range
@@ -36,7 +42,7 @@ class ImportShoutbombPhoneNotices extends Command
     /**
      * Import from FTP.
      */
-    protected function importFromFTP(ShoutbombPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
+    protected function importFromFTP(PolarisPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
     {
         $this->line("📥 Importing PhoneNotices.csv from FTP...");
         if ($startDate && $endDate) {
@@ -90,7 +96,7 @@ class ImportShoutbombPhoneNotices extends Command
     /**
      * Import from local file.
      */
-    protected function importFromFile(ShoutbombPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
+    protected function importFromFile(PolarisPhoneNoticeImporter $importer, ?Carbon $startDate, ?Carbon $endDate): int
     {
         $filePath = $this->option('file');
 

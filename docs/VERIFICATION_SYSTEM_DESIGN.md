@@ -76,18 +76,18 @@ interface NotificationPlugin {
 
 **Data Tables**:
 - `shoutbomb_submissions` - What we sent (official)
-- `shoutbomb_phone_notices` - Polaris verification
+- `polaris_phone_notices` - Polaris verification
 - `shoutbomb_deliveries` - Delivery reports from Shoutbomb
 
 **Commands**:
 - `notices:import-shoutbomb-submissions`
-- `notices:import-phone-notices`
+- `notices:import-polaris-phone-notices`
 - `notices:import-shoutbomb-reports`
 
 **Verification Flow**:
 ```
 1. Check shoutbomb_submissions → Was it submitted?
-2. Check shoutbomb_phone_notices → Did Polaris confirm?
+2. Check polaris_phone_notices → Did Polaris confirm?
 3. Check shoutbomb_deliveries → Was it delivered?
 4. Return verification status with all details
 ```
@@ -326,7 +326,7 @@ Response:
         {
           "step": "verified",
           "timestamp": "2025-11-09 14:25:00",
-          "source": "shoutbomb_phone_notices",
+          "source": "polaris_phone_notices",
           "file": "PhoneNotices.csv"
         },
         {
@@ -454,7 +454,7 @@ delivery_option_id, notification_status_id, notification_date
 id, patron_barcode, phone_number, notification_type, submitted_at,
 source_file, delivery_type
 
--- shoutbomb_phone_notices (link by patron + date + item)
+-- polaris_phone_notices (link by patron + date + item)
 id, patron_barcode, phone_number, item_barcode, notice_date,
 delivery_type, source_file
 

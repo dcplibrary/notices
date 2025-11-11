@@ -5,7 +5,7 @@ namespace Dcplibrary\Notices\Plugins;
 use Dcplibrary\Notices\Contracts\NotificationPlugin;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\ShoutbombSubmission;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Services\VerificationResult;
 use Illuminate\Support\Collection;
@@ -128,7 +128,7 @@ class ShoutbombPlugin implements NotificationPlugin
             $result->addTimelineEvent(
                 'verified',
                 Carbon::parse($phoneNotice->notice_date),
-                'shoutbomb_phone_notices',
+                'polaris_phone_notices',
                 [
                     'id' => $phoneNotice->id,
                     'file' => $phoneNotice->source_file ?? 'PhoneNotices.csv',
@@ -182,11 +182,11 @@ class ShoutbombPlugin implements NotificationPlugin
     /**
      * Find the phone notice record (verification).
      */
-    protected function findPhoneNotice(NotificationLog $log): ?ShoutbombPhoneNotice
+    protected function findPhoneNotice(NotificationLog $log): ?PolarisPhoneNotice
     {
         $noticeDate = Carbon::parse($log->notification_date);
 
-        $query = ShoutbombPhoneNotice::where('patron_barcode', $log->patron_barcode)
+        $query = PolarisPhoneNotice::where('patron_barcode', $log->patron_barcode)
             ->whereDate('notice_date', $noticeDate->format('Y-m-d'));
 
         // If we have item barcode, match on it too

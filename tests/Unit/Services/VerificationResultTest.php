@@ -118,7 +118,7 @@ class VerificationResultTest extends TestCase
 
         $result->addTimelineEvent('created', $now, 'notification_logs');
         $result->addTimelineEvent('submitted', $now->copy()->addMinutes(2), 'shoutbomb_submissions');
-        $result->addTimelineEvent('verified', $now->copy()->addMinutes(3), 'shoutbomb_phone_notices');
+        $result->addTimelineEvent('verified', $now->copy()->addMinutes(3), 'polaris_phone_notices');
         $result->addTimelineEvent('delivered', $now->copy()->addMinutes(5), 'shoutbomb_deliveries');
 
         $this->assertCount(4, $result->timeline);

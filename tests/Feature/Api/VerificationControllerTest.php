@@ -4,7 +4,7 @@ namespace Dcplibrary\Notices\Tests\Feature\Api;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\ShoutbombSubmission;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -410,7 +410,7 @@ class VerificationControllerTest extends TestCase
             'delivery_type' => 'voice',
         ]);
 
-        ShoutbombPhoneNotice::create([
+        PolarisPhoneNotice::create([
             'patron_barcode' => '12345',
             'item_barcode' => '810045',
             'notice_date' => $noticeDate->format('Y-m-d'),

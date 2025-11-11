@@ -97,7 +97,7 @@ class DashboardController extends Controller
             $search = $request->input('search');
 
             // Find patron barcodes from Shoutbomb phone notices that match the search term
-            $matchingBarcodes = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::where(function ($q) use ($search) {
+            $matchingBarcodes = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%");
             })
@@ -192,13 +192,34 @@ class DashboardController extends Controller
             ->groupBy('delivery_option_id')
             ->get();
 
+        // Top items by notification count (across all channels)
+        $topItems = NotificationLog::whereBetween('notification_logs.notification_date', [$startDate, $endDate])
+            ->join(
+                \DB::raw('(
+                    SELECT patron_barcode, notice_date, title, item_record_id, COUNT(*) as count
+                    FROM ' . \DB::connection()->getTablePrefix() . 'polaris_phone_notices
+                    WHERE notice_date BETWEEN ? AND ?
+                    GROUP BY patron_barcode, notice_date, title, item_record_id
+                ) as items'),
+                'notification_logs.patron_barcode',
+                '=',
+                'items.patron_barcode'
+            )
+            ->addBinding([$startDate, $endDate], 'join')
+            ->selectRaw('items.title, items.item_record_id, COUNT(notification_logs.id) as notification_count')
+            ->groupBy('items.title', 'items.item_record_id')
+            ->orderBy('notification_count', 'desc')
+            ->limit(15)
+            ->get();
+
         return view('notices::dashboard.analytics', compact(
             'days',
             'startDate',
             'endDate',
             'successRateTrend',
             'typeDistribution',
-            'deliveryDistribution'
+            'deliveryDistribution',
+            'topItems'
         ));
     }
 
@@ -225,7 +246,7 @@ class DashboardController extends Controller
             ->first();
 
         // Get phone notices statistics (verification/corroboration)
-        $phoneNoticeStats = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeStats = \Dcplibrary\Notices\Models\PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_notices,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -243,7 +264,7 @@ class DashboardController extends Controller
             ->groupBy('date');
 
         // Daily phone notice trend
-        $phoneNoticeTrend = \Dcplibrary\Notices\Models\ShoutbombPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeTrend = \Dcplibrary\Notices\Models\PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('DATE(notice_date) as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date')

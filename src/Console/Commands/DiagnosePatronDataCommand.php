@@ -4,7 +4,7 @@ namespace Dcplibrary\Notices\Console\Commands;
 
 use Illuminate\Console\Command;
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 
 class DiagnosePatronDataCommand extends Command
 {
@@ -26,23 +26,23 @@ class DiagnosePatronDataCommand extends Command
         ];
 
         $shoutbombRange = [
-            'min' => ShoutbombPhoneNotice::min('notice_date'),
-            'max' => ShoutbombPhoneNotice::max('notice_date'),
-            'count' => ShoutbombPhoneNotice::count(),
+            'min' => PolarisPhoneNotice::min('notice_date'),
+            'max' => PolarisPhoneNotice::max('notice_date'),
+            'count' => PolarisPhoneNotice::count(),
         ];
 
         $this->table(
             ['Source', 'Earliest', 'Latest', 'Count'],
             [
                 ['notification_logs', $notificationRange['min'], $notificationRange['max'], $notificationRange['count']],
-                ['shoutbomb_phone_notices', $shoutbombRange['min'], $shoutbombRange['max'], $shoutbombRange['count']],
+                ['polaris_phone_notices', $shoutbombRange['min'], $shoutbombRange['max'], $shoutbombRange['count']],
             ]
         );
 
         $this->newLine();
 
         // Find overlapping date
-        $overlapDate = ShoutbombPhoneNotice::whereBetween('notice_date', [$notificationRange['min'], $notificationRange['max']])
+        $overlapDate = PolarisPhoneNotice::whereBetween('notice_date', [$notificationRange['min'], $notificationRange['max']])
             ->orderBy('notice_date', 'desc')
             ->value('notice_date');
 
@@ -63,8 +63,8 @@ class DiagnosePatronDataCommand extends Command
                 $this->line("  Type: {$notification->notification_type_name}");
                 $this->newLine();
 
-                // Check for matching Shoutbomb data
-                $phoneNotice = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+                // Check for matching Polaris data
+                $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $notification->patron_barcode)
                     ->whereDate('notice_date', $overlapDate)
                     ->first();
 
@@ -97,12 +97,12 @@ class DiagnosePatronDataCommand extends Command
                         $this->info("✓ Accessor working correctly!");
                     }
                 } else {
-                    $this->error("✗ No matching ShoutbombPhoneNotice for this barcode");
+                    $this->error("✗ No matching PolarisPhoneNotice for this barcode");
 
                     // Show what barcodes exist for this date
                     $this->newLine();
-                    $this->info("Barcodes in shoutbomb_phone_notices for {$overlapDate}:");
-                    $barcodes = ShoutbombPhoneNotice::whereDate('notice_date', $overlapDate)
+                    $this->info("Barcodes in polaris_phone_notices for {$overlapDate}:");
+                    $barcodes = PolarisPhoneNotice::whereDate('notice_date', $overlapDate)
                         ->limit(10)
                         ->get(['patron_barcode', 'first_name', 'last_name']);
 
@@ -112,7 +112,7 @@ class DiagnosePatronDataCommand extends Command
                 }
             }
         } else {
-            $this->error("✗ No overlapping dates between notification_logs and shoutbomb_phone_notices");
+            $this->error("✗ No overlapping dates between notification_logs and polaris_phone_notices");
             $this->warn("The data imports are from completely different date ranges!");
         }
 
@@ -148,27 +148,27 @@ class DiagnosePatronDataCommand extends Command
         $this->line("  Type: {$notification->notification_type_name}");
         $this->newLine();
 
-        // Check if Shoutbomb data exists for this notification
-        $this->info("Checking ShoutbombPhoneNotice for this patron...");
+        // Check if Polaris phone notice data exists for this notification
+        $this->info("Checking PolarisPhoneNotice for this patron...");
 
-        $phoneNotices = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+        $phoneNotices = PolarisPhoneNotice::where('patron_barcode', $notification->patron_barcode)
             ->orderBy('notice_date', 'desc')
             ->limit(5)
             ->get();
 
         if ($phoneNotices->isEmpty()) {
-            $this->error("  ✗ No ShoutbombPhoneNotice records found for barcode: {$notification->patron_barcode}");
+            $this->error("  ✗ No PolarisPhoneNotice records found for barcode: {$notification->patron_barcode}");
 
-            // Check if ANY Shoutbomb data exists
-            $totalShoutbomb = ShoutbombPhoneNotice::count();
-            $this->warn("  Total ShoutbombPhoneNotice records in database: {$totalShoutbomb}");
+            // Check if ANY Polaris phone notice data exists
+            $totalPolaris = PolarisPhoneNotice::count();
+            $this->warn("  Total PolarisPhoneNotice records in database: {$totalPolaris}");
 
-            if ($totalShoutbomb > 0) {
-                $sample = ShoutbombPhoneNotice::first();
+            if ($totalPolaris > 0) {
+                $sample = PolarisPhoneNotice::first();
                 $this->info("  Sample record - Barcode: {$sample->patron_barcode}, Date: {$sample->notice_date}");
             }
         } else {
-            $this->info("  ✓ Found {$phoneNotices->count()} ShoutbombPhoneNotice records:");
+            $this->info("  ✓ Found {$phoneNotices->count()} PolarisPhoneNotice records:");
             foreach ($phoneNotices as $pn) {
                 $this->line("    - Date: {$pn->notice_date}, Name: {$pn->first_name} {$pn->last_name}, Title: " . substr($pn->title, 0, 40));
             }
@@ -185,7 +185,7 @@ class DiagnosePatronDataCommand extends Command
             $this->error("  ✗ Accessor returned barcode/unknown instead of name");
 
             // Check date matching
-            $exactMatch = ShoutbombPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+            $exactMatch = PolarisPhoneNotice::where('patron_barcode', $notification->patron_barcode)
                 ->whereDate('notice_date', $notification->notification_date->format('Y-m-d'))
                 ->first();
 

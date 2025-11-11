@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\PolarisImportService;
+use Dcplibrary\Notices\Services\NotificationAggregatorService;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
 
@@ -25,7 +26,7 @@ class ImportNotifications extends Command
     /**
      * Execute the console command.
      */
-    public function handle(PolarisImportService $importer): int
+    public function handle(PolarisImportService $importer, NotificationAggregatorService $aggregator): int
     {
         $this->info('🚀 Starting Polaris notification import...');
         $this->newLine();
@@ -84,6 +85,19 @@ class ImportNotifications extends Command
             $this->line('─────────────────────────────────────────');
             $this->info("📅 Date range: {$result['start_date']} to {$result['end_date']}");
             $this->newLine();
+
+            // Automatically aggregate imported data
+            if ($result['imported'] > 0) {
+                $this->info('📊 Aggregating imported data for analytics...');
+                
+                $startDate = Carbon::parse($result['start_date'])->startOfDay();
+                $endDate = Carbon::parse($result['end_date'])->startOfDay();
+                
+                $aggResult = $aggregator->aggregateDateRange($startDate, $endDate);
+                
+                $this->info("✅ Aggregated {$aggResult['combinations_aggregated']} combinations");
+                $this->newLine();
+            }
 
             // Show import stats
             if ($this->option('verbose')) {

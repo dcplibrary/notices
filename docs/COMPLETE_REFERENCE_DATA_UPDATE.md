@@ -205,7 +205,7 @@ Understanding how data flows is crucial:
 - **Used By:** Shoutbomb statistics page
 - **Contains:** What was SENT TO Shoutbomb for processing
 
-### shoutbomb_phone_notices
+### polaris_phone_notices
 - **Source:** PhoneNotices.csv from Shoutbomb
 - **Used By:** Sync command
 - **Contains:** What was DELIVERED BY Shoutbomb (Voice/SMS)
@@ -225,7 +225,7 @@ php artisan notices:sync-shoutbomb-to-logs
 ```
 
 **What it does:**
-1. Reads PhoneNotices.csv data from `shoutbomb_phone_notices` table
+1. Reads PhoneNotices.csv data from `polaris_phone_notices` table
 2. Converts each record to `notification_logs` format
 3. Maps delivery type: 'v' → ID 3 (Phone 1 Voice), 't' → ID 8 (SMS)
 4. Maps notification type: Defaults to ID 2 (Hold Ready)

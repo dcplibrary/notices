@@ -172,8 +172,10 @@
                         <th scope="col" class="w-8 px-3 py-3"></th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patron</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item / Notice</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -208,37 +210,64 @@
                             <div>{{ $notification->notification_date->format('M d, Y') }}</div>
                             <div class="text-xs text-gray-500">{{ $notification->notification_date->format('g:i A') }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-4">
+                            @php
+                                $firstName = $notification->patron_first_name ?? '';
+                                $lastName = $notification->patron_last_name ?? '';
+                                $displayName = trim($lastName . ', ' . $firstName);
+                                if ($displayName === ',') {
+                                    $displayName = $notification->patron_name;
+                                }
+                            @endphp
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $notification->patron_name }}
+                                {{ $displayName }}
                             </div>
                             <div class="text-xs text-gray-500 font-mono">
                                 {{ $notification->patron_barcode ?? 'ID: ' . $notification->patron_id }}
                             </div>
+                            @if($notification->delivery_string)
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                {{ $notification->delivery_string }}
+                            </div>
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             @php
                                 $items = $notification->items;
+                                $itemCount = $items->count();
                                 $firstItem = $items->first();
                             @endphp
-                            @if($firstItem && $firstItem->bibliographic)
+                            @if($firstItem)
                                 <div class="text-sm text-gray-900">
-                                    {{ Str::limit($firstItem->bibliographic->Title ?? 'Unknown Title', 60) }}
+                                    @if(isset($firstItem->bibliographic) && isset($firstItem->bibliographic->Title))
+                                        {{ Str::limit($firstItem->bibliographic->Title, 60) }}
+                                    @elseif(isset($firstItem->title))
+                                        {{ Str::limit($firstItem->title, 60) }}
+                                    @else
+                                        Unknown Title
+                                    @endif
                                 </div>
-                                @if($items->count() > 1)
-                                    <div class="text-xs text-gray-500">+{{ $items->count() - 1 }} more item(s)</div>
+                                @if($itemCount > 1)
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        {{ $itemCount - 1 }} more
+                                    </div>
                                 @endif
                             @else
-                                <div class="text-sm text-gray-900">{{ $notification->notification_type_name }}</div>
+                                <div class="text-sm text-gray-500">No item details</div>
                             @endif
-                            <div class="text-xs text-gray-500 mt-1">
-                                @if($notification->total_items > 0)
-                                    {{ $notification->total_items }} item{{ $notification->total_items != 1 ? 's' : '' }}
-                                @endif
-                            </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <div class="flex items-center space-x-1">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-xs font-medium text-gray-900">
+                                {{ $notification->notification_type_name }}
+                            </div>
+                            @if($notification->total_items > 0)
+                            <div class="text-xs text-gray-500 mt-1">
+                                {{ $notification->total_items }} item{{ $notification->total_items != 1 ? 's' : '' }}
+                            </div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-1.5">
                                 @if(in_array($notification->delivery_option_id, [1]))
                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
@@ -256,19 +285,22 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
                                     </svg>
                                 @endif
-                                <span class="text-xs">{{ explode(' ', $notification->delivery_method_name)[0] }}</span>
+                                <div class="text-xs">
+                                    <div class="text-gray-900">{{ explode(' ', $notification->delivery_method_name)[0] }}</div>
+                                    <div class="text-gray-500 text-[10px]">{{ $notification->notification_status_name }}</div>
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <a href="{{ route('notices.notification.detail', $notification->id) }}"
-                               class="text-indigo-600 hover:text-indigo-900">
-                                View Details
+                               class="text-indigo-600 hover:text-indigo-900 text-xs">
+                                Details →
                             </a>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center">
+                        <td colspan="7" class="px-6 py-8 text-center">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                             </svg>

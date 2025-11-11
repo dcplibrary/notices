@@ -3,7 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Illuminate\Console\Command;
 
 class DiagnoseDataIssues extends Command
@@ -94,8 +94,8 @@ class DiagnoseDataIssues extends Command
         $polarisVoice = NotificationLog::where('delivery_option_id', 3)->count();
         $polarisSMS = NotificationLog::where('delivery_option_id', 8)->count();
 
-        $shoutbombVoice = ShoutbombPhoneNotice::where('delivery_type', 'voice')->count();
-        $shoutbombText = ShoutbombPhoneNotice::where('delivery_type', 'text')->count();
+        $shoutbombVoice = PolarisPhoneNotice::where('delivery_type', 'voice')->count();
+        $shoutbombText = PolarisPhoneNotice::where('delivery_type', 'text')->count();
 
         $this->table(
             ['Source', 'Voice', 'Text/SMS'],
@@ -112,7 +112,7 @@ class DiagnoseDataIssues extends Command
             $this->newLine();
             $this->line('The problem:');
             $this->line('  • Dashboard and Analytics pages only show data from notification_logs');
-            $this->line('  • Shoutbomb Voice/SMS data is in shoutbomb_phone_notices table');
+            $this->line('  • Shoutbomb Voice/SMS data is in polaris_phone_notices table');
             $this->line('  • These two data sources are not merged');
             $this->newLine();
             $this->line('Solutions:');

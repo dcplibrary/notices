@@ -62,6 +62,46 @@
             </div>
         </div>
     </div>
+
+    <!-- Top Items by Notification Count -->
+    <div class="mt-8 bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
+                Top Items by Notification Count
+            </h3>
+        </div>
+        <div class="px-6 py-4">
+            @if($topItems->isNotEmpty())
+                <div class="space-y-3">
+                    @foreach($topItems as $index => $item)
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ $index + 1 }}. {{ Str::limit($item->title, 60) }}
+                                </div>
+                                @if($item->item_record_id)
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Item ID: <span class="font-mono">{{ $item->item_record_id }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="ml-4 text-right">
+                                <div class="text-lg font-bold text-blue-600">{{ $item->notification_count }}</div>
+                                <div class="text-xs text-gray-500">notification{{ $item->notification_count != 1 ? 's' : '' }}</div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-8">
+                    <p class="text-sm text-gray-500">No items found in this period</p>
+                </div>
+            @endif
+        </div>
+    </div>
 </div>
 
 @push('scripts')

@@ -4,7 +4,7 @@ namespace Dcplibrary\Notices\Services;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\ShoutbombSubmission;
-use Dcplibrary\Notices\Models\ShoutbombPhoneNotice;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Carbon\Carbon;
 
@@ -113,7 +113,7 @@ class NoticeVerificationService
             $result->addTimelineEvent(
                 'verified',
                 Carbon::parse($phoneNotice->notice_date),
-                'shoutbomb_phone_notices',
+                'polaris_phone_notices',
                 [
                     'id' => $phoneNotice->id,
                     'file' => $phoneNotice->source_file ?? 'PhoneNotices.csv',
@@ -168,12 +168,12 @@ class NoticeVerificationService
     /**
      * Find the phone notice record (verification).
      */
-    protected function findPhoneNotice(NotificationLog $log): ?ShoutbombPhoneNotice
+    protected function findPhoneNotice(NotificationLog $log): ?PolarisPhoneNotice
     {
         // Match by patron + item + date
         $noticeDate = Carbon::parse($log->notification_date);
 
-        $query = ShoutbombPhoneNotice::where('patron_barcode', $log->patron_barcode)
+        $query = PolarisPhoneNotice::where('patron_barcode', $log->patron_barcode)
             ->whereDate('notice_date', $noticeDate->format('Y-m-d'));
 
         // If we have item barcode, match on it too
@@ -380,7 +380,7 @@ class NoticeVerificationService
 
         foreach ($submissions as $submission) {
             // Check if there's a matching phone notice
-            $phoneNotice = ShoutbombPhoneNotice::where('patron_barcode', $submission->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $submission->patron_barcode)
                 ->whereDate('notice_date', Carbon::parse($submission->submitted_at)->format('Y-m-d'))
                 ->first();
 
@@ -402,7 +402,7 @@ class NoticeVerificationService
         }
 
         // Find phone notices without matching deliveries
-        $phoneNotices = ShoutbombPhoneNotice::dateRange($startDate, $endDate)->get();
+        $phoneNotices = PolarisPhoneNotice::dateRange($startDate, $endDate)->get();
         $verifiedNotDelivered = [];
 
         foreach ($phoneNotices as $phoneNotice) {

@@ -108,16 +108,16 @@ notifications-shoutbomb/
 │   ├── ShoutbombChannel.php                  (Implements NotificationChannel)
 │   ├── Models/
 │   │   ├── ShoutbombSubmission.php
-│   │   ├── ShoutbombPhoneNotice.php
+│   │   ├── PolarisPhoneNotice.php
 │   │   └── ShoutbombDelivery.php
 │   ├── Services/
 │   │   ├── ShoutbombFTPService.php
 │   │   ├── ShoutbombSubmissionImporter.php
-│   │   ├── ShoutbombPhoneNoticeImporter.php
+│   │   ├── PolarisPhoneNoticeImporter.php
 │   │   └── ShoutbombVerifier.php             (Implements NotificationVerifier)
 │   ├── Commands/
 │   │   ├── ImportShoutbombSubmissions.php
-│   │   ├── ImportShoutbombPhoneNotices.php
+│   │   ├── ImportPolarisPhoneNotices.php
 │   │   └── ImportShoutbombReports.php
 │   ├── Http/
 │   │   └── Controllers/
@@ -125,7 +125,7 @@ notifications-shoutbomb/
 │   └── Database/
 │       └── migrations/
 │           ├── create_shoutbomb_submissions_table.php
-│           ├── create_shoutbomb_phone_notices_table.php
+│           ├── create_polaris_phone_notices_table.php
 │           └── create_shoutbomb_deliveries_table.php
 ├── config/
 │   └── shoutbomb.php
