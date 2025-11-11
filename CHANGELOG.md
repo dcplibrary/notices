@@ -4,6 +4,49 @@ All notable changes to the Polaris Notices Package will be documented in this fi
 
 ## [Unreleased]
 
+### Added - Console Commands for Manual Imports (2025-11-11)
+
+#### New Artisan Commands
+- Created `ImportPolarisCommand` (notices:import-polaris)
+  - Wraps `PolarisImportService` with CLI interface
+  - Options: --days, --start-date, --end-date
+  - Output formatted for SyncController parsing
+- Created `ImportShoutbombCommand` (notices:import-shoutbomb)
+  - Wraps `ShoutbombSubmissionImporter` with CLI interface  
+  - Options: --start-date
+  - Reports breakdown by type (holds, overdues, renewals)
+- Created `AggregateNotificationsCommand` (notices:aggregate)
+  - Wraps `NotificationAggregatorService` with CLI interface
+  - Options: --yesterday, --date, --start-date, --end-date, --all
+  - Provides date range and combination statistics
+
+#### Critical Bug Fixes
+- **CRITICAL**: Fixed commands not available to web requests
+  - Root cause: Commands were registered inside `if ($this->app->runningInConsole())`
+  - Solution: Moved command registration outside that check
+  - Impact: `Artisan::call()` from web requests (SyncController) can now find commands
+  - This is a **critical pattern** for all Laravel packages with commands
+- Fixed HTTPS/mixed content errors behind nginx-proxy
+  - Changed JavaScript fetch URLs from `route()` helpers to relative URLs
+  - Relative URLs automatically use same protocol as page
+- Fixed duplicate aggregate command registration
+  - Commented out old `AggregateNotifications::class` to prevent conflict
+- Removed stray backslashes from HTML comment in sync view
+
+#### Files Modified
+- Created: `src/Console/Commands/ImportPolarisCommand.php`
+- Created: `src/Console/Commands/ImportShoutbombCommand.php`  
+- Created: `src/Console/Commands/AggregateNotificationsCommand.php`
+- Modified: `src/NoticesServiceProvider.php` (critical command registration fix)
+- Modified: `resources/views/dashboard/index.blade.php` (relative URLs)
+- Modified: `resources/views/settings/sync.blade.php` (relative URLs, backslash fix)
+
+#### Documentation
+- Created `SESSION_2025-11-11_console_commands_sync.md` with complete session details
+- Documents critical Laravel package pattern for command registration
+
+### Added - Namespace Migration & Verification System (2025-11-10)
+
 ### Added - Namespace Migration & Verification System (2025-11-10)
 
 #### Repository Rename
