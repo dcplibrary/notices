@@ -546,58 +546,51 @@ new Chart(deliveryCtx, {
     }
 });
 
-// Sync Now function
-function syncNow() {
-    return {
-        syncing: false,
-        syncMessage: '',
-        syncStatus: 'info',
+// Sync Now function added to window for Alpine to access
+window.syncNow = async function() {
+    const component = Alpine.$data(document.querySelector('[x-data]'));
+    component.syncing = true;
+    component.syncMessage = 'Starting sync...';
+    component.syncStatus = 'info';
 
-        async syncNow() {
-            this.syncing = true;
-            this.syncMessage = 'Starting sync...';
-            this.syncStatus = 'info';
-
-            try {
-                const response = await fetch('{{ route("notices.sync.all") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    const polarisRecords = data.results?.polaris?.records || 0;
-                    const shoutbombRecords = data.results?.shoutbomb?.records || 0;
-                    this.syncMessage = `✓ Sync complete! Imported ${polarisRecords + shoutbombRecords} records.`;
-                    this.syncStatus = 'success';
-                    
-                    // Reload page after 3 seconds to show new data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 3000);
-                } else {
-                    this.syncMessage = 'Sync completed with some errors. Check Settings > Sync for details.';
-                    this.syncStatus = 'error';
-                    setTimeout(() => {
-                        this.syncMessage = '';
-                    }, 5000);
-                }
-            } catch (error) {
-                this.syncMessage = 'Sync failed: ' + error.message;
-                this.syncStatus = 'error';
-                setTimeout(() => {
-                    this.syncMessage = '';
-                }, 5000);
-            } finally {
-                this.syncing = false;
+    try {
+        const response = await fetch('{{ route("notices.sync.all") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const polarisRecords = data.results?.polaris?.records || 0;
+            const shoutbombRecords = data.results?.shoutbomb?.records || 0;
+            component.syncMessage = `✓ Sync complete! Imported ${polarisRecords + shoutbombRecords} records.`;
+            component.syncStatus = 'success';
+            
+            // Reload page after 3 seconds to show new data
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            component.syncMessage = 'Sync completed with some errors. Check Settings > Sync for details.';
+            component.syncStatus = 'error';
+            setTimeout(() => {
+                component.syncMessage = '';
+            }, 5000);
         }
-    };
-}
+    } catch (error) {
+        component.syncMessage = 'Sync failed: ' + error.message;
+        component.syncStatus = 'error';
+        setTimeout(() => {
+            component.syncMessage = '';
+        }, 5000);
+    } finally {
+        component.syncing = false;
+    }
+};
 </script>
 @endpush
 @endsection
