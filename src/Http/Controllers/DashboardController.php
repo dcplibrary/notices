@@ -408,20 +408,23 @@ class DashboardController extends Controller
             $query = NotificationLog::query();
 
             // Apply filters
-            if ($request->has('patron_barcode')) {
+            if ($request->filled('patron_barcode')) {
                 $query->where('patron_barcode', $request->patron_barcode);
             }
 
-            if ($request->has('phone')) {
-                $query->where('phone', 'like', '%' . $request->phone . '%');
+            if ($request->filled('phone')) {
+                $query->where('delivery_string', 'like', '%' . $request->phone . '%');
             }
 
-            if ($request->has('email')) {
-                $query->where('email', $request->email);
+            if ($request->filled('email')) {
+                $query->where('delivery_string', 'like', '%' . $request->email . '%');
             }
 
-            if ($request->has('item_barcode')) {
-                $query->where('item_barcode', $request->item_barcode);
+            // Note: item_barcode is not available in notification_logs
+            // This would require joining to a different table or storing item data
+            if ($request->filled('item_barcode')) {
+                // TODO: Implement item_barcode search when item data is available
+                // For now, we'll skip this filter
             }
 
             // Date range filter
