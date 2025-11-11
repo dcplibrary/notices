@@ -119,7 +119,7 @@ class DashboardController extends Controller
         $query = NotificationLog::query();
 
         // Apply date range filter
-        if ($request->has('start_date') && $request->has('end_date')) {
+        if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = Carbon::parse($request->start_date)->startOfDay();
             $endDate = Carbon::parse($request->end_date)->endOfDay();
             $query->dateRange($startDate, $endDate);
@@ -128,17 +128,17 @@ class DashboardController extends Controller
         }
 
         // Apply type filter
-        if ($request->has('type_id')) {
+        if ($request->filled('type_id') && $request->type_id > 0) {
             $query->ofType((int) $request->type_id);
         }
 
         // Apply delivery method filter
-        if ($request->has('delivery_id')) {
+        if ($request->filled('delivery_id') && $request->delivery_id > 0) {
             $query->byDeliveryMethod((int) $request->delivery_id);
         }
 
         // Apply status filter
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $status = $request->input('status');
             if (in_array($status, ['completed', 'pending', 'failed'])) {
                 $query->where('status', $status);
@@ -146,7 +146,7 @@ class DashboardController extends Controller
         }
         
         // Legacy: Support old status_id filtering (supports single or multiple statuses)
-        if ($request->has('status_id')) {
+        if ($request->filled('status_id')) {
             $statusId = $request->input('status_id');
             
             // Handle comma-separated string or array
@@ -209,7 +209,13 @@ class DashboardController extends Controller
         // Get filter options - only enabled items
         $notificationTypes = NotificationType::enabled()->ordered()->pluck('description', 'notification_type_id')->toArray();
         $deliveryOptions = DeliveryMethod::enabled()->ordered()->pluck('delivery_option', 'delivery_option_id')->toArray();
-        $notificationStatuses = NotificationStatus::enabled()->ordered()->pluck('description', 'notification_status_id')->toArray();
+        
+        // Filter detailed statuses by selected status category if applicable
+        $notificationStatusesQuery = NotificationStatus::enabled()->ordered();
+        if ($request->filled('status') && in_array($request->input('status'), ['completed', 'pending', 'failed'])) {
+            $notificationStatusesQuery->where('category', $request->input('status'));
+        }
+        $notificationStatuses = $notificationStatusesQuery->pluck('description', 'notification_status_id')->toArray();
 
         return view('notices::dashboard.notifications', compact(
             'notifications',

@@ -102,7 +102,7 @@
 
     <!-- Filters -->
     <div x-show="showFilters" x-cloak class="bg-white shadow rounded-lg p-6 mb-6">
-        <form method="GET" class="space-y-4">
+        <form method="GET" action="{{ route('notices.list') }}" class="space-y-4">
             <!-- Search -->
             <div class="col-span-full">
                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
@@ -192,7 +192,7 @@
             </div>
 
             <!-- Filters Row -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
                     <label for="type_id" class="block text-sm font-medium text-gray-700">Type</label>
                     <select id="type_id" name="type_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
@@ -218,17 +218,30 @@
                 </div>
 
                 <div>
-                    <label for="status_id" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select id="status_id" name="status_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                         <option value="">All Statuses</option>
-                        @foreach($notificationStatuses as $id => $name)
-                            <option value="{{ $id }}" {{ request('status_id') == $id ? 'selected' : '' }}>
-                                {{ $name }}
-                            </option>
-                        @endforeach
+                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
             </div>
+
+            <!-- Detailed Status Filter (shown only when a status is selected) -->
+            @if(request('status'))
+            <div>
+                <label for="status_id" class="block text-sm font-medium text-gray-700">Detailed Status ({{ ucfirst(request('status')) }} only)</label>
+                <select id="status_id" name="status_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="">All {{ ucfirst(request('status')) }} Statuses</option>
+                    @foreach($notificationStatuses as $id => $name)
+                        <option value="{{ $id }}" {{ request('status_id') == $id ? 'selected' : '' }}>
+                            {{ $name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
 
             <!-- Action Buttons -->
             <div class="flex items-center space-x-3">
