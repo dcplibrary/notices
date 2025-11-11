@@ -263,6 +263,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
+            'label' => 'nullable|string|max:255',
         ]);
 
         $type->update($validated);
@@ -280,6 +281,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
+            'label' => 'nullable|string|max:255',
         ]);
 
         $method->update($validated);
@@ -297,6 +299,7 @@ class SettingsController extends Controller
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
+            'label' => 'nullable|string|max:255',
         ]);
 
         $status->update($validated);

@@ -31,6 +31,7 @@ class NotificationType extends Model
     protected $fillable = [
         'notification_type_id',
         'description',
+        'label',
         'enabled',
         'display_order',
     ];
@@ -57,6 +58,14 @@ class NotificationType extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('display_order')->orderBy('description');
+    }
+
+    /**
+     * Get the display name (label if available, otherwise description).
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->label ?: $this->description;
     }
 
     /**

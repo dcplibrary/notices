@@ -32,6 +32,7 @@ class DeliveryMethod extends Model
         'delivery_option_id',
         'delivery_option',
         'description',
+        'label',
         'enabled',
         'display_order',
     ];
@@ -58,6 +59,14 @@ class DeliveryMethod extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('display_order')->orderBy('delivery_option');
+    }
+
+    /**
+     * Get the display name (label if available, otherwise delivery_option).
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->label ?: $this->delivery_option;
     }
 
     /**
