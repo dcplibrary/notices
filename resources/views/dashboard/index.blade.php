@@ -7,7 +7,10 @@
     showDatePicker: false,
     showCustomDateModal: false,
     customStartDate: '',
-    customEndDate: ''
+    customEndDate: '',
+    syncing: false,
+    syncMessage: '',
+    syncStatus: ''
 }">
     <!-- Header -->
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
@@ -17,7 +20,24 @@
                 {{ $startDate->format('M d, Y') }} - {{ $endDate->format('M d, Y') }}
             </p>
         </div>
-        <div class="mt-4 sm:mt-0 relative">
+        <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <!-- Sync Button -->
+            @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
+            <button @click="syncNow()"
+                    :disabled="syncing"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg x-show="!syncing" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <svg x-show="syncing" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span x-text="syncing ? 'Syncing...' : 'Sync Now'"></span>
+            </button>
+            @endif
+            
+            <div class="relative">
             <button @click="showDatePicker = !showDatePicker"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -127,6 +147,52 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Status Toast -->
+    <div x-show="syncMessage" 
+         x-cloak
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed top-4 right-4 z-50 max-w-sm w-full">
+        <div :class="{
+            'bg-green-50 border-green-200': syncStatus === 'success',
+            'bg-red-50 border-red-200': syncStatus === 'error',
+            'bg-blue-50 border-blue-200': syncStatus === 'info'
+        }" class="border-l-4 p-4 rounded-lg shadow-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg x-show="syncStatus === 'success'" class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg x-show="syncStatus === 'error'" class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg x-show="syncStatus === 'info'" class="animate-spin h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium" 
+                       :class="{
+                           'text-green-800': syncStatus === 'success',
+                           'text-red-800': syncStatus === 'error',
+                           'text-blue-800': syncStatus === 'info'
+                       }"
+                       x-text="syncMessage"></p>
+                </div>
+                <button @click="syncMessage = ''" class="ml-auto flex-shrink-0">
+                    <svg class="h-5 w-5 text-gray-400 hover:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -478,6 +544,59 @@ new Chart(deliveryCtx, {
         }
     }
 });
+
+// Sync Now function
+function syncNow() {
+    return {
+        syncing: false,
+        syncMessage: '',
+        syncStatus: 'info',
+
+        async syncNow() {
+            this.syncing = true;
+            this.syncMessage = 'Starting sync...';
+            this.syncStatus = 'info';
+
+            try {
+                const response = await fetch('{{ route("notices.sync.all") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const polarisRecords = data.results?.polaris?.records || 0;
+                    const shoutbombRecords = data.results?.shoutbomb?.records || 0;
+                    this.syncMessage = `✓ Sync complete! Imported ${polarisRecords + shoutbombRecords} records.`;
+                    this.syncStatus = 'success';
+                    
+                    // Reload page after 3 seconds to show new data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    this.syncMessage = 'Sync completed with some errors. Check Settings > Sync for details.';
+                    this.syncStatus = 'error';
+                    setTimeout(() => {
+                        this.syncMessage = '';
+                    }, 5000);
+                }
+            } catch (error) {
+                this.syncMessage = 'Sync failed: ' + error.message;
+                this.syncStatus = 'error';
+                setTimeout(() => {
+                    this.syncMessage = '';
+                }, 5000);
+            } finally {
+                this.syncing = false;
+            }
+        }
+    };
+}
 </script>
 @endpush
 @endsection
