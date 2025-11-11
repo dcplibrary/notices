@@ -145,7 +145,7 @@ class PolarisQueryService
                     ->get();
 
                 foreach ($holds as $hold) {
-                    if ($hold->ItemRecordID) {
+                    if (isset($hold->ItemRecordID) && $hold->ItemRecordID) {
                         $item = $this->getItem($hold->ItemRecordID);
                         if ($item) {
                             $items->push($item);
@@ -155,16 +155,17 @@ class PolarisQueryService
             }
 
             // For overdue notifications (type 1, 12, 13), query overdue items
+            // Note: CircItemRecords uses DueDateTime, not DueDate
             if (in_array($notificationTypeId, [1, 12, 13])) {
                 $overdues = \DB::connection('polaris')
                     ->table('Polaris.Polaris.CircItemRecords')
                     ->where('PatronID', $patronId)
-                    ->where('DueDate', '<', $notificationDate)
+                    ->where('DueDateTime', '<', $notificationDate)
                     ->whereNull('CheckInDate')
                     ->get();
 
                 foreach ($overdues as $overdue) {
-                    if ($overdue->ItemRecordID) {
+                    if (isset($overdue->ItemRecordID) && $overdue->ItemRecordID) {
                         $item = $this->getItem($overdue->ItemRecordID);
                         if ($item) {
                             $items->push($item);
