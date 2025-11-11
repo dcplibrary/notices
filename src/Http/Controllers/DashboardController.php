@@ -116,10 +116,9 @@ class DashboardController extends Controller
 
         // Apply date range filter
         if ($request->has('start_date') && $request->has('end_date')) {
-            $query->dateRange(
-                Carbon::parse($request->start_date),
-                Carbon::parse($request->end_date)
-            );
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate = Carbon::parse($request->end_date)->endOfDay();
+            $query->dateRange($startDate, $endDate);
         } else {
             $query->recent(30);
         }

@@ -235,9 +235,22 @@ new Chart(trendCtx, {
         },
         onClick: (event, elements) => {
             if (elements.length > 0) {
-                const index = elements[0].index;
+                const element = elements[0];
+                const index = element.index;
+                const datasetIndex = element.datasetIndex;
                 const date = trendDates[index];
-                window.location.href = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
+                
+                let url = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
+                
+                // Add status filter based on which line was clicked
+                // Dataset 0 = Sent (no filter), 1 = Success (status 16), 2 = Failed (status 11)
+                if (datasetIndex === 1) {
+                    url += '&status_id=16'; // Success
+                } else if (datasetIndex === 2) {
+                    url += '&status_id=11'; // Failed
+                }
+                
+                window.location.href = url;
             }
         },
         onHover: (event, elements) => {
