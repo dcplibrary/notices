@@ -8,6 +8,7 @@ use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\AggregateNotifications;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
+use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\NoticeExportService;
@@ -103,6 +104,7 @@ class NoticesServiceProvider extends ServiceProvider
                 AggregateNotifications::class,
                 TestConnections::class,
                 SeedDemoDataCommand::class,
+                BackfillNotificationStatus::class,
                 Commands\ImportShoutbombSubmissions::class,
                 Commands\ImportPolarisPhoneNotices::class,
                 Commands\ListShoutbombFiles::class,

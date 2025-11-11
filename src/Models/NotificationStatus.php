@@ -4,10 +4,11 @@ namespace Dcplibrary\Notices\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NotificationStatus extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -30,7 +31,42 @@ class NotificationStatus extends Model
     protected $fillable = [
         'notification_status_id',
         'description',
+        'enabled',
+        'display_order',
+        'category',
     ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+        'display_order' => 'integer',
+    ];
+
+    /**
+     * Scope to get only enabled statuses.
+     */
+    public function scopeEnabled($query)
+    {
+        return $query->where('enabled', true);
+    }
+
+    /**
+     * Scope to order by display_order.
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('display_order')->orderBy('description');
+    }
+
+    /**
+     * Scope to get statuses by category.
+     */
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
 
     /**
      * Get notifications with this status.

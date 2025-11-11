@@ -4,10 +4,11 @@ namespace Dcplibrary\Notices\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NotificationType extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -30,7 +31,33 @@ class NotificationType extends Model
     protected $fillable = [
         'notification_type_id',
         'description',
+        'enabled',
+        'display_order',
     ];
+
+    /**
+     * The attributes that should be cast.
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+        'display_order' => 'integer',
+    ];
+
+    /**
+     * Scope to get only enabled types.
+     */
+    public function scopeEnabled($query)
+    {
+        return $query->where('enabled', true);
+    }
+
+    /**
+     * Scope to order by display_order.
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('display_order')->orderBy('description');
+    }
 
     /**
      * Get notifications of this type.

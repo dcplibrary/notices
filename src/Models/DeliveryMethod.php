@@ -4,10 +4,11 @@ namespace Dcplibrary\Notices\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DeliveryMethod extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
@@ -31,7 +32,7 @@ class DeliveryMethod extends Model
         'delivery_option_id',
         'delivery_option',
         'description',
-        'active',
+        'enabled',
         'display_order',
     ];
 
@@ -39,15 +40,24 @@ class DeliveryMethod extends Model
      * The attributes that should be cast.
      */
     protected $casts = [
-        'active' => 'boolean',
+        'enabled' => 'boolean',
+        'display_order' => 'integer',
     ];
 
     /**
-     * Scope to get only active delivery methods.
+     * Scope to get only enabled delivery methods.
      */
-    public function scopeActive($query)
+    public function scopeEnabled($query)
     {
-        return $query->where('active', true);
+        return $query->where('enabled', true);
+    }
+
+    /**
+     * Scope to order by display_order.
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('display_order')->orderBy('delivery_option');
     }
 
     /**

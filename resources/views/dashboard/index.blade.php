@@ -3,7 +3,12 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
-<div class="px-4 sm:px-0" x-data="{ showDatePicker: false }">
+<div class="px-4 sm:px-0" x-data="{ 
+    showDatePicker: false,
+    showCustomDateModal: false,
+    customStartDate: '',
+    customEndDate: ''
+}">
     <!-- Header -->
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
         <div>
@@ -50,6 +55,77 @@
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 365 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 365 Days
                     </a>
+                    <div class="border-t border-gray-200 my-1"></div>
+                    <button @click="showCustomDateModal = true; showDatePicker = false"
+                            class="w-full text-left block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 font-medium">
+                        Custom Date Range...
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Date Range Modal -->
+        <div x-show="showCustomDateModal"
+             x-cloak
+             class="fixed inset-0 z-50 overflow-y-auto"
+             @keydown.escape.window="showCustomDateModal = false">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                 @click="showCustomDateModal = false"></div>
+            
+            <!-- Modal -->
+            <div class="flex min-h-full items-center justify-center p-4">
+                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+                     @click.away="showCustomDateModal = false">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Custom Date Range</h3>
+                        <button @click="showCustomDateModal = false"
+                                class="text-gray-400 hover:text-gray-500">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form method="GET" action="{{ route('notices.dashboard') }}">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Start Date
+                                </label>
+                                <input type="date" 
+                                       id="start_date" 
+                                       name="start_date"
+                                       x-model="customStartDate"
+                                       required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                            
+                            <div>
+                                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">
+                                    End Date
+                                </label>
+                                <input type="date" 
+                                       id="end_date" 
+                                       name="end_date"
+                                       x-model="customEndDate"
+                                       required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button"
+                                    @click="showCustomDateModal = false"
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700">
+                                Apply
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
