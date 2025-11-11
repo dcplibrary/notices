@@ -15,6 +15,9 @@ class NotificationTypeSeeder extends Seeder
      */
     public function run(): void
     {
+        // Types that are not actively used and should be disabled by default
+        $disabledTypes = [4, 6, 14, 15, 16]; // Recall, Route, Serial Claim, Polaris Fusion, Course Reserves
+        
         $types = [
             [0, 'Combined'],
             [1, '1st Overdue'],
@@ -40,10 +43,15 @@ class NotificationTypeSeeder extends Seeder
             [21, '2nd Fine Notice'],
         ];
 
+        $order = 0;
         foreach ($types as [$id, $description]) {
             NotificationType::updateOrCreate(
                 ['notification_type_id' => $id],
-                ['description' => $description]
+                [
+                    'description' => $description,
+                    'enabled' => !in_array($id, $disabledTypes),
+                    'display_order' => $order++,
+                ]
             );
         }
     }

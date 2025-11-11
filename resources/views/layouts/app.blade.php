@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Notifications Dashboard')</title>
 
     <!-- Tailwind CSS CDN (for quick styling) -->
@@ -46,10 +47,12 @@
                            class="@if(request()->routeIs('notices.troubleshooting')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Troubleshooting
                         </a>
+                        @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
                         <a href="{{ route('notices.settings.index') }}"
                            class="@if(request()->routeIs('notices.settings.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Settings
                         </a>
+                        @endif
                     </div>
                 </div>
                 <div class="flex items-center sm:hidden">
@@ -96,10 +99,12 @@
                    class="@if(request()->routeIs('notices.troubleshooting')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Troubleshooting
                 </a>
+                @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
                 <a href="{{ route('notices.settings.index') }}"
                    class="@if(request()->routeIs('notices.settings.*')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Settings
                 </a>
+                @endif
             </div>
         </div>
     </nav>

@@ -45,6 +45,17 @@
                 </a>
             @endif
 
+            @if(request('status'))
+                <a href="{{ route('notices.list', request()->except(['status', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Status:</span>
+                    <span class="font-semibold">{{ ucfirst(request('status')) }}</span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
             @if(request('status_id'))
                 <a href="{{ route('notices.list', request()->except(['status_id', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">

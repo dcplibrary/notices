@@ -32,13 +32,19 @@ Route::prefix('verification')->name('verification.')->group(function () {
     Route::get('/{id}', [DashboardController::class, 'timeline'])->name('timeline');
 });
 
-// Settings management routes
+// Settings management routes - Admin only (Computer Services group)
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');
+    Route::get('/reference-data', [SettingsController::class, 'referenceData'])->name('reference-data');
     Route::get('/scoped', [SettingsController::class, 'scoped'])->name('scoped');
     Route::post('/', [SettingsController::class, 'store'])->name('store');
     Route::get('/{id}', [SettingsController::class, 'show'])->name('show');
     Route::get('/{id}/edit', [SettingsController::class, 'edit'])->name('edit');
     Route::put('/{id}', [SettingsController::class, 'update'])->name('update');
     Route::delete('/{id}', [SettingsController::class, 'destroy'])->name('destroy');
+    
+    // Reference data management
+    Route::put('/notification-type/{id}', [SettingsController::class, 'updateNotificationType'])->name('update-notification-type');
+    Route::put('/delivery-method/{id}', [SettingsController::class, 'updateDeliveryMethod'])->name('update-delivery-method');
+    Route::put('/notification-status/{id}', [SettingsController::class, 'updateNotificationStatus'])->name('update-notification-status');
 });

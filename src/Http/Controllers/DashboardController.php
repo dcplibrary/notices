@@ -4,14 +4,18 @@ namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationType;
+use Dcplibrary\Notices\Models\DeliveryMethod;
+use Dcplibrary\Notices\Models\NotificationStatus;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Illuminate\View\View;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -202,10 +206,10 @@ class DashboardController extends Controller
 
         $notifications = $query->paginate(50)->withQueryString();
 
-        // Get filter options
-        $notificationTypes = config('notices.notification_types', []);
-        $deliveryOptions = config('notices.delivery_options', []);
-        $notificationStatuses = config('notices.notification_statuses', []);
+        // Get filter options - only enabled items
+        $notificationTypes = NotificationType::enabled()->ordered()->pluck('description', 'notification_type_id')->toArray();
+        $deliveryOptions = DeliveryMethod::enabled()->ordered()->pluck('delivery_option', 'delivery_option_id')->toArray();
+        $notificationStatuses = NotificationStatus::enabled()->ordered()->pluck('description', 'notification_status_id')->toArray();
 
         return view('notices::dashboard.notifications', compact(
             'notifications',

@@ -3,6 +3,9 @@
 namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\NotificationSetting;
+use Dcplibrary\Notices\Models\NotificationType;
+use Dcplibrary\Notices\Models\DeliveryMethod;
+use Dcplibrary\Notices\Models\NotificationStatus;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -16,6 +19,14 @@ class SettingsController extends Controller
     public function __construct(SettingsManager $settingsManager)
     {
         $this->settingsManager = $settingsManager;
+        
+        // Only allow users in Computer Services group to access settings
+        $this->middleware(function ($request, $next) {
+            if (!Auth::check() || !Auth::user()->inGroup('Computer Services')) {
+                abort(403, 'Access denied. Settings are only available to Computer Services staff.');
+            }
+            return $next($request);
+        });
     }
 
     /**
@@ -223,5 +234,72 @@ class SettingsController extends Controller
         }
 
         return $parts;
+    }
+
+    /**
+     * Display reference data management page.
+     */
+    public function referenceData()
+    {
+        $notificationTypes = NotificationType::ordered()->get();
+        $deliveryMethods = DeliveryMethod::ordered()->get();
+        $notificationStatuses = NotificationStatus::ordered()->get();
+
+        return view('notices::settings.reference-data', compact(
+            'notificationTypes',
+            'deliveryMethods',
+            'notificationStatuses'
+        ));
+    }
+
+    /**
+     * Update notification type settings.
+     */
+    public function updateNotificationType(Request $request, $id)
+    {
+        $type = NotificationType::findOrFail($id);
+        
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+            'display_order' => 'required|integer|min:0',
+        ]);
+
+        $type->update($validated);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update delivery method settings.
+     */
+    public function updateDeliveryMethod(Request $request, $id)
+    {
+        $method = DeliveryMethod::findOrFail($id);
+        
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+            'display_order' => 'required|integer|min:0',
+        ]);
+
+        $method->update($validated);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Update notification status settings.
+     */
+    public function updateNotificationStatus(Request $request, $id)
+    {
+        $status = NotificationStatus::findOrFail($id);
+        
+        $validated = $request->validate([
+            'enabled' => 'required|boolean',
+            'display_order' => 'required|integer|min:0',
+        ]);
+
+        $status->update($validated);
+
+        return response()->json(['success' => true]);
     }
 }

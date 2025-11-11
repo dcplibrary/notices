@@ -15,6 +15,10 @@ class NotificationStatusSeeder extends Seeder
      */
     public function run(): void
     {
+        // Map statuses to categories
+        $completedStatuses = [1, 2, 12, 15, 16];
+        $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
+        
         $statuses = [
             [1, 'Call completed - Voice'],
             [2, 'Call completed - Answering machine'],
@@ -34,10 +38,19 @@ class NotificationStatusSeeder extends Seeder
             [16, 'Sent'],
         ];
 
+        $order = 0;
         foreach ($statuses as [$id, $description]) {
+            $category = in_array($id, $completedStatuses) ? 'completed' : 
+                       (in_array($id, $failedStatuses) ? 'failed' : 'pending');
+            
             NotificationStatus::updateOrCreate(
                 ['notification_status_id' => $id],
-                ['description' => $description]
+                [
+                    'description' => $description,
+                    'category' => $category,
+                    'enabled' => true,
+                    'display_order' => $order++,
+                ]
             );
         }
     }

@@ -1,141 +1,189 @@
 @extends('notices::layouts.app')
 
-@section('title', 'Notification Settings')
+@section('title', 'Settings')
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-            <h1 class="text-3xl font-bold text-gray-900">Notification Settings</h1>
-            <p class="mt-2 text-sm text-gray-700">
-                Manage global notification settings. Changes take effect immediately.
+<div class="px-4 sm:px-0">
+    <div class="sm:flex sm:items-center sm:justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Settings</h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Manage notification system configuration
             </p>
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="mt-4 rounded-md bg-green-50 p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="mt-4 rounded-md bg-red-50 p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">There were errors with your submission</h3>
-                    <div class="mt-2 text-sm text-red-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+    <!-- Settings Cards Grid -->
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Reference Data Card -->
+        <a href="{{ route('notices.settings.reference-data') }}" 
+           class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Reference Data
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-900">
+                                Types & Methods
+                            </div>
+                        </dd>
                     </div>
                 </div>
-            </div>
-        </div>
-    @endif
-
-    @if($settings->isEmpty())
-        <div class="mt-8 text-center">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No settings configured</h3>
-            <p class="mt-1 text-sm text-gray-500">Settings will appear here once they are created in the database.</p>
-        </div>
-    @else
-        @foreach($settings as $group => $groupSettings)
-            <div class="mt-8">
-                <div class="mb-4">
-                    <h2 class="text-xl font-semibold text-gray-900 capitalize">{{ str_replace('_', ' ', $group) }}</h2>
-                    <div class="mt-2 border-t border-gray-200"></div>
-                </div>
-
-                <div class="bg-white shadow overflow-hidden sm:rounded-md">
-                    <ul role="list" class="divide-y divide-gray-200">
-                        @foreach($groupSettings as $setting)
-                            <li>
-                                <div class="px-4 py-4 sm:px-6 hover:bg-gray-50">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center">
-                                                <p class="text-sm font-medium text-indigo-600 truncate">
-                                                    {{ $setting->full_key }}
-                                                </p>
-                                                @if($setting->is_sensitive)
-                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                        Sensitive
-                                                    </span>
-                                                @endif
-                                                @if(!$setting->is_editable)
-                                                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                        Read-only
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            @if($setting->description)
-                                                <p class="mt-1 text-sm text-gray-500">{{ $setting->description }}</p>
-                                            @endif
-                                            <div class="mt-2 flex items-center text-sm text-gray-500">
-                                                <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                                                    @if($setting->shouldHide())
-                                                        {{ $setting->getMaskedValue() }}
-                                                    @else
-                                                        {{ is_array($setting->getTypedValue()) ? json_encode($setting->getTypedValue()) : $setting->getTypedValue() }}
-                                                    @endif
-                                                </span>
-                                                <span class="ml-2 text-gray-400">|</span>
-                                                <span class="ml-2">Type: <span class="font-medium">{{ $setting->type }}</span></span>
-                                            </div>
-                                            @if($setting->updated_by)
-                                                <p class="mt-1 text-xs text-gray-400">
-                                                    Last updated by {{ $setting->updated_by }} on {{ $setting->updated_at->format('M d, Y H:i:s') }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <div class="ml-5 flex-shrink-0 flex space-x-2">
-                                            @if($setting->is_editable)
-                                                <a href="{{ route('notices.settings.edit', $setting->id) }}"
-                                                   class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                    Edit
-                                                </a>
-                                                <form action="{{ route('notices.settings.destroy', $setting->id) }}"
-                                                      method="POST"
-                                                      class="inline"
-                                                      onsubmit="return confirm('Delete this setting? It will revert to config default.');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">
+                        Enable/disable notification types, delivery methods, and statuses
+                    </p>
                 </div>
             </div>
-        @endforeach
-    @endif
+        </a>
+
+        <!-- System Settings Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-400 truncate">
+                            System Settings
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-500">
+                                Coming Soon
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Configure system-wide notification settings and preferences
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Settings Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-400 truncate">
+                            Import Settings
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-500">
+                                Coming Soon
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Configure scheduled imports from Polaris and Shoutbomb
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Settings Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-400 truncate">
+                            Email Settings
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-500">
+                                Coming Soon
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Configure email report import and processing
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FTP Settings Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-400 truncate">
+                            FTP Settings
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-500">
+                                Coming Soon
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Configure Shoutbomb FTP connection and paths
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Settings Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-400 truncate">
+                            Dashboard Settings
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-500">
+                                Coming Soon
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-500">
+                        Configure dashboard display preferences and defaults
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
