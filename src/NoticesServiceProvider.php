@@ -101,7 +101,7 @@ class NoticesServiceProvider extends ServiceProvider
                 ImportNotifications::class,
                 ImportShoutbombReports::class,
                 ImportEmailReports::class,
-                AggregateNotifications::class,
+                // AggregateNotifications::class, // Replaced by Console\Commands\AggregateNotificationsCommand
                 TestConnections::class,
                 SeedDemoDataCommand::class,
                 BackfillNotificationStatus::class,
