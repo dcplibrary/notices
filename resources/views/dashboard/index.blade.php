@@ -16,17 +16,17 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <!-- Total Sent -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <a href="{{ route('notices.list') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Total Sent</dt>
                 <dd class="mt-1 text-3xl font-semibold text-gray-900">
                     {{ number_format($totals['total_sent'] ?? 0) }}
                 </dd>
             </div>
-        </div>
+        </a>
 
         <!-- Successful -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <a href="{{ route('notices.list', ['status_id' => 16]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Successful</dt>
                 <dd class="mt-1 text-3xl font-semibold text-green-600">
@@ -36,27 +36,27 @@
                     {{ number_format($totals['avg_success_rate'] ?? 0, 1) }}% success rate
                 </dd>
             </div>
-        </div>
+        </a>
 
         <!-- Failed -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <a href="{{ route('notices.list', ['status_id' => 11]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Failed</dt>
                 <dd class="mt-1 text-3xl font-semibold text-red-600">
                     {{ number_format($totals['total_failed'] ?? 0) }}
                 </dd>
             </div>
-        </div>
+        </a>
 
         <!-- Unique Patrons -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
+        <a href="{{ route('notices.list', ['type_id' => 2]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Total Holds</dt>
                 <dd class="mt-1 text-3xl font-semibold text-indigo-600">
                     {{ number_format($totals['total_holds'] ?? 0) }}
                 </dd>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Charts Row -->
@@ -174,6 +174,7 @@ const typeLabels = @json(collect($byType)->map(function($item) {
     return config('notices.notification_types')[$item['notification_type_id']] ?? 'Unknown';
 }));
 const typeData = @json(collect($byType)->pluck('total_sent'));
+const typeIdsOverview = @json(collect($byType)->pluck('notification_type_id'));
 
 new Chart(typeCtx, {
     type: 'doughnut',
@@ -198,6 +199,16 @@ new Chart(typeCtx, {
             legend: {
                 position: 'bottom'
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const typeId = typeIdsOverview[index];
+                window.location.href = '{{ route('notices.list') }}?type_id=' + typeId;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });
@@ -208,6 +219,7 @@ const deliveryLabels = @json(collect($byDelivery)->map(function($item) {
     return config('notices.delivery_options')[$item['delivery_option_id']] ?? 'Unknown';
 }));
 const deliveryData = @json(collect($byDelivery)->pluck('total_sent'));
+const deliveryIdsOverview = @json(collect($byDelivery)->pluck('delivery_option_id'));
 
 new Chart(deliveryCtx, {
     type: 'bar',
@@ -236,6 +248,16 @@ new Chart(deliveryCtx, {
             y: {
                 beginAtZero: true
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const deliveryId = deliveryIdsOverview[index];
+                window.location.href = '{{ route('notices.list') }}?delivery_id=' + deliveryId;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });
