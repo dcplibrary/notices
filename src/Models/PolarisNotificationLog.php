@@ -92,10 +92,33 @@ class PolarisNotificationLog extends Model
      */
     public function toLocalFormat(): array
     {
+        // Parse phone/email from delivery_string based on delivery type
+        $phone = null;
+        $email = null;
+        
+        if ($this->DeliveryOptionID == 3 || $this->DeliveryOptionID == 8) {
+            // Voice (3) or SMS (8) - delivery_string contains phone
+            $phone = $this->DeliveryString;
+        } elseif ($this->DeliveryOptionID == 2) {
+            // Email (2) - delivery_string contains email
+            $email = $this->DeliveryString;
+        }
+        
+        // Get patron name from Polaris (cached per import batch for performance)
+        $patronName = $this->getPatronName();
+        
+        // Get primary item info (first hold/overdue item if available)
+        $itemInfo = $this->getPrimaryItemInfo();
+
         return [
             'polaris_log_id' => $this->NotificationLogID,
             'patron_id' => $this->PatronID,
             'patron_barcode' => $this->PatronBarcode,
+            'phone' => $phone,
+            'email' => $email,
+            'patron_name' => $patronName,
+            'item_barcode' => $itemInfo['barcode'] ?? null,
+            'item_title' => $itemInfo['title'] ?? null,
             'notification_date' => $this->NotificationDateTime,
             'notification_type_id' => $this->NotificationTypeID,
             'delivery_option_id' => $this->DeliveryOptionID,
@@ -117,6 +140,60 @@ class PolarisNotificationLog extends Model
             'reported' => $this->Reported,
             'imported_at' => now(),
         ];
+    }
+
+    /**
+     * Get patron name from Polaris.
+     */
+    protected function getPatronName(): ?string
+    {
+        try {
+            $patron = \DB::connection('polaris')
+                ->table('Polaris.Polaris.Patrons')
+                ->where('PatronID', $this->PatronID)
+                ->select('NameLast', 'NameFirst')
+                ->first();
+            
+            if ($patron) {
+                return trim(($patron->NameFirst ?? '') . ' ' . ($patron->NameLast ?? ''));
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch patron name', [
+                'patron_id' => $this->PatronID,
+                'error' => $e->getMessage(),
+            ]);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get primary item information.
+     * Returns the first item from NotificationLogLineItems.
+     */
+    protected function getPrimaryItemInfo(): array
+    {
+        try {
+            $item = \DB::connection('polaris')
+                ->table('PolarisTransactions.Polaris.NotificationLogLineItems')
+                ->where('NotificationLogID', $this->NotificationLogID)
+                ->select('ItemBarcode', 'Title')
+                ->first();
+            
+            if ($item) {
+                return [
+                    'barcode' => $item->ItemBarcode,
+                    'title' => $item->Title,
+                ];
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to fetch item info', [
+                'notification_log_id' => $this->NotificationLogID,
+                'error' => $e->getMessage(),
+            ]);
+        }
+        
+        return [];
     }
 
     /**

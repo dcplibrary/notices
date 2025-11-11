@@ -413,18 +413,15 @@ class DashboardController extends Controller
             }
 
             if ($request->filled('phone')) {
-                $query->where('delivery_string', 'like', '%' . $request->phone . '%');
+                $query->where('phone', 'like', '%' . $request->phone . '%');
             }
 
             if ($request->filled('email')) {
-                $query->where('delivery_string', 'like', '%' . $request->email . '%');
+                $query->where('email', 'like', '%' . $request->email . '%');
             }
 
-            // Note: item_barcode is not available in notification_logs
-            // This would require joining to a different table or storing item data
             if ($request->filled('item_barcode')) {
-                // TODO: Implement item_barcode search when item data is available
-                // For now, we'll skip this filter
+                $query->where('item_barcode', $request->item_barcode);
             }
 
             // Date range filter

@@ -23,6 +23,11 @@ class NotificationLog extends Model
     protected $fillable = [
         'patron_id',
         'patron_barcode',
+        'phone',
+        'email',
+        'patron_name',
+        'item_barcode',
+        'item_title',
         'notification_date',
         'notification_type_id',
         'delivery_option_id',
