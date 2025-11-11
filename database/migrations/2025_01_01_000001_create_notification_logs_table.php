@@ -18,6 +18,15 @@ return new class extends Migration
             $table->integer('polaris_log_id')->unique()->nullable()->comment('NotificationLogID from Polaris');
             $table->integer('patron_id')->comment('PatronID from Polaris');
             $table->string('patron_barcode', 20)->nullable();
+            
+            // Contact fields (parsed from delivery_string for better searchability)
+            $table->string('phone', 20)->nullable()->index('nl_phone_idx')->comment('Normalized phone number for SMS/Voice');
+            $table->string('email', 255)->nullable()->index('nl_email_idx')->comment('Email address for Email notifications');
+            $table->string('patron_name', 255)->nullable()->comment('Patron name for search');
+            
+            // Item information
+            $table->string('item_barcode', 50)->nullable()->index('nl_item_barcode_idx')->comment('Primary item barcode in notification');
+            $table->text('item_title')->nullable()->comment('Item title for display');
 
             // Notification details
             $table->dateTime('notification_date')->index()->comment('NotificationDateTime from Polaris');
