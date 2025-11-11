@@ -554,7 +554,7 @@ window.syncNow = async function() {
     component.syncStatus = 'info';
 
     try {
-        const response = await fetch('{{ route("notices.sync.all") }}', {
+        const response = await fetch('/notices/sync/all', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

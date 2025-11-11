@@ -304,7 +304,7 @@ function syncManager() {
             this.messageType = 'info';
 
             try {
-                const response = await fetch('{{ route("notices.sync.all") }}', {
+                const response = await fetch('/notices/sync/all', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -348,7 +348,7 @@ function syncManager() {
             this.messageType = 'info';
 
             try {
-                const response = await fetch(`{{ url('notices/sync') }}/${operation}`, {
+                const response = await fetch(`/notices/sync/${operation}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -380,7 +380,7 @@ function syncManager() {
             this.messageType = 'info';
 
             try {
-                const response = await fetch('{{ route("notices.sync.test-connections") }}');
+                const response = await fetch('/notices/sync/test-connections');
                 const data = await response.json();
 
                 this.connectionResults = data;
