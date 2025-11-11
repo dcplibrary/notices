@@ -30,14 +30,15 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($typeDistribution as $type)
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">
+                <a href="{{ route('notices.list', ['type_id' => $type->notification_type_id]) }}"
+                   class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
+                    <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
                     </span>
-                    <span class="font-semibold text-gray-900">
+                    <span class="font-semibold text-gray-900 group-hover:text-indigo-600">
                         {{ number_format($type->total_sent) }}
                     </span>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>
@@ -145,6 +146,7 @@ new Chart(successCtx, {
 
 // Type Distribution
 const typeDistCtx = document.getElementById('typeDistChart').getContext('2d');
+const typeIds = @json($typeDistribution->pluck('notification_type_id'));
 new Chart(typeDistCtx, {
     type: 'pie',
     data: {
@@ -170,6 +172,16 @@ new Chart(typeDistCtx, {
             legend: {
                 position: 'bottom'
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const typeId = typeIds[index];
+                window.location.href = '{{ route('notices.list') }}?type_id=' + typeId;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });

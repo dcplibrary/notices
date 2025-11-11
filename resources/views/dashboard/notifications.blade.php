@@ -10,7 +10,75 @@
             <h2 class="text-2xl font-bold text-gray-900">Notifications</h2>
             <p class="mt-1 text-sm text-gray-600">View and filter notification logs</p>
         </div>
-        <div class="mt-4 sm:mt-0">
+        <div class="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
+            <!-- Active Filters -->
+            @if(request('search'))
+                <a href="{{ route('notices.list', request()->except(['search', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Search:</span>
+                    <span class="font-semibold">{{ Str::limit(request('search'), 20) }}</span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
+            @if(request('type_id'))
+                <a href="{{ route('notices.list', request()->except(['type_id', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Type:</span>
+                    <span class="font-semibold">{{ $notificationTypes[request('type_id')] ?? 'Unknown' }}</span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
+            @if(request('delivery_id'))
+                <a href="{{ route('notices.list', request()->except(['delivery_id', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Delivery:</span>
+                    <span class="font-semibold">{{ $deliveryOptions[request('delivery_id')] ?? 'Unknown' }}</span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
+            @if(request('status_id'))
+                <a href="{{ route('notices.list', request()->except(['status_id', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Status:</span>
+                    <span class="font-semibold">{{ $notificationStatuses[request('status_id')] ?? 'Unknown' }}</span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
+            @php
+                $hasCustomDateRange = request('start_date') || request('end_date');
+                $defaultStart = now()->subDays(30)->format('Y-m-d');
+                $defaultEnd = now()->format('Y-m-d');
+                $isCustomDate = (request('start_date') && request('start_date') != $defaultStart) || (request('end_date') && request('end_date') != $defaultEnd);
+            @endphp
+
+            @if($isCustomDate)
+                <a href="{{ route('notices.list', request()->except(['start_date', 'end_date', 'page'])) }}"
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <span class="text-gray-500 mr-1">Date:</span>
+                    <span class="font-semibold">
+                        {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->format('M d') : 'Start' }}
+                        -
+                        {{ request('end_date') ? \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') : 'End' }}
+                    </span>
+                    <svg class="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            @endif
+
+            <!-- Show Filters Button -->
             <button @click="showFilters = !showFilters"
                     class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                 <svg class="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
