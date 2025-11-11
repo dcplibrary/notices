@@ -80,6 +80,27 @@ class NoticesServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register commands (must be outside runningInConsole so Artisan::call() from web works)
+        $this->commands([
+            ImportNotifications::class,
+            ImportShoutbombReports::class,
+            ImportEmailReports::class,
+            // AggregateNotifications::class, // Replaced by Console\Commands\AggregateNotificationsCommand
+            TestConnections::class,
+            SeedDemoDataCommand::class,
+            BackfillNotificationStatus::class,
+            Commands\ImportShoutbombSubmissions::class,
+            Commands\ImportPolarisPhoneNotices::class,
+            Commands\ListShoutbombFiles::class,
+            Commands\InspectDeliveryMethods::class,
+            Commands\DiagnoseDataIssues::class,
+            Commands\SyncShoutbombToLogs::class,
+            Console\Commands\DiagnosePatronDataCommand::class,
+            Console\Commands\ImportPolarisCommand::class,
+            Console\Commands\ImportShoutbombCommand::class,
+            Console\Commands\AggregateNotificationsCommand::class,
+        ]);
+
         // Publish configuration file
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -95,27 +116,6 @@ class NoticesServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../resources/views' => resource_path('views/vendor/notices'),
             ], 'notices-views');
-
-            // Register commands
-            $this->commands([
-                ImportNotifications::class,
-                ImportShoutbombReports::class,
-                ImportEmailReports::class,
-                // AggregateNotifications::class, // Replaced by Console\Commands\AggregateNotificationsCommand
-                TestConnections::class,
-                SeedDemoDataCommand::class,
-                BackfillNotificationStatus::class,
-                Commands\ImportShoutbombSubmissions::class,
-                Commands\ImportPolarisPhoneNotices::class,
-                Commands\ListShoutbombFiles::class,
-                Commands\InspectDeliveryMethods::class,
-                Commands\DiagnoseDataIssues::class,
-                Commands\SyncShoutbombToLogs::class,
-                Console\Commands\DiagnosePatronDataCommand::class,
-                Console\Commands\ImportPolarisCommand::class,
-                Console\Commands\ImportShoutbombCommand::class,
-                Console\Commands\AggregateNotificationsCommand::class,
-            ]);
         }
 
         // Load migrations automatically
