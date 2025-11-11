@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
-<div class="px-4 sm:px-0" x-data="{ 
+<div x-data="{ 
     showDatePicker: false,
     showCustomDateModal: false,
     customStartDate: '',
@@ -82,6 +82,7 @@
                     </button>
                 </div>
             </div>
+        </div>
         </div>
 
         <!-- Custom Date Range Modal -->
