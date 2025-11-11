@@ -238,11 +238,83 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="w-8 px-3 py-3"></th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patron</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_date', 'direction' => request('sort') == 'notification_date' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                               class="inline-flex items-center hover:text-gray-700 group">
+                                Date
+                                @if(request('sort') == 'notification_date')
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        @if(request('direction') == 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        @endif
+                                    </svg>
+                                @else
+                                    <svg class="ml-1 w-4 h-4 opacity-0 group-hover:opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                    </svg>
+                                @endif
+                            </a>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'patron_barcode', 'direction' => request('sort') == 'patron_barcode' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                               class="inline-flex items-center hover:text-gray-700 group">
+                                Patron
+                                @if(request('sort') == 'patron_barcode')
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        @if(request('direction') == 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        @endif
+                                    </svg>
+                                @else
+                                    <svg class="ml-1 w-4 h-4 opacity-0 group-hover:opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                    </svg>
+                                @endif
+                            </a>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_type_id', 'direction' => request('sort') == 'notification_type_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                               class="inline-flex items-center hover:text-gray-700 group">
+                                Type
+                                @if(request('sort') == 'notification_type_id')
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        @if(request('direction') == 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        @endif
+                                    </svg>
+                                @else
+                                    <svg class="ml-1 w-4 h-4 opacity-0 group-hover:opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                    </svg>
+                                @endif
+                            </a>
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'delivery_option_id', 'direction' => request('sort') == 'delivery_option_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                               class="inline-flex items-center hover:text-gray-700 group">
+                                Delivery
+                                @if(request('sort') == 'delivery_option_id')
+                                    <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        @if(request('direction') == 'asc')
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        @endif
+                                    </svg>
+                                @else
+                                    <svg class="ml-1 w-4 h-4 opacity-0 group-hover:opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                                    </svg>
+                                @endif
+                            </a>
+                        </th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>

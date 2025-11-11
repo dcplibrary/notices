@@ -51,14 +51,15 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($deliveryDistribution as $delivery)
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">
+                <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+                   class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
+                    <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
                     </span>
-                    <span class="font-semibold text-gray-900">
+                    <span class="font-semibold text-gray-900 group-hover:text-indigo-600">
                         {{ number_format($delivery->total_sent) }}
                     </span>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>
@@ -188,6 +189,7 @@ new Chart(typeDistCtx, {
 
 // Delivery Distribution
 const deliveryDistCtx = document.getElementById('deliveryDistChart').getContext('2d');
+const deliveryIds = @json($deliveryDistribution->pluck('delivery_option_id'));
 new Chart(deliveryDistCtx, {
     type: 'pie',
     data: {
@@ -211,6 +213,16 @@ new Chart(deliveryDistCtx, {
             legend: {
                 position: 'bottom'
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const deliveryId = deliveryIds[index];
+                window.location.href = '{{ route('notices.list') }}?delivery_id=' + deliveryId;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });

@@ -118,7 +118,23 @@ class DashboardController extends Controller
         }
 
         // Sort
-        $query->orderBy('notification_date', 'desc');
+        $sortField = $request->input('sort', 'notification_date');
+        $sortDirection = $request->input('direction', 'desc');
+
+        // Whitelist sortable fields
+        $allowedSorts = [
+            'notification_date',
+            'patron_barcode',
+            'notification_type_id',
+            'delivery_option_id',
+            'notification_status_id'
+        ];
+
+        if (in_array($sortField, $allowedSorts)) {
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('notification_date', 'desc');
+        }
 
         $notifications = $query->paginate(50)->withQueryString();
 
