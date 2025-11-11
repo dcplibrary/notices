@@ -102,6 +102,35 @@
             </div>
         </a>
 
+        <!-- Export & Backup Card -->
+        <a href="{{ route('notices.settings.export') }}" 
+           class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Export & Backup
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-900">
+                                Data Protection
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">
+                        Export configuration and create database backups
+                    </p>
+                </div>
+            </div>
+        </a>
+
         <!-- Email Settings Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
             <div class="p-6">

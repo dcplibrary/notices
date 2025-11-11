@@ -3,6 +3,7 @@
 use Dcplibrary\Notices\Http\Controllers\DashboardController;
 use Dcplibrary\Notices\Http\Controllers\SettingsController;
 use Dcplibrary\Notices\Http\Controllers\SyncController;
+use Dcplibrary\Notices\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +39,7 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');
     Route::get('/reference-data', [SettingsController::class, 'referenceData'])->name('reference-data');
     Route::get('/sync', [SettingsController::class, 'sync'])->name('sync');
+    Route::get('/export', [SettingsController::class, 'export'])->name('export');
     Route::get('/scoped', [SettingsController::class, 'scoped'])->name('scoped');
     Route::post('/', [SettingsController::class, 'store'])->name('store');
     Route::get('/{id}', [SettingsController::class, 'show'])->name('show');
@@ -59,4 +61,12 @@ Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
     Route::get('/logs', [SyncController::class, 'logs'])->name('logs');
+});
+
+// Export/Backup routes - Admin only
+Route::prefix('export')->name('export.')->group(function () {
+    Route::get('/reference-data', [ExportController::class, 'exportReferenceData'])->name('reference-data');
+    Route::get('/reference-data-sql', [ExportController::class, 'exportReferenceDataSql'])->name('reference-data-sql');
+    Route::post('/notification-data', [ExportController::class, 'exportNotificationData'])->name('notification-data');
+    Route::post('/database-backup', [ExportController::class, 'exportDatabaseBackup'])->name('database-backup');
 });

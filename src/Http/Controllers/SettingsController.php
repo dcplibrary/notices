@@ -329,4 +329,12 @@ class SettingsController extends Controller
             'recentSyncs'
         ));
     }
+
+    /**
+     * Display Export & Backup page.
+     */
+    public function export()
+    {
+        return view('notices::settings.export');
+    }
 }
