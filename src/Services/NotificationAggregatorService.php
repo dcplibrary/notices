@@ -62,9 +62,9 @@ class NotificationAggregatorService
             ->where('delivery_option_id', $deliveryOptionId)
             ->selectRaw('
                 COUNT(*) as total_sent,
-                SUM(CASE WHEN notification_status_id = 12 THEN 1 ELSE 0 END) as total_success,
-                SUM(CASE WHEN notification_status_id = 14 THEN 1 ELSE 0 END) as total_failed,
-                SUM(CASE WHEN notification_status_id = 15 THEN 1 ELSE 0 END) as total_pending,
+                SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success,
+                SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed,
+                SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as total_pending,
                 SUM(holds_count) as total_holds,
                 SUM(overdues_count) as total_overdues,
                 SUM(overdues_2nd_count) as total_overdues_2nd,

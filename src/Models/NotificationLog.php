@@ -21,13 +21,14 @@ class NotificationLog extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'polaris_log_id',
         'patron_id',
         'patron_barcode',
         'notification_date',
         'notification_type_id',
         'delivery_option_id',
         'notification_status_id',
+        'status',
+        'status_description',
         'delivery_string',
         'holds_count',
         'overdues_count',
@@ -147,12 +148,21 @@ class NotificationLog extends Model
         return $query->where('notification_status_id', $statusId);
     }
 
+
     /**
-     * Scope to get successful notifications.
+     * Scope to get completed notifications.
      */
-    public function scopeSuccessful(Builder $query): Builder
+    public function scopeCompleted(Builder $query): Builder
     {
-        return $query->where('notification_status_id', 12); // 12 = Success
+        return $query->where('status', 'completed');
+    }
+
+    /**
+     * Scope to get pending notifications.
+     */
+    public function scopePending(Builder $query): Builder
+    {
+        return $query->where('status', 'pending');
     }
 
     /**
@@ -160,7 +170,7 @@ class NotificationLog extends Model
      */
     public function scopeFailed(Builder $query): Builder
     {
-        return $query->where('notification_status_id', 14); // 14 = Failed
+        return $query->where('status', 'failed');
     }
 
     /**
@@ -177,6 +187,27 @@ class NotificationLog extends Model
     public function scopeRecent(Builder $query, int $days = 7): Builder
     {
         return $query->where('notification_date', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Set status field based on notification_status_id.
+     * Called automatically when notification_status_id is set.
+     */
+    public function setStatusFromNotificationStatusId(): void
+    {
+        $completedStatuses = [1, 2, 12, 15, 16];
+        $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
+
+        if (in_array($this->notification_status_id, $completedStatuses)) {
+            $this->status = 'completed';
+        } elseif (in_array($this->notification_status_id, $failedStatuses)) {
+            $this->status = 'failed';
+        } else {
+            $this->status = 'pending';
+        }
+
+        // Set human-readable status description
+        $this->status_description = config("notices.notification_statuses.{$this->notification_status_id}");
     }
 
     /**

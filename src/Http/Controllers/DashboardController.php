@@ -134,8 +134,26 @@ class DashboardController extends Controller
         }
 
         // Apply status filter
+        if ($request->has('status')) {
+            $status = $request->input('status');
+            if (in_array($status, ['completed', 'pending', 'failed'])) {
+                $query->where('status', $status);
+            }
+        }
+        
+        // Legacy: Support old status_id filtering (supports single or multiple statuses)
         if ($request->has('status_id')) {
-            $query->byStatus((int) $request->status_id);
+            $statusId = $request->input('status_id');
+            
+            // Handle comma-separated string or array
+            if (is_string($statusId) && str_contains($statusId, ',')) {
+                $statusIds = array_map('intval', explode(',', $statusId));
+                $query->whereIn('notification_status_id', $statusIds);
+            } elseif (is_array($statusId)) {
+                $query->whereIn('notification_status_id', array_map('intval', $statusId));
+            } else {
+                $query->byStatus((int) $statusId);
+            }
         }
 
         // Apply search filter

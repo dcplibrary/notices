@@ -68,7 +68,7 @@
         </a>
 
         <!-- Successful -->
-        <a href="{{ route('notices.list', ['status_id' => 16]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="{{ route('notices.list', ['status' => 'completed']) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Successful</dt>
                 <dd class="mt-1 text-3xl font-semibold text-green-600">
@@ -81,7 +81,7 @@
         </a>
 
         <!-- Failed -->
-        <a href="{{ route('notices.list', ['status_id' => 11]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="{{ route('notices.list', ['status' => 'failed']) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Failed</dt>
                 <dd class="mt-1 text-3xl font-semibold text-red-600">
@@ -243,11 +243,13 @@ new Chart(trendCtx, {
                 let url = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
                 
                 // Add status filter based on which line was clicked
-                // Dataset 0 = Sent (no filter), 1 = Success (status 16), 2 = Failed (status 11)
+                // Dataset 0 = Sent (no filter)
+                // Dataset 1 = Success (filter to completed status)
+                // Dataset 2 = Failed (filter to failed status)
                 if (datasetIndex === 1) {
-                    url += '&status_id=16'; // Success
+                    url += '&status=completed';
                 } else if (datasetIndex === 2) {
-                    url += '&status_id=11'; // Failed
+                    url += '&status=failed';
                 }
                 
                 window.location.href = url;
