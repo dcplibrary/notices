@@ -73,33 +73,34 @@
             </div>
         </div>
 
-        <!-- Import Settings Card -->
-        <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">
+        <!-- Sync & Import Card -->
+        <a href="{{ route('notices.settings.sync') }}" 
+           class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
                     </div>
                     <div class="ml-5 w-0 flex-1">
-                        <dt class="text-sm font-medium text-gray-400 truncate">
-                            Import Settings
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Sync & Import
                         </dt>
                         <dd class="flex items-baseline">
-                            <div class="text-lg font-semibold text-gray-500">
-                                Coming Soon
+                            <div class="text-lg font-semibold text-gray-900">
+                                Data Management
                             </div>
                         </dd>
                     </div>
                 </div>
                 <div class="mt-4">
-                    <p class="text-sm text-gray-500">
-                        Configure scheduled imports from Polaris and Shoutbomb
+                    <p class="text-sm text-gray-600">
+                        Import data from Polaris and Shoutbomb, test connections
                     </p>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Email Settings Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg opacity-50">

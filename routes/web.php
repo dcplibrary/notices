@@ -2,6 +2,7 @@
 
 use Dcplibrary\Notices\Http\Controllers\DashboardController;
 use Dcplibrary\Notices\Http\Controllers\SettingsController;
+use Dcplibrary\Notices\Http\Controllers\SyncController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,7 @@ Route::prefix('verification')->name('verification.')->group(function () {
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');
     Route::get('/reference-data', [SettingsController::class, 'referenceData'])->name('reference-data');
+    Route::get('/sync', [SettingsController::class, 'sync'])->name('sync');
     Route::get('/scoped', [SettingsController::class, 'scoped'])->name('scoped');
     Route::post('/', [SettingsController::class, 'store'])->name('store');
     Route::get('/{id}', [SettingsController::class, 'show'])->name('show');
@@ -47,4 +49,14 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::put('/notification-type/{id}', [SettingsController::class, 'updateNotificationType'])->name('update-notification-type');
     Route::put('/delivery-method/{id}', [SettingsController::class, 'updateDeliveryMethod'])->name('update-delivery-method');
     Route::put('/notification-status/{id}', [SettingsController::class, 'updateNotificationStatus'])->name('update-notification-status');
+});
+
+// Sync/Import routes - Admin only
+Route::prefix('sync')->name('sync.')->group(function () {
+    Route::post('/all', [SyncController::class, 'syncAll'])->name('all');
+    Route::post('/polaris', [SyncController::class, 'importPolaris'])->name('polaris');
+    Route::post('/shoutbomb', [SyncController::class, 'importShoutbomb'])->name('shoutbomb');
+    Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
+    Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
+    Route::get('/logs', [SyncController::class, 'logs'])->name('logs');
 });

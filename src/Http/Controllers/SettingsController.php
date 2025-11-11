@@ -6,6 +6,7 @@ use Dcplibrary\Notices\Models\NotificationSetting;
 use Dcplibrary\Notices\Models\NotificationType;
 use Dcplibrary\Notices\Models\DeliveryMethod;
 use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\SyncLog;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -301,5 +302,28 @@ class SettingsController extends Controller
         $status->update($validated);
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Display sync/import management page.
+     */
+    public function sync()
+    {
+        // Get last sync for each operation type
+        $lastSyncAll = SyncLog::latestFor('sync_all');
+        $lastPolaris = SyncLog::latestFor('import_polaris');
+        $lastShoutbomb = SyncLog::latestFor('import_shoutbomb');
+        $lastAggregate = SyncLog::latestFor('aggregate');
+
+        // Get recent sync history
+        $recentSyncs = SyncLog::recent(10);
+
+        return view('notices::settings.sync', compact(
+            'lastSyncAll',
+            'lastPolaris',
+            'lastShoutbomb',
+            'lastAggregate',
+            'recentSyncs'
+        ));
     }
 }
