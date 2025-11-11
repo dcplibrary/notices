@@ -195,6 +195,7 @@
 <script>
 // Trend Chart
 const trendCtx = document.getElementById('trendChart').getContext('2d');
+const trendDates = @json($trendData->pluck('summary_date')->map(fn($d) => $d->format('Y-m-d')));
 new Chart(trendCtx, {
     type: 'line',
     data: {
@@ -231,12 +232,23 @@ new Chart(trendCtx, {
             y: {
                 beginAtZero: true
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const date = trendDates[index];
+                window.location.href = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });
 
 // Success Rate Trend Chart
 const successRateCtx = document.getElementById('successRateChart').getContext('2d');
+const successRateDates = @json($successRateTrend->pluck('summary_date')->map(fn($d) => $d->format('Y-m-d')));
 new Chart(successRateCtx, {
     type: 'line',
     data: {
@@ -268,6 +280,16 @@ new Chart(successRateCtx, {
                     }
                 }
             }
+        },
+        onClick: (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const date = successRateDates[index];
+                window.location.href = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
+            }
+        },
+        onHover: (event, elements) => {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
         }
     }
 });
