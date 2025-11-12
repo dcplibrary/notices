@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 class Patron extends Model
 {
     protected $connection = 'polaris';
-    protected $table = 'Polaris.Polaris.Patrons';
+    protected $table = 'Polaris.Polaris.PatronRegistration';
     protected $primaryKey = 'PatronID';
     public $timestamps = false;
 

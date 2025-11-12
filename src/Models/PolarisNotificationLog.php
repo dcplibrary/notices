@@ -158,7 +158,7 @@ class PolarisNotificationLog extends Model
     {
         try {
             $patron = \DB::connection('polaris')
-                ->table('Polaris.Polaris.Patrons')
+                ->table('Polaris.Polaris.PatronRegistration')
                 ->where('PatronID', $this->PatronID)
                 ->select('NameLast', 'NameFirst')
                 ->first();
@@ -178,30 +178,13 @@ class PolarisNotificationLog extends Model
 
     /**
      * Get primary item information.
-     * Returns the first item from NotificationLogLineItems.
+     * Note: NotificationLogLineItems table doesn't exist in this Polaris installation.
+     * Item details would need to be retrieved from imported Shoutbomb data instead.
      */
     protected function getPrimaryItemInfo(): array
     {
-        try {
-            $item = \DB::connection('polaris')
-                ->table('PolarisTransactions.Polaris.NotificationLogLineItems')
-                ->where('NotificationLogID', $this->NotificationLogID)
-                ->select('ItemBarcode', 'Title')
-                ->first();
-            
-            if ($item) {
-                return [
-                    'barcode' => $item->ItemBarcode,
-                    'title' => $item->Title,
-                ];
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Failed to fetch item info', [
-                'notification_log_id' => $this->NotificationLogID,
-                'error' => $e->getMessage(),
-            ]);
-        }
-        
+        // NotificationLogLineItems table doesn't exist in this database
+        // Return empty array - item info will be populated from Shoutbomb imports
         return [];
     }
 
