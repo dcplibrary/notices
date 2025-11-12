@@ -2,19 +2,15 @@
 
 namespace Dcplibrary\Notices\Database\Seeders;
 
+use Illuminate\Database\Seeder;
 use Dcplibrary\Notices\Models\NotificationType;
 use Dcplibrary\Notices\Models\DeliveryMethod;
 use Dcplibrary\Notices\Models\NotificationStatus;
-use Illuminate\Database\Seeder;
 
 class PopulateReferenceDataLabelsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Notification Types - Add user-friendly labels
         $typeLabels = [
             1 => '1st Overdue',
             2 => 'Hold Ready',
@@ -31,29 +27,25 @@ class PopulateReferenceDataLabelsSeeder extends Seeder
             20 => 'Manual Bill',
             21 => '2nd Fine Notice',
         ];
-
         foreach ($typeLabels as $id => $label) {
             NotificationType::where('notification_type_id', $id)->update(['label' => $label]);
         }
 
-        // Delivery Methods - Add user-friendly labels
         $deliveryLabels = [
             1 => 'Mail',
             2 => 'Email',
             3 => 'Voice Call',
-            4 => 'Voice Call (Alt)', // Phone 2
-            5 => 'Voice Call (Alt 2)', // Phone 3
+            4 => 'Voice Call (Alt)',
+            5 => 'Voice Call (Alt 2)',
             6 => 'Fax',
             7 => 'EDI',
             8 => 'Text Message',
             9 => 'Mobile App',
         ];
-
         foreach ($deliveryLabels as $id => $label) {
             DeliveryMethod::where('delivery_option_id', $id)->update(['label' => $label]);
         }
 
-        // Notification Statuses - Add user-friendly labels
         $statusLabels = [
             1 => 'Answered',
             2 => 'Voicemail',
@@ -72,11 +64,10 @@ class PopulateReferenceDataLabelsSeeder extends Seeder
             15 => 'Text Sent',
             16 => 'Mail Printed',
         ];
-
         foreach ($statusLabels as $id => $label) {
             NotificationStatus::where('notification_status_id', $id)->update(['label' => $label]);
         }
 
-        $this->command->info('Reference data labels populated successfully!');
+        $this->command?->info('Reference data labels populated successfully!');
     }
 }

@@ -7,17 +7,9 @@ use Dcplibrary\Notices\Models\NotificationType;
 
 class NotificationTypeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     * 
-     * Populates notification_types from Polaris.NotificationTypes
-     * Source: /polaris-databases/sql/Polaris.Polaris.NotificationTypes.csv
-     */
     public function run(): void
     {
-        // Types that are not actively used and should be disabled by default
-        $disabledTypes = [4, 6, 14, 15, 16]; // Recall, Route, Serial Claim, Polaris Fusion, Course Reserves
-        
+        $disabledTypes = [4, 6, 14, 15, 16];
         $types = [
             [0, 'Combined'],
             [1, '1st Overdue'],
@@ -42,7 +34,6 @@ class NotificationTypeSeeder extends Seeder
             [20, 'Manual Bill'],
             [21, '2nd Fine Notice'],
         ];
-
         $order = 0;
         foreach ($types as [$id, $description]) {
             NotificationType::updateOrCreate(

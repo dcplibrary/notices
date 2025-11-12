@@ -7,18 +7,10 @@ use Dcplibrary\Notices\Models\NotificationStatus;
 
 class NotificationStatusSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     * 
-     * Populates notification_statuses from Polaris.NotificationStatuses
-     * Source: /polaris-databases/sql/Polaris.Polaris.NotificationStatuses.csv
-     */
     public function run(): void
     {
-        // Map statuses to categories
         $completedStatuses = [1, 2, 12, 15, 16];
         $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
-        
         $statuses = [
             [1, 'Call completed - Voice'],
             [2, 'Call completed - Answering machine'],
@@ -37,12 +29,9 @@ class NotificationStatusSeeder extends Seeder
             [15, 'Mail Printed'],
             [16, 'Sent'],
         ];
-
         $order = 0;
         foreach ($statuses as [$id, $description]) {
-            $category = in_array($id, $completedStatuses) ? 'completed' : 
-                       (in_array($id, $failedStatuses) ? 'failed' : 'pending');
-            
+            $category = in_array($id, $completedStatuses) ? 'completed' : (in_array($id, $failedStatuses) ? 'failed' : 'pending');
             NotificationStatus::updateOrCreate(
                 ['notification_status_id' => $id],
                 [
