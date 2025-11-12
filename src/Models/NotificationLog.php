@@ -498,10 +498,10 @@ class NotificationLog extends Model
         $cleanPhone = preg_replace('/[^0-9]/', '', $this->delivery_string);
 
         return \Dcplibrary\Notices\Models\ShoutbombDelivery::where(function ($query) use ($cleanPhone) {
-            $query->where('phone', 'LIKE', "%{$cleanPhone}%")
-                  ->orWhere('phone', 'LIKE', "%{$this->delivery_string}%");
+            $query->where('phone_number', 'LIKE', "%{$cleanPhone}%")
+                  ->orWhere('phone_number', 'LIKE', "%{$this->delivery_string}%");
         })
-        ->whereDate('delivered_at', $this->notification_date->format('Y-m-d'))
+        ->whereDate('sent_date', $this->notification_date->format('Y-m-d'))
         ->get();
     }
 

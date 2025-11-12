@@ -434,9 +434,9 @@
                     <div class="bg-gray-50 rounded p-3 text-xs">
                         <div class="grid grid-cols-2 gap-2">
                             <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($delivery->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Status:</span> <span class="@if($delivery->status == 'delivered') text-green-700 @else text-red-700 @endif font-medium">{{ ucfirst($delivery->status) }}</span></div>
-                            <div><span class="font-medium text-gray-600">Delivered:</span> {{ $delivery->delivered_at?->format('M d, Y g:i A') ?? 'N/A' }}</div>
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $delivery->phone }}</span></div>
+                            <div><span class="font-medium text-gray-600">Status:</span> <span class="@if($delivery->status === 'Delivered') text-green-700 @else text-red-700 @endif font-medium">{{ $delivery->status }}</span></div>
+                            <div><span class="font-medium text-gray-600">Sent:</span> {{ $delivery->sent_date?->format('M d, Y g:i A') ?? 'N/A' }}</div>
+                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $delivery->phone_number }}</span></div>
                             @if($delivery->message)
                             <div class="col-span-2"><span class="font-medium text-gray-600">Message:</span> {{ $delivery->message }}</div>
                             @endif
