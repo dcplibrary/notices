@@ -217,6 +217,22 @@ class SeedDemoDataCommand extends Command
             ->create(['sent_date' => $date]);
         $count += 2;
 
+        // Opted out (from email report)
+        ShoutbombDelivery::factory()
+            ->count(rand(0, 2))
+            ->sms()
+            ->optedOut()
+            ->create(['sent_date' => $date]);
+        $count += 1;
+
+        // Invalid number from email report
+        ShoutbombDelivery::factory()
+            ->count(rand(0, 1))
+            ->sms()
+            ->invalid()
+            ->create(['sent_date' => $date]);
+        $count += 1;
+
         // Successful voice deliveries
         ShoutbombDelivery::factory()
             ->count(rand(5, 10))
@@ -224,6 +240,14 @@ class SeedDemoDataCommand extends Command
             ->delivered()
             ->create(['sent_date' => $date]);
         $count += 7;
+
+        // Undelivered voice from email report
+        ShoutbombDelivery::factory()
+            ->count(rand(0, 2))
+            ->voice()
+            ->emailUndeliveredVoice()
+            ->create(['sent_date' => $date]);
+        $count += 1;
 
         return $count;
     }

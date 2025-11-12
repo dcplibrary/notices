@@ -130,6 +130,19 @@ class NoticesServiceProvider extends ServiceProvider
 
         // Register scheduled tasks
         $this->registerScheduledTasks();
+
+        // Auto-seed reference data when running plain `db:seed` (no --class) to include lookup tables
+        if ($this->app->runningInConsole() && $this->shouldAutoSeedReference()) {
+            try {
+                // Prevent double-run in case of nested calls
+                if (!defined('NOTICES_REFERENCE_SEEDED')) {
+                    define('NOTICES_REFERENCE_SEEDED', true);
+                    (new \Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder())->run();
+                }
+            } catch (\Throwable $e) {
+                // Swallow errors to avoid breaking user seeding; they can run the seeder manually if desired
+            }
+        }
     }
 
     /**
@@ -229,5 +242,20 @@ class NoticesServiceProvider extends ServiceProvider
         return [
             'notices',
         ];
+    }
+    /**
+     * Determine if we should auto-seed reference data on `db:seed`.
+     */
+    protected function shouldAutoSeedReference(): bool
+    {
+        $argv = $_SERVER['argv'] ?? [];
+        if (!is_array($argv)) return false;
+
+        $isDbSeed = in_array('db:seed', $argv, true) || in_array('migrate:fresh', $argv, true);
+        $hasClass = collect($argv)->contains(function ($arg) {
+            return str_starts_with($arg, '--class') || $arg === '--class';
+        });
+
+        return $isDbSeed && !$hasClass;
     }
 }
