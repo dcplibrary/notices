@@ -14,6 +14,7 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **RESTful API**: Access data programmatically for custom integrations
 - ✅ **Direct MSSQL Connection**: Connect to Polaris ILS database
 - ✅ **Shoutbomb Integration**: Import SMS/Voice delivery reports via FTP
+- ✅ **Shoutbomb Reports (Graph) Integration**: Optionally read failure reports from dcplibrary/shoutbomb-reports
 - ✅ **Email Report Ingester**: Automated IMAP email fetching and parsing for Shoutbomb reports
 - ✅ **Automated Imports**: Schedule daily/hourly imports via Laravel scheduler
 - ✅ **Real-time Tracking**: Track notification delivery across all channels
@@ -178,6 +179,10 @@ Re-aggregate all historical data:
 ```bash
 php artisan notices:aggregate --all
 ```
+
+## Shoutbomb Reports Integration (Optional)
+
+See docs/integrations/shoutbomb-reports.md for how to enable reading failure reports from dcplibrary/shoutbomb-reports. This does not replace importing Shoutbomb submissions via FTP.
 
 ## Scheduled Tasks
 

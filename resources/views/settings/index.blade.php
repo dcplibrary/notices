@@ -39,8 +39,39 @@
                     <p class="text-sm text-gray-600">
                         Use dcplibrary/shoutbomb-reports data to mark failed deliveries. Absence of a failure implies success when a notice has been submitted.
                     </p>
-                    <div class="mt-4 flex items-center gap-3">
-                        <a href="{{ route('notices.settings.index') }}#integrations" class="text-indigo-600 hover:text-indigo-800 text-sm">Manage setting</a>
+
+                    @php
+                        /** @var \Dcplibrary\Notices\Services\SettingsManager $sm */
+                        $sm = app(\Dcplibrary\Notices\Services\SettingsManager::class);
+                        $enabled = (bool) ($sm->get('integrations.shoutbomb_reports.enabled') ?? config('notices.integrations.shoutbomb_reports.enabled'));
+                        $sbSetting = \Dcplibrary\Notices\Models\NotificationSetting::global()
+                            ->where('group', 'integrations')
+                            ->where('key', 'shoutbomb_reports.enabled')
+                            ->first();
+                    @endphp
+
+                    <div class="mt-3 flex items-center gap-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                            {{ $enabled ? 'Enabled' : 'Disabled' }}
+                        </span>
+
+                        <form method="POST" action="{{ route('notices.settings.integrations.shoutbomb-reports.toggle') }}" class="inline-flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="enabled" value="0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="enabled" value="1" class="sr-only peer" {{ $enabled ? 'checked' : '' }} onchange="this.form.submit()">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-600 transition"></div>
+                                <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5"></div>
+                                <span class="ml-3 text-sm text-gray-700">Toggle</span>
+                            </label>
+                        </form>
+
+                        @if($sbSetting)
+                            <a href="{{ route('notices.settings.edit', $sbSetting->id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit setting</a>
+                        @else
+                            <span class="text-xs text-gray-500">No DB override set. Using .env/config.</span>
+                        @endif
+
                         <button type="button" onclick="document.getElementById('sb-install-modal').classList.remove('hidden')" class="text-sm text-gray-700 hover:text-gray-900 underline">How to install</button>
                     </div>
                 </div>

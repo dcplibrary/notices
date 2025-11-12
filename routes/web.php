@@ -51,6 +51,10 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::put('/notification-type/{id}', [SettingsController::class, 'updateNotificationType'])->name('update-notification-type');
     Route::put('/delivery-method/{id}', [SettingsController::class, 'updateDeliveryMethod'])->name('update-delivery-method');
     Route::put('/notification-status/{id}', [SettingsController::class, 'updateNotificationStatus'])->name('update-notification-status');
+
+    // Integrations
+    Route::post('/integrations/shoutbomb-reports/toggle', [SettingsController::class, 'toggleShoutbombReports'])
+        ->name('integrations.shoutbomb-reports.toggle');
 });
 
 // Sync/Import routes - Admin only

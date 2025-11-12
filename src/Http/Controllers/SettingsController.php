@@ -337,4 +337,44 @@ class SettingsController extends Controller
     {
         return view('notices::settings.export');
     }
+
+    /**
+     * Toggle the Shoutbomb Reports integration (DB-backed setting).
+     */
+    public function toggleShoutbombReports(Request $request)
+    {
+        $enabled = filter_var($request->input('enabled'), FILTER_VALIDATE_BOOLEAN);
+
+        // Ensure the setting exists with proper type on first toggle
+        $existing = NotificationSetting::global()
+            ->where('group', 'integrations')
+            ->where('key', 'shoutbomb_reports.enabled')
+            ->first();
+
+        if (!$existing) {
+            $setting = new NotificationSetting();
+            $setting->group = 'integrations';
+            $setting->key = 'shoutbomb_reports.enabled';
+            $setting->type = 'boolean';
+            $setting->description = 'Enable using dcplibrary/shoutbomb-reports data to infer delivery failures (absence implies success when submitted).';
+            $setting->is_public = true;
+            $setting->is_editable = true;
+            $setting->is_sensitive = false;
+            $setting->updated_by = $this->getCurrentUser();
+            $setting->setTypedValue($enabled);
+            $setting->save();
+        } else {
+            $this->settingsManager->set(
+                'integrations.shoutbomb_reports.enabled',
+                $enabled,
+                null,
+                null,
+                $this->getCurrentUser()
+            );
+        }
+
+        return redirect()
+            ->route('notices.settings.index')
+            ->with('success', 'Shoutbomb Reports integration ' . ($enabled ? 'enabled' : 'disabled') . '.');
+    }
 }
