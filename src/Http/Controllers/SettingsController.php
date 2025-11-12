@@ -323,10 +323,9 @@ class SettingsController extends Controller
         // Get recent sync history
         $recentSyncs = SyncLog::recent(10);
 
-        // Compute integration/command availability
+        // Compute integration availability
         $integrationEnabled = (bool) ($this->settingsManager->get('integrations.shoutbomb_reports.enabled')
             ?? config('notices.integrations.shoutbomb_reports.enabled', false));
-        $shoutbombReportsCommandAvailable = array_key_exists('shoutbomb:check-reports', \Illuminate\Support\Facades\Artisan::all());
 
         return view('notices::settings.sync', compact(
             'lastSyncAll',
@@ -335,8 +334,7 @@ class SettingsController extends Controller
             'lastShoutbombReports',
             'lastAggregate',
             'recentSyncs',
-            'integrationEnabled',
-            'shoutbombReportsCommandAvailable'
+            'integrationEnabled'
         ));
     }
 

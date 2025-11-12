@@ -97,7 +97,7 @@
                         </form>
 
                         @if($sbSetting)
-                            <a href="{{ route('notices.settings.edit', $sbSetting->id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit setting</a>
+                            <span class="text-xs text-gray-500">DB override active for this integration.</span>
                         @else
                             <span class="text-xs text-gray-500">No DB override set. Using .env/config.</span>
                         @endif
