@@ -343,6 +343,15 @@ class SyncController extends Controller
      */
     private function runImportShoutbombReports(): array
     {
+        // Preflight: ensure the command is registered so web-triggered Artisan::call works
+        $commands = Artisan::all();
+        if (!array_key_exists('shoutbomb:check-reports', $commands)) {
+            return [
+                'status' => 'error',
+                'message' => "Command 'shoutbomb:check-reports' is not registered. Ensure dcplibrary/shoutbomb-reports is installed and its ServiceProvider registers commands outside runningInConsole.",
+            ];
+        }
+
         $exitCode = Artisan::call('shoutbomb:check-reports');
         $output = Artisan::output();
 
