@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Artisan;
 
 class SettingsController extends Controller
 {
@@ -336,6 +337,30 @@ class SettingsController extends Controller
     public function export()
     {
         return view('notices::settings.export');
+    }
+
+    /**
+     * Run phone normalization on existing data via Artisan command.
+     */
+    public function normalizePhones(Request $request)
+    {
+        $dry = $request->boolean('dry_run', false);
+        $fast = $request->boolean('fast_sql', true);
+
+        $options = [];
+        if ($dry) $options['--dry-run'] = true;
+        if ($fast) $options['--fast-sql'] = true;
+
+        try {
+            Artisan::call('notices:normalize-phones', $options);
+            $output = Artisan::output();
+            return redirect()->route('notices.settings.index')
+                ->with('success', 'Phone normalization ' . ($dry ? '(dry run) ' : '') . 'completed.')
+                ->with('details', $output);
+        } catch (\Throwable $e) {
+            return redirect()->route('notices.settings.index')
+                ->withErrors(['error' => 'Normalization failed: ' . $e->getMessage()]);
+        }
     }
 
     /**

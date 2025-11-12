@@ -99,6 +99,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\ImportPolarisCommand::class,
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
+            Console\Commands\NormalizePhonesCommand::class,
         ]);
 
         // Publish configuration file

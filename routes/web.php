@@ -55,6 +55,9 @@ Route::prefix('settings')->name('settings.')->group(function () {
     // Integrations
     Route::post('/integrations/shoutbomb-reports/toggle', [SettingsController::class, 'toggleShoutbombReports'])
         ->name('integrations.shoutbomb-reports.toggle');
+
+    // Data tools
+    Route::post('/tools/normalize-phones', [SettingsController::class, 'normalizePhones'])->name('tools.normalize-phones');
 });
 
 // Sync/Import routes - Admin only

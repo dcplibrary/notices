@@ -97,8 +97,17 @@ class PolarisNotificationLog extends Model
         $email = null;
         
         if ($this->DeliveryOptionID == 3 || $this->DeliveryOptionID == 8) {
-            // Voice (3) or SMS (8) - delivery_string contains phone
-            $phone = $this->DeliveryString;
+            // Voice (3) or SMS (8)
+            // DeliveryString may be a phone number or an email-to-SMS address (e.g., 2705551234@txt.att.net)
+            // Best representation for our use case (Shoutbomb) is the 10-digit local number.
+            $raw = (string) $this->DeliveryString;
+            // Trim at '@' if present to avoid picking up digits from the domain
+            $local = str_contains($raw, '@') ? substr($raw, 0, strpos($raw, '@')) : $raw;
+            $digits = preg_replace('/[^0-9]/', '', $local);
+            if (!empty($digits)) {
+                // Use last 10 digits if longer (typical NANP)
+                $phone = strlen($digits) > 10 ? substr($digits, -10) : $digits;
+            }
         } elseif ($this->DeliveryOptionID == 2) {
             // Email (2) - delivery_string contains email
             $email = $this->DeliveryString;

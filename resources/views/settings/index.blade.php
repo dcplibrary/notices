@@ -14,6 +14,36 @@
     </div>
 
     <!-- Settings Cards Grid -->
+    @if(session('success'))
+        <div class="mb-4 rounded-md bg-green-50 p-4">
+            <div class="flex">
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-green-800">{{ session('success') }}</h3>
+                    @if(session('details'))
+                        <div class="mt-2 text-xs text-green-700 whitespace-pre-wrap">{{ session('details') }}</div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-4 rounded-md bg-red-50 p-4">
+            <div class="flex">
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Action failed</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Shoutbomb Reports Integration Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -163,6 +193,41 @@
                 </div>
             </div>
         </a>
+
+        <!-- Data Tools: Normalize Phones -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h4l3-3m0 0l3 3m-3-3v10m5-5h4m0 0l-3-3m3 3l-3 3" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">Data Tools</dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-900">Normalize Phones</div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">Trim at @, digits-only, keep last 10 for Voice/SMS. Safe to run multiple times.</p>
+                    <div class="mt-4 flex items-center gap-3">
+                        <form method="POST" action="{{ route('notices.settings.tools.normalize-phones') }}" onsubmit="return confirm('Run phone normalization now?');">
+                            @csrf
+                            <input type="hidden" name="fast_sql" value="1">
+                            <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Run</button>
+                        </form>
+                        <form method="POST" action="{{ route('notices.settings.tools.normalize-phones') }}" onsubmit="return confirm('Perform a DRY RUN? No data will be changed.');">
+                            @csrf
+                            <input type="hidden" name="fast_sql" value="1">
+                            <input type="hidden" name="dry_run" value="1">
+                            <button type="submit" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">Dry run</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Export & Backup Card -->
         <a href="{{ route('notices.settings.export') }}" 
