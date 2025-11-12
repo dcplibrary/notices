@@ -28,16 +28,53 @@ class DashboardController extends Controller
         $startDate = now()->subDays($days);
         $endDate = now();
 
-        // Get aggregated totals
+        // Get aggregated totals (from analytics table)
         $totals = DailyNotificationSummary::getAggregatedTotals($startDate, $endDate);
 
-        // Get breakdown by type
+        // Get breakdown by type (from analytics table)
         $byType = DailyNotificationSummary::getBreakdownByType($startDate, $endDate);
 
-        // Get breakdown by delivery method
+        // Get breakdown by delivery method (from analytics table)
         $byDelivery = DailyNotificationSummary::getBreakdownByDelivery($startDate, $endDate);
 
-        // Get daily trend data for chart
+        // Fallback: if analytics table is empty for the range, compute from notification_logs directly
+        $needsFallback = empty($totals) || ((int)($totals['total_sent'] ?? 0) === 0 && (count($byType) === 0) && (count($byDelivery) === 0));
+        if ($needsFallback) {
+            $totalsObj = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+                ->selectRaw('
+                    COUNT(*) as total_sent,
+                    SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success,
+                    SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed,
+                    SUM(holds_count) as total_holds,
+                    SUM(overdues_count + overdues_2nd_count + overdues_3rd_count) as total_overdues
+                ')
+                ->first();
+
+            $totals = [
+                'total_sent' => (int) ($totalsObj->total_sent ?? 0),
+                'total_success' => (int) ($totalsObj->total_success ?? 0),
+                'total_failed' => (int) ($totalsObj->total_failed ?? 0),
+                'total_holds' => (int) ($totalsObj->total_holds ?? 0),
+                'total_overdues' => (int) ($totalsObj->total_overdues ?? 0),
+                'avg_success_rate' => ($totalsObj->total_sent ?? 0) > 0
+                    ? round((($totalsObj->total_success ?? 0) * 100.0 / ($totalsObj->total_sent ?? 1)), 2)
+                    : 0,
+            ];
+
+            $byType = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+                ->selectRaw('notification_type_id, COUNT(*) as total_sent, SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success, SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed')
+                ->groupBy('notification_type_id')
+                ->get()
+                ->toArray();
+
+            $byDelivery = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+                ->selectRaw('delivery_option_id, COUNT(*) as total_sent, SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success, SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed')
+                ->groupBy('delivery_option_id')
+                ->get()
+                ->toArray();
+        }
+
+        // Get daily trend data for chart (prefer analytics table)
         $trendData = DailyNotificationSummary::dateRange($startDate, $endDate)
             ->selectRaw('
                 summary_date,
@@ -48,6 +85,15 @@ class DashboardController extends Controller
             ->groupBy('summary_date')
             ->orderBy('summary_date')
             ->get();
+
+        // Fallback to logs if analytics table returned no rows
+        if ($trendData->isEmpty()) {
+            $trendData = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+                ->selectRaw('DATE(notification_date) as summary_date, COUNT(*) as total_sent, SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success, SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed')
+                ->groupBy('summary_date')
+                ->orderBy('summary_date')
+                ->get();
+        }
 
         // Success rate trend (from analytics)
         $successRateTrend = DailyNotificationSummary::dateRange($startDate, $endDate)
@@ -65,6 +111,20 @@ class DashboardController extends Controller
             ->groupBy('summary_date')
             ->orderBy('summary_date')
             ->get();
+
+        if ($successRateTrend->isEmpty()) {
+            $successRateTrend = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
+                ->selectRaw('
+                    DATE(notification_date) as summary_date,
+                    COUNT(*) as total_sent,
+                    SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) as total_success,
+                    SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as total_failed,
+                    CASE WHEN COUNT(*) > 0 THEN ROUND((SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2) ELSE 0 END as success_rate
+                ')
+                ->groupBy('summary_date')
+                ->orderBy('summary_date')
+                ->get();
+        }
 
         // Type distribution with detailed breakdown (from analytics)
         $typeDistribution = DailyNotificationSummary::dateRange($startDate, $endDate)
