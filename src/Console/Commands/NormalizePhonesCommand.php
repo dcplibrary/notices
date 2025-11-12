@@ -4,21 +4,64 @@ namespace Dcplibrary\Notices\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class NormalizePhonesCommand extends Command
 {
     protected $signature = 'notices:normalize-phones
                             {--dry-run : Show what would change without writing}
-                            {--fast-sql : Use a single SQL UPDATE (MySQL 8+ REGEXP_REPLACE)}';
+                            {--fast-sql : Use a single SQL UPDATE (MySQL 8+ REGEXP_REPLACE)}
+                            {--tables=* : Tables to normalize (notification_logs, polaris_phone_notices, shoutbomb_submissions, shoutbomb_deliveries)}';
 
-    protected $description = 'Normalize Voice/SMS phone values from delivery_string (trim at @, digits-only, last 10)';
+    protected $description = 'Normalize phone numbers across notice tables (digits-only, last 10). For notification_logs, derives from delivery_string.';
 
     public function handle(): int
     {
         $dry = (bool) $this->option('dry-run');
         $fast = (bool) $this->option('fast-sql');
+        $tables = $this->option('tables');
 
-        $this->info('Normalizing Voice/SMS phone values in notification_logs...');
+        // Default to all supported tables if none specified
+        if (empty($tables)) {
+            $tables = [
+                'notification_logs',
+                'polaris_phone_notices',
+                'shoutbomb_submissions',
+                'shoutbomb_deliveries',
+            ];
+        }
+
+        $ok = true;
+        foreach ($tables as $table) {
+            if (!Schema::hasTable($table)) {
+                $this->warn("Skipping {$table}: table does not exist.");
+                continue;
+            }
+
+            switch ($table) {
+                case 'notification_logs':
+                    $ok = $this->normalizeNotificationLogs($dry, $fast) && $ok;
+                    break;
+                case 'polaris_phone_notices':
+                    $ok = $this->normalizeGenericPhoneColumn('polaris_phone_notices', 'phone_number', $dry, $fast) && $ok;
+                    break;
+                case 'shoutbomb_submissions':
+                    $ok = $this->normalizeGenericPhoneColumn('shoutbomb_submissions', 'phone_number', $dry, $fast) && $ok;
+                    break;
+                case 'shoutbomb_deliveries':
+                    $ok = $this->normalizeGenericPhoneColumn('shoutbomb_deliveries', 'phone_number', $dry, $fast) && $ok;
+                    break;
+                default:
+                    $this->warn("Unknown table {$table}, skipping.");
+            }
+        }
+
+        return $ok ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    protected function normalizeNotificationLogs(bool $dry, bool $fast): bool
+    {
+        $this->info('Normalizing phone in notification_logs from delivery_string...');
 
         if ($fast) {
             $sql = "UPDATE notification_logs\n" .
@@ -27,17 +70,17 @@ class NormalizePhonesCommand extends Command
                    "  AND delivery_string IS NOT NULL";
 
             if ($dry) {
-                $this->line('DRY RUN (fast-sql):');
+                $this->line('DRY RUN (fast-sql) [notification_logs]:');
                 $this->line($sql);
-                return Command::SUCCESS;
+                return true;
             }
 
             try {
                 $affected = DB::update($sql);
-                $this->info("Updated {$affected} rows using fast SQL.");
-                return Command::SUCCESS;
+                $this->info("notification_logs: updated {$affected} rows using fast SQL.");
+                return true;
             } catch (\Throwable $e) {
-                $this->warn('Fast SQL path failed (missing REGEXP_REPLACE or incompatible SQL). Falling back to chunked PHP mode.');
+                $this->warn('Fast SQL path failed for notification_logs. Falling back to chunked PHP mode.');
             }
         }
 
@@ -78,15 +121,82 @@ class NormalizePhonesCommand extends Command
                 }
 
                 $total += count($updates);
-                $this->line("Prepared updates in chunk: " . count($updates));
+                $this->line("notification_logs: prepared updates in chunk: " . count($updates));
             });
 
         if ($dry) {
-            $this->info("DRY RUN: would update {$total} rows.");
+            $this->info("notification_logs DRY RUN: would update {$total} rows.");
         } else {
-            $this->info("Updated {$total} rows.");
+            $this->info("notification_logs: updated {$total} rows.");
         }
 
-        return Command::SUCCESS;
+        return true;
+    }
+
+    protected function normalizeGenericPhoneColumn(string $table, string $column, bool $dry, bool $fast): bool
+    {
+        $this->info("Normalizing {$column} in {$table}...");
+
+        if ($fast) {
+            $sql = "UPDATE {$table} SET {$column} = NULLIF(RIGHT(REGEXP_REPLACE({$column}, '[^0-9]', ''), 10), '')";
+
+            if ($dry) {
+                $this->line("DRY RUN (fast-sql) [{$table}]:");
+                $this->line($sql);
+                return true;
+            }
+
+            try {
+                $affected = DB::update($sql);
+                $this->info("{$table}: updated {$affected} rows using fast SQL.");
+                return true;
+            } catch (\Throwable $e) {
+                $this->warn("Fast SQL path failed for {$table}. Falling back to chunked PHP mode.");
+            }
+        }
+
+        // Chunked PHP fallback
+        $chunk = 1000;
+        $total = 0;
+        DB::table($table)
+            ->orderBy('id')
+            ->chunkById($chunk, function ($rows) use (&$total, $dry, $table, $column) {
+                $updates = [];
+                foreach ($rows as $row) {
+                    $raw = (string) ($row->{$column} ?? '');
+                    $digits = preg_replace('/[^0-9]/', '', $raw);
+                    $normalized = $digits ? (strlen($digits) > 10 ? substr($digits, -10) : $digits) : null;
+
+                    if ($normalized !== ($row->{$column} ?? null)) {
+                        $updates[$row->id] = $normalized;
+                    }
+                }
+
+                if (!$dry && !empty($updates)) {
+                    foreach (array_chunk($updates, 500, true) as $batch) {
+                        $ids = array_keys($batch);
+                        $case = 'CASE id ';
+                        foreach ($batch as $id => $phone) {
+                            $val = $phone === null ? 'NULL' : ("'" . addslashes($phone) . "'");
+                            $case .= "WHEN {$id} THEN {$val} ";
+                        }
+                        $case .= 'END';
+                        DB::table($table)
+                            ->whereIn('id', $ids)
+                            ->update([$column => DB::raw($case)]);
+                    }
+                }
+
+                $total += count($updates);
+                $this->line("{$table}: prepared updates in chunk: " . count($updates));
+            });
+
+        if ($dry) {
+            $this->info("{$table} DRY RUN: would update {$total} rows.");
+        } else {
+            $this->info("{$table}: updated {$total} rows.");
+        }
+
+        return true;
     }
 }

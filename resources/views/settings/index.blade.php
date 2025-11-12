@@ -165,9 +165,8 @@
             </div>
         </div>
 
-        <!-- Sync & Import Card -->
-        <a href="{{ route('notices.settings.sync') }}" 
-           class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <!-- Sync & Import (Data Management) Card with Normalize Phones actions -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -188,31 +187,16 @@
                 </div>
                 <div class="mt-4">
                     <p class="text-sm text-gray-600">
-                        Import data from Polaris and Shoutbomb, test connections
+                        Import data from Polaris and Shoutbomb, test connections, and manage data tools.
                     </p>
                 </div>
-            </div>
-        </a>
-
-        <!-- Data Tools: Normalize Phones -->
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h4l3-3m0 0l3 3m-3-3v10m5-5h4m0 0l-3-3m3 3l-3 3" />
-                        </svg>
-                    </div>
-                    <div class="ml-5 w-0 flex-1">
-                        <dt class="text-sm font-medium text-gray-500 truncate">Data Tools</dt>
-                        <dd class="flex items-baseline">
-                            <div class="text-lg font-semibold text-gray-900">Normalize Phones</div>
-                        </dd>
-                    </div>
+                <div class="mt-4 flex items-center gap-3">
+                    <a href="{{ route('notices.settings.sync') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Open Sync & Import</a>
                 </div>
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600">Trim at @, digits-only, keep last 10 for Voice/SMS. Safe to run multiple times.</p>
-                    <div class="mt-4 flex items-center gap-3">
+                <div class="mt-6 border-t pt-4">
+                    <h4 class="text-sm font-medium text-gray-700">Data Tools: Normalize Phones</h4>
+                    <p class="mt-1 text-sm text-gray-600">Normalize phone numbers across logs and related tables (digits-only, last 10). Safe to run multiple times.</p>
+                    <div class="mt-3 flex items-center gap-3">
                         <form method="POST" action="{{ route('notices.settings.tools.normalize-phones') }}" onsubmit="return confirm('Run phone normalization now?');">
                             @csrf
                             <input type="hidden" name="fast_sql" value="1">

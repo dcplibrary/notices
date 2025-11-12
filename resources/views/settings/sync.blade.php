@@ -115,10 +115,10 @@
                     </button>
                 </div>
 
-                <!-- Import Shoutbomb -->
+                <!-- Import Shoutbomb (FTP) -->
                 <div class="flex items-center justify-between pt-4 border-t">
                     <div>
-                        <h4 class="text-sm font-medium text-gray-900">Import from Shoutbomb</h4>
+                        <h4 class="text-sm font-medium text-gray-900">Import from Shoutbomb (FTP)</h4>
                         <p class="text-xs text-gray-500">Import delivery reports from Shoutbomb FTP</p>
                         @if($lastShoutbomb)
                         <p class="text-xs text-gray-400 mt-1">
@@ -136,6 +136,52 @@
                         Import
                     </button>
                 </div>
+
+                <!-- Sync Shoutbomb Reports (Email/Graph) -->
+                @if($integrationEnabled && $shoutbombReportsCommandAvailable)
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <div>
+<h4 class="text-sm font-medium text-gray-900">Sync Shoutbomb Report Emails</h4>
+                        <p class="text-xs text-gray-500">Ingest failure reports via shoutbomb:check-reports (dcplibrary/shoutbomb-reports)</p>
+                        @if($lastShoutbombReports)
+                        <p class="text-xs text-gray-400 mt-1">
+                            Last: {{ $lastShoutbombReports->started_at->diffForHumans() }}
+                            ({{ $lastShoutbombReports->records_processed ?? 0 }} records)
+                        </p>
+                        @endif
+                    </div>
+                    <button @click="importShoutbombReports()" 
+                            :disabled="loading"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                        <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+Sync Report Emails
+                    </button>
+                </div>
+                @elseif(!$integrationEnabled)
+                <div class="flex items-start justify-between pt-4 border-t opacity-60">
+                    <div>
+<h4 class="text-sm font-medium text-gray-900">Sync Shoutbomb Report Emails</h4>
+                        <p class="text-xs text-gray-500">Enable Shoutbomb Reports Integration on the Settings page to use this tool.</p>
+                    </div>
+                    <button disabled
+                            class="inline-flex items-center px-3 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                        Sync Reports
+                    </button>
+                </div>
+                @else
+                <div class="flex items-start justify-between pt-4 border-t opacity-60">
+                    <div>
+<h4 class="text-sm font-medium text-gray-900">Sync Shoutbomb Report Emails</h4>
+                        <p class="text-xs text-gray-500">Command shoutbomb:check-reports is not available. Install dcplibrary/shoutbomb-reports.</p>
+                    </div>
+                    <button disabled
+                            class="inline-flex items-center px-3 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                        Sync Reports
+                    </button>
+                </div>
+                @endif
 
                 <!-- Run Aggregation -->
                 <div class="flex items-center justify-between pt-4 border-t">
@@ -335,7 +381,11 @@ function syncManager() {
         },
 
         async importShoutbomb() {
-            await this.runOperation('shoutbomb', 'Import Shoutbomb');
+            await this.runOperation('shoutbomb', 'Import Shoutbomb (FTP)');
+        },
+
+        async importShoutbombReports() {
+await this.runOperation('shoutbomb-reports', 'Sync Shoutbomb Report Emails');
         },
 
         async aggregate() {

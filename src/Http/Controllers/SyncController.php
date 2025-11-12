@@ -163,6 +163,37 @@ class SyncController extends Controller
     }
 
     /**
+     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports)
+     */
+    public function importShoutbombReports(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_shoutbomb_reports',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportShoutbombReports();
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['shoutbomb_reports' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['shoutbomb_reports' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Run aggregation only
      */
     public function aggregate(): JsonResponse
@@ -299,6 +330,25 @@ class SyncController extends Controller
         // Parse output to get record count
         preg_match('/Imported (\d+)/', $output, $matches);
         $records = isset($matches[1]) ? (int) $matches[1] : 0;
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run Shoutbomb reports check via external package
+     */
+    private function runImportShoutbombReports(): array
+    {
+        $exitCode = Artisan::call('shoutbomb:check-reports');
+        $output = Artisan::output();
+
+        // Attempt to parse a generic processed count if present
+        preg_match('/Processed\s+(\d+)/i', $output, $matches);
+        $records = isset($matches[1]) ? (int) $matches[1] : null;
 
         return [
             'status' => $exitCode === 0 ? 'success' : 'error',

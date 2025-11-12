@@ -317,17 +317,26 @@ class SettingsController extends Controller
         $lastSyncAll = SyncLog::latestFor('sync_all');
         $lastPolaris = SyncLog::latestFor('import_polaris');
         $lastShoutbomb = SyncLog::latestFor('import_shoutbomb');
+        $lastShoutbombReports = SyncLog::latestFor('import_shoutbomb_reports');
         $lastAggregate = SyncLog::latestFor('aggregate');
 
         // Get recent sync history
         $recentSyncs = SyncLog::recent(10);
 
+        // Compute integration/command availability
+        $integrationEnabled = (bool) ($this->settingsManager->get('integrations.shoutbomb_reports.enabled')
+            ?? config('notices.integrations.shoutbomb_reports.enabled', false));
+        $shoutbombReportsCommandAvailable = array_key_exists('shoutbomb:check-reports', \Illuminate\Support\Facades\Artisan::all());
+
         return view('notices::settings.sync', compact(
             'lastSyncAll',
             'lastPolaris',
             'lastShoutbomb',
+            'lastShoutbombReports',
             'lastAggregate',
-            'recentSyncs'
+            'recentSyncs',
+            'integrationEnabled',
+            'shoutbombReportsCommandAvailable'
         ));
     }
 
