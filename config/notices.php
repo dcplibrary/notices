@@ -129,7 +129,7 @@ return [
     |
     */
 
-    'email_reports' => [
+'email_reports' => [
         'enabled' => env('EMAIL_REPORTS_ENABLED', false),
 
         'connection' => [
@@ -149,6 +149,29 @@ return [
         'mark_as_read' => env('EMAIL_MARK_AS_READ', true),
         'move_to_folder' => env('EMAIL_MOVE_TO_FOLDER', ''),
         'max_emails_per_run' => env('EMAIL_MAX_PER_RUN', 50),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Integrations
+    |--------------------------------------------------------------------------
+    |
+    | Feature toggles for optional external integrations. These can be turned
+    | on/off via .env or database-backed settings.
+    |
+    */
+
+'integrations' => [
+        'shoutbomb_reports' => [
+            // When enabled, verification will consult the dcplibrary/shoutbomb-reports
+            // tables to infer delivery failures (and success by absence).
+            // Prefer an explicit NOTICES_* toggle; fall back to SHOUTBOMB_LOG_PROCESSING if present.
+            'enabled' => env('NOTICES_SHOUTBOMB_REPORTS_ENABLED', env('SHOUTBOMB_LOG_PROCESSING', false)),
+            // Name of the failure table (reuse existing SHOUTBOMB_FAILURE_TABLE from the app .env)
+            'table' => env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports'),
+            // Hours around the notice date to search failure emails for a match
+            'date_window_hours' => env('SHOUTBOMB_REPORTS_DATE_WINDOW_HOURS', 24),
+        ],
     ],
 
     /*

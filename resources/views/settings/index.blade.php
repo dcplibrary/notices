@@ -15,6 +15,37 @@
 
     <!-- Settings Cards Grid -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Shoutbomb Reports Integration Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            Shoutbomb Reports Integration
+                        </dt>
+                        <dd class="flex items-baseline">
+                            <div class="text-lg font-semibold text-gray-900">
+                                Enable/disable
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-sm text-gray-600">
+                        Use dcplibrary/shoutbomb-reports data to mark failed deliveries. Absence of a failure implies success when a notice has been submitted.
+                    </p>
+                    <div class="mt-4 flex items-center gap-3">
+                        <a href="{{ route('notices.settings.index') }}#integrations" class="text-indigo-600 hover:text-indigo-800 text-sm">Manage setting</a>
+                        <button type="button" onclick="document.getElementById('sb-install-modal').classList.remove('hidden')" class="text-sm text-gray-700 hover:text-gray-900 underline">How to install</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Reference Data Card -->
         <a href="{{ route('notices.settings.reference-data') }}" 
            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
@@ -215,5 +246,57 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Install Modal -->
+<div id="sb-install-modal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="document.getElementById('sb-install-modal').classList.add('hidden')"></div>
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div>
+        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100">
+          <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6h4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="mt-3 text-center sm:mt-5">
+          <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Install Shoutbomb Reports</h3>
+          <div class="mt-2">
+            <p class="text-sm text-gray-500">If not already installed in your Laravel app, follow these steps:</p>
+            <ol class="mt-3 text-left text-sm text-gray-700 list-decimal list-inside space-y-2">
+              <li>Add the package: <code class="bg-gray-100 px-2 py-1 rounded">composer require dcplibrary/shoutbomb-reports</code></li>
+              <li>Publish and run migrations:
+                <div class="mt-1">
+                  <code class="bg-gray-100 px-2 py-1 rounded text-xs">php artisan vendor:publish --provider="Dcplibrary\ShoutbombReports\ShoutbombReportsServiceProvider" --tag=migrations</code><br>
+                  <code class="bg-gray-100 px-2 py-1 rounded text-xs">php artisan migrate</code>
+                </div>
+              </li>
+              <li>Configure .env (examples):
+                <div class="mt-1 text-xs">
+                  SHOUTBOMB_TENANT_ID=...<br>
+                  SHOUTBOMB_CLIENT_ID=...<br>
+                  SHOUTBOMB_CLIENT_SECRET=...<br>
+                  SHOUTBOMB_USER_EMAIL=...<br>
+                  SHOUTBOMB_FOLDER=Shoutbomb<br>
+                  SHOUTBOMB_FAILURE_TABLE=notice_failure_reports
+                </div>
+              </li>
+              <li>Enable integration in Notices:
+                <div class="mt-1 text-xs">
+                  NOTICES_SHOUTBOMB_REPORTS_ENABLED=true
+                </div>
+              </li>
+              <li>Schedule the package’s sync/ingest commands in your app’s scheduler.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+        <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm" onclick="document.getElementById('sb-install-modal').classList.add('hidden')">Got it</button>
+        <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm" onclick="document.getElementById('sb-install-modal').classList.add('hidden')">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection

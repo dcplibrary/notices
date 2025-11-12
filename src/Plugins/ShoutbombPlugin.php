@@ -143,6 +143,16 @@ class ShoutbombPlugin implements NotificationPlugin
      */
     protected function verifyDelivery(NotificationLog $log, VerificationResult $result): void
     {
+        // If the new shoutbomb-reports integration is enabled, infer delivery from its failure table
+        if (config('notices.integrations.shoutbomb_reports.enabled')) {
+            $this->verifyDeliveryViaReports($log, $result);
+            // If we've set a status via reports (failed or inferred delivered), stop here
+            if ($result->delivery_status || $result->delivered) {
+                return;
+            }
+        }
+
+        // Legacy path: use deliveries imported from FTP into shoutbomb_deliveries
         $delivery = $this->findDelivery($log);
 
         if ($delivery) {
@@ -162,6 +172,72 @@ class ShoutbombPlugin implements NotificationPlugin
                     'carrier' => $delivery->carrier,
                 ]
             );
+        }
+    }
+
+    /**
+     * Verify delivery via dcplibrary/shoutbomb-reports failure data.
+     * Absence of a failure row implies success if we already know it was submitted.
+     */
+    protected function verifyDeliveryViaReports(NotificationLog $log, VerificationResult $result): void
+    {
+        if (!$log->phone) {
+            return;
+        }
+
+        $noticeDate = Carbon::parse($log->notification_date);
+        $hours = (int) config('notices.integrations.shoutbomb_reports.date_window_hours', 24);
+        $type = in_array($log->delivery_option_id, [3]) ? 'Voice' : 'SMS';
+
+        // Query failures matching phone/type around the notice date
+        try {
+            /** @var \Dcplibrary\Notices\Models\NoticeFailureReport $failure */
+            $failure = \Dcplibrary\Notices\Models\NoticeFailureReport::query()
+                ->ofType($type)
+                ->forPhone($log->phone)
+                ->around($noticeDate, $hours)
+                ->orderBy('received_at', 'asc')
+                ->first();
+
+            if ($failure) {
+                // Mark as failed based on report
+                $result->delivered = false;
+                $result->delivery_status = 'Failed';
+                $result->failure_reason = $failure->failure_reason ?? $failure->failure_type ?? 'Delivery failed';
+
+                $result->addTimelineEvent(
+                    'delivery_failed',
+                    $failure->received_at,
+                    (string) (config('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')),
+                    [
+                        'patron_phone' => $failure->patron_phone ?? null,
+                        'notice_type' => $failure->notice_type ?? null,
+                        'failure_type' => $failure->failure_type ?? null,
+                        'reason' => $failure->failure_reason ?? null,
+                    ]
+                );
+                return;
+            }
+
+            // No failure found. If we know it was submitted, infer success
+            if ($result->submitted) {
+                $result->delivered = true;
+                $result->delivery_status = 'Delivered';
+                $result->delivered_at = $result->submitted_at ?? $noticeDate;
+
+                $result->addTimelineEvent(
+                    'delivered_inferred',
+                    $result->delivered_at,
+                    'inference',
+                    [
+                        'reason' => 'No failure found in shoutbomb-reports around notice date',
+                        'window_hours' => $hours,
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            // Swallow errors to avoid hard dependency if the table doesn't exist
+            // (e.g., integration not yet set up). Leave delivery status unset.
         }
     }
 
@@ -316,6 +392,18 @@ class ShoutbombPlugin implements NotificationPlugin
      */
     public function isEnabled(): bool
     {
-        return $this->getConfig()['enabled'] ?? true;
+        // Prefer DB-backed setting if present
+        try {
+            $settings = app(\Dcplibrary\Notices\Services\SettingsManager::class);
+            $db = $settings->get('integrations.shoutbomb_reports.enabled');
+            if ($db !== null) {
+                return (bool) $db;
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        // Fallback to config/env
+        return (bool) ($this->getConfig()['enabled'] ?? true);
     }
 }
