@@ -51,10 +51,10 @@ class ShoutbombSubmissionParser
             'title' => trim($parts[0]),
             'pickup_date' => $this->parseDate($parts[1]),
             'item_id' => trim($parts[2]), // SysHoldRequestID
-            'patron_barcode' => trim($parts[3]), // PatronID (will be matched with patron lists)
+            'patron_barcode' => trim($parts[6]), // PBarcode - actual patron barcode
             'branch_id' => (int) trim($parts[4]),
             'expiration_date' => $this->parseDate($parts[5]),
-            'phone_number' => $this->formatPhoneNumber($parts[6]),
+            'phone_number' => null, // Not in SQL output
         ];
     }
 
@@ -91,7 +91,7 @@ class ShoutbombSubmissionParser
     {
         $parts = explode('|', $line);
 
-        if (count($parts) < 3) {
+        if (count($parts) < 13) {
             return null;
         }
 
@@ -99,12 +99,12 @@ class ShoutbombSubmissionParser
         // PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PatronBarcode
         return [
             'notification_type' => 'overdue',
-            'patron_barcode' => trim($parts[0]), // PatronID
+            'patron_barcode' => trim($parts[12]), // PatronBarcode - actual patron barcode
             'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
             'expiration_date' => $this->parseDate($parts[3]), // DueDate
             'branch_id' => null,
-            'phone_number' => $this->formatPhoneNumber($parts[12]),
+            'phone_number' => null, // Not needed
         ];
     }
 
@@ -149,12 +149,12 @@ class ShoutbombSubmissionParser
 
         return [
             'notification_type' => 'renew',
-            'patron_barcode' => trim($parts[0]), // PatronID (will be matched with patron lists)
+            'patron_barcode' => trim($parts[13]), // PatronBarcode - actual patron barcode  
             'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
             'expiration_date' => $this->parseDate($parts[3]), // DueDate
             'branch_id' => null, // Not in SQL output
-            'phone_number' => $this->formatPhoneNumber($parts[12]),
+            'phone_number' => null, // Not needed
         ];
     }
 

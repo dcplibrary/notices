@@ -105,6 +105,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\DiagnoseShoutbombMatchingCommand::class,
             Console\Commands\UpdateDeliveryFromPatronListsCommand::class,
             Console\Commands\ComparePatronBarcodesCommand::class,
+            Console\Commands\UpdateDeliveryViaPatronIdCommand::class,
         ]);
 
         // Publish configuration file
