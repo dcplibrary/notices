@@ -20,7 +20,7 @@ return new class extends Migration
             // Notification details
             $table->enum('notification_type', ['holds', 'overdue', 'renew'])->index();
             $table->string('patron_barcode', 20)->index();
-            $table->string('phone_number', 20)->index();
+            $table->string('phone_number', 20)->nullable()->index();
 
             // Item details (common)
             $table->string('title')->nullable();
