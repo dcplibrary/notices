@@ -17,11 +17,13 @@ return new class extends Migration
             $table->string('delivery_option', 100)->comment('Polaris delivery method name');
             
             // Additional useful fields
+            $table->string('label')->nullable()->comment('Short label for UI');
             $table->text('description')->nullable()->comment('Extended description for UI');
-            $table->boolean('active')->default(true)->comment('Whether this method is in use');
+            $table->boolean('enabled')->default(true)->comment('Whether this method is in use');
             $table->integer('display_order')->default(0)->comment('Sort order for UI display');
             
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

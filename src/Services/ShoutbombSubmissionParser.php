@@ -51,10 +51,14 @@ class ShoutbombSubmissionParser
             'title' => trim($parts[0]),
             'pickup_date' => $this->parseDate($parts[1]),
             'item_id' => trim($parts[2]), // SysHoldRequestID
-            'patron_barcode' => trim($parts[6]), // PBarcode - actual patron barcode
+            'patron_barcode' => trim($parts[6]), // PBarcode
             'branch_id' => (int) trim($parts[4]),
             'expiration_date' => $this->parseDate($parts[5]),
-            'phone_number' => null, // Not in SQL output
+            'item_record_id' => null,
+            'renewals' => null,
+            'bibliographic_record_id' => null,
+            'renewal_limit' => null,
+            'phone_number' => null,
         ];
     }
 
@@ -99,12 +103,17 @@ class ShoutbombSubmissionParser
         // PatronID|ItemBarcode|Title|DueDate|ItemRecordID|Dummy1|Dummy2|Dummy3|Dummy4|Renewals|BibRecordID|RenewalLimit|PatronBarcode
         return [
             'notification_type' => 'overdue',
-            'patron_barcode' => trim($parts[12]), // PatronBarcode - actual patron barcode
+            'patron_barcode' => trim($parts[12]), // PatronBarcode
             'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
             'expiration_date' => $this->parseDate($parts[3]), // DueDate
+            'item_record_id' => (int) trim($parts[4]),
+            'renewals' => (int) trim($parts[9]),
+            'bibliographic_record_id' => (int) trim($parts[10]),
+            'renewal_limit' => (int) trim($parts[11]),
             'branch_id' => null,
-            'phone_number' => null, // Not needed
+            'pickup_date' => null,
+            'phone_number' => null,
         ];
     }
 
@@ -149,12 +158,17 @@ class ShoutbombSubmissionParser
 
         return [
             'notification_type' => 'renew',
-            'patron_barcode' => trim($parts[13]), // PatronBarcode - actual patron barcode  
+            'patron_barcode' => trim($parts[12]), // PatronBarcode
             'item_id' => trim($parts[1]), // ItemBarcode
             'title' => trim($parts[2]),
             'expiration_date' => $this->parseDate($parts[3]), // DueDate
-            'branch_id' => null, // Not in SQL output
-            'phone_number' => null, // Not needed
+            'item_record_id' => (int) trim($parts[4]),
+            'renewals' => (int) trim($parts[9]),
+            'bibliographic_record_id' => (int) trim($parts[10]),
+            'renewal_limit' => (int) trim($parts[11]),
+            'branch_id' => null,
+            'pickup_date' => null,
+            'phone_number' => null,
         ];
     }
 

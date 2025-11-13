@@ -22,12 +22,20 @@ return new class extends Migration
             $table->string('patron_barcode', 20)->index();
             $table->string('phone_number', 20)->index();
 
-            // Item details (for holds)
+            // Item details (common)
             $table->string('title')->nullable();
-            $table->string('item_id', 50)->nullable();
-            $table->integer('branch_id')->nullable();
-            $table->date('pickup_date')->nullable();
-            $table->date('expiration_date')->nullable();
+            
+            // Hold-specific fields
+            $table->string('item_id', 50)->nullable()->comment('SysHoldRequestID for holds, ItemBarcode for overdue/renew');
+            $table->integer('branch_id')->nullable()->comment('PickupOrganizationID for holds');
+            $table->date('pickup_date')->nullable()->comment('CreationDate for holds');
+            $table->date('expiration_date')->nullable()->comment('HoldTillDate for holds, DueDate for overdue/renew');
+            
+            // Overdue/Renew-specific fields
+            $table->integer('item_record_id')->nullable()->comment('ItemRecordID for overdue/renew');
+            $table->integer('renewals')->nullable()->comment('Renewal count for overdue/renew');
+            $table->integer('bibliographic_record_id')->nullable()->comment('BibRecordID for overdue/renew');
+            $table->integer('renewal_limit')->nullable()->comment('RenewalLimit for overdue/renew');
 
             // Submission tracking
             $table->dateTime('submitted_at')->index();

@@ -265,6 +265,7 @@ class ShoutbombSubmissionImporter
         foreach ($submissions as $submission) {
             $submission['submitted_at'] = $submittedAt;
             $submission['source_file'] = $filename;
+            $submission['delivery_type'] = null; // No patron lists in local import
             $submission['imported_at'] = now();
 
             ShoutbombSubmission::create($submission);

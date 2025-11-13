@@ -33,6 +33,8 @@ return new class extends Migration
             $table->integer('notification_type_id')->index()->comment('1=Overdue, 2=Hold, 7=AlmostOverdue, etc.');
             $table->integer('delivery_option_id')->index()->comment('1=Mail, 2=Email, 3=Voice, 8=SMS');
             $table->integer('notification_status_id')->index()->comment('12=Success, 14=Failed, etc.');
+            $table->enum('status', ['completed', 'pending', 'failed'])->default('pending')->index()->comment('Simplified status for queries');
+            $table->text('status_description')->nullable()->comment('Human-readable status description');
 
             // Delivery information
             $table->string('delivery_string')->nullable()->comment('Email address, phone number, or mailing address');
