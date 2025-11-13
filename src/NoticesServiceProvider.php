@@ -133,14 +133,10 @@ class NoticesServiceProvider extends ServiceProvider
 
         // Auto-seed reference data when running plain `db:seed` (no --class) to include lookup tables
         if ($this->app->runningInConsole() && $this->shouldAutoSeedReference()) {
-            try {
-                // Prevent double-run in case of nested calls
-                if (!defined('NOTICES_REFERENCE_SEEDED')) {
-                    define('NOTICES_REFERENCE_SEEDED', true);
-                    (new \Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder())->run();
-                }
-            } catch (\Throwable $e) {
-                // Swallow errors to avoid breaking user seeding; they can run the seeder manually if desired
+            // Prevent double-run in case of nested calls
+            if (!defined('NOTICES_REFERENCE_SEEDED')) {
+                define('NOTICES_REFERENCE_SEEDED', true);
+                $this->call(\Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder::class);
             }
         }
     }
