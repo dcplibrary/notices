@@ -136,7 +136,9 @@ class NoticesServiceProvider extends ServiceProvider
             // Prevent double-run in case of nested calls
             if (!defined('NOTICES_REFERENCE_SEEDED')) {
                 define('NOTICES_REFERENCE_SEEDED', true);
-                $this->call(\Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder::class);
+                $seeder = new \Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder();
+                $seeder->setContainer($this->app);
+                $seeder->run();
             }
         }
     }
