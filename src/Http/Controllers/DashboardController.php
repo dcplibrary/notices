@@ -94,6 +94,13 @@ class DashboardController extends Controller
                 ->orderBy('summary_date')
                 ->get();
         }
+        // Ensure summary_date is a Carbon instance for the view
+        $trendData = $trendData->map(function ($row) {
+            if (is_string($row->summary_date)) {
+                $row->summary_date = Carbon::parse($row->summary_date);
+            }
+            return $row;
+        });
 
         // Success rate trend (from analytics)
         $successRateTrend = DailyNotificationSummary::dateRange($startDate, $endDate)
@@ -125,6 +132,13 @@ class DashboardController extends Controller
                 ->orderBy('summary_date')
                 ->get();
         }
+        // Ensure summary_date is a Carbon instance for the view
+        $successRateTrend = $successRateTrend->map(function ($row) {
+            if (is_string($row->summary_date)) {
+                $row->summary_date = Carbon::parse($row->summary_date);
+            }
+            return $row;
+        });
 
         // Type distribution with detailed breakdown (from analytics)
         $typeDistribution = DailyNotificationSummary::dateRange($startDate, $endDate)
