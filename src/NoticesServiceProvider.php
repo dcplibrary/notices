@@ -100,6 +100,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
             Console\Commands\NormalizePhonesCommand::class,
+            Console\Commands\UpdateNotificationStatusCommand::class,
         ]);
 
         // Publish configuration file

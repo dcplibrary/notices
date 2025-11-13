@@ -118,6 +118,18 @@ class PolarisNotificationLog extends Model
         
         // Get primary item info (first hold/overdue item if available)
         $itemInfo = $this->getPrimaryItemInfo();
+        
+        // Map notification_status_id to simplified status field
+        $completedStatuses = [1, 2, 12, 15, 16];
+        $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
+        
+        if (in_array($this->NotificationStatusID, $completedStatuses)) {
+            $status = 'completed';
+        } elseif (in_array($this->NotificationStatusID, $failedStatuses)) {
+            $status = 'failed';
+        } else {
+            $status = 'pending';
+        }
 
         return [
             'polaris_log_id' => $this->NotificationLogID,
@@ -132,6 +144,7 @@ class PolarisNotificationLog extends Model
             'notification_type_id' => $this->NotificationTypeID,
             'delivery_option_id' => $this->DeliveryOptionID,
             'notification_status_id' => $this->NotificationStatusID,
+            'status' => $status,
             'delivery_string' => $this->DeliveryString,
             'holds_count' => $this->HoldsCount ?? 0,
             'overdues_count' => $this->OverduesCount ?? 0,
