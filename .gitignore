@@ -1,0 +1,59 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# IDE - PhpStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# OS - Windows
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Testing
+.phpunit.result.cache
+.phpunit.cache/
+coverage/
+coverage-html/
+.coverage
+*.clover
+junit.xml
+
+# Code Quality
+.php-cs-fixer.cache
+.phpstan.cache
+
+# Environment
+.env*
+!.env.example
+
+# Composer
+composer.phar
+composer.lock
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Laravel
+/bootstrap/compiled.php
+/app/storage/
+/storage/
+
+# Logs
+*.log

@@ -1,0 +1,41 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.2
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+        tools: php-cs-fixer, phpstan
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-interaction
+
+    - name: Check code style
+      run: |
+        if [ -f ".php-cs-fixer.php" ]; then
+          vendor/bin/php-cs-fixer fix --dry-run --diff
+        else
+          echo "No .php-cs-fixer.php found, skipping code style check"
+        fi
+
+    - name: Run static analysis
+      run: |
+        if [ -f "phpstan.neon" ]; then
+          vendor/bin/phpstan analyse
+        else
+          echo "No phpstan.neon found, skipping static analysis"
+        fi
