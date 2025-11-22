@@ -1,0 +1,26 @@
+services:
+  web:
+    container_name: notifications
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    expose:
+      - "80"
+      - "443"
+    environment:
+      VIRTUAL_HOST: notifications.dcplibrary.org
+    volumes:
+      - .:/var/www
+      - .docker/sites-enabled:/etc/apache2/sites-enabled
+    restart: always
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external:
+      name: nginx-proxy
+
+volumes:
+  mysql_data:
+    driver: local

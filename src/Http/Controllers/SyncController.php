@@ -1,0 +1,382 @@
+<?php
+
+namespace Dcplibrary\Notices\Http\Controllers;
+
+use Dcplibrary\Notices\Models\SyncLog;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class SyncController extends Controller
+{
+    public function __construct()
+    {
+        // Admin only
+        $this->middleware(function ($request, $next) {
+            if (!Auth::check() || !Auth::user()->inGroup('Computer Services')) {
+                abort(403, 'Unauthorized');
+            }
+            return $next($request);
+        });
+    }
+
+    /**
+     * Run all sync operations: Polaris import → Shoutbomb import → Aggregation
+     */
+    public function syncAll(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'sync_all',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        $results = [];
+        $hasErrors = false;
+
+        // Step 1: Import from Polaris
+        try {
+            $polarisResult = $this->runImportPolaris();
+            $results['polaris'] = $polarisResult;
+            if ($polarisResult['status'] === 'error') {
+                $hasErrors = true;
+            }
+        } catch (\Exception $e) {
+            $results['polaris'] = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            $hasErrors = true;
+        }
+
+        // Step 2: Import from Shoutbomb (continue even if Polaris failed)
+        try {
+            $shoutbombResult = $this->runImportShoutbomb();
+            $results['shoutbomb'] = $shoutbombResult;
+            if ($shoutbombResult['status'] === 'error') {
+                $hasErrors = true;
+            }
+        } catch (\Exception $e) {
+            $results['shoutbomb'] = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            $hasErrors = true;
+        }
+
+        // Step 3: Run aggregation (continue even if imports had errors)
+        try {
+            $aggregateResult = $this->runAggregate();
+            $results['aggregate'] = $aggregateResult;
+            if ($aggregateResult['status'] === 'error') {
+                $hasErrors = true;
+            }
+        } catch (\Exception $e) {
+            $results['aggregate'] = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            $hasErrors = true;
+        }
+
+        // Calculate total records processed
+        $totalRecords = ($results['polaris']['records'] ?? 0) + 
+                       ($results['shoutbomb']['records'] ?? 0);
+
+        if ($hasErrors) {
+            $log->markCompletedWithErrors($results, 'One or more operations had errors');
+        } else {
+            $log->markCompleted($results, $totalRecords);
+        }
+
+        return response()->json([
+            'success' => !$hasErrors,
+            'results' => $results,
+            'log_id' => $log->id,
+        ]);
+    }
+
+    /**
+     * Import from Polaris only
+     */
+    public function importPolaris(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_polaris',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportPolaris();
+            
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['polaris' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['polaris' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Import from Shoutbomb only
+     */
+    public function importShoutbomb(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_shoutbomb',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportShoutbomb();
+            
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['shoutbomb' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['shoutbomb' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports)
+     */
+    public function importShoutbombReports(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_shoutbomb_reports',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportShoutbombReports();
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['shoutbomb_reports' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['shoutbomb_reports' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Run aggregation only
+     */
+    public function aggregate(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'aggregate',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runAggregate();
+            
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['aggregate' => $result]);
+            } else {
+                $log->markCompletedWithErrors(['aggregate' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Test database connections
+     */
+    public function testConnections(): JsonResponse
+    {
+        $results = [];
+
+        // Test Polaris connection
+        try {
+            DB::connection('polaris')->getPdo();
+            $results['polaris'] = [
+                'status' => 'success',
+                'message' => 'Connected successfully',
+            ];
+        } catch (\Exception $e) {
+            $results['polaris'] = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+        }
+
+        // Test Shoutbomb FTP (if enabled)
+        if (config('notices.shoutbomb.enabled')) {
+            try {
+                // Simple FTP connection test
+                $ftp = ftp_connect(
+                    config('notices.shoutbomb.ftp.host'),
+                    config('notices.shoutbomb.ftp.port'),
+                    config('notices.shoutbomb.ftp.timeout', 30)
+                );
+
+                if ($ftp && ftp_login($ftp, 
+                    config('notices.shoutbomb.ftp.username'), 
+                    config('notices.shoutbomb.ftp.password')
+                )) {
+                    $results['shoutbomb_ftp'] = [
+                        'status' => 'success',
+                        'message' => 'Connected successfully',
+                    ];
+                    ftp_close($ftp);
+                } else {
+                    $results['shoutbomb_ftp'] = [
+                        'status' => 'error',
+                        'message' => 'Failed to connect or login',
+                    ];
+                }
+            } catch (\Exception $e) {
+                $results['shoutbomb_ftp'] = [
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                ];
+            }
+        } else {
+            $results['shoutbomb_ftp'] = [
+                'status' => 'disabled',
+                'message' => 'Shoutbomb imports are disabled',
+            ];
+        }
+
+        return response()->json($results);
+    }
+
+    /**
+     * Get sync logs
+     */
+    public function logs(Request $request): JsonResponse
+    {
+        $logs = SyncLog::latest('started_at')
+            ->limit($request->input('limit', 20))
+            ->get();
+
+        return response()->json($logs);
+    }
+
+    /**
+     * Run Polaris import command
+     */
+    private function runImportPolaris(): array
+    {
+        \Log::info('All available commands: ' . json_encode(array_keys(Artisan::all())));
+        \Log::info('Notices commands: ' . json_encode(array_filter(array_keys(Artisan::all()), fn($k) => str_starts_with($k, 'notices:'))));
+        $exitCode = Artisan::call('notices:import-polaris');
+        $output = Artisan::output();
+
+        // Parse output to get record count
+        preg_match('/Imported (\d+) notification/', $output, $matches);
+        $records = isset($matches[1]) ? (int) $matches[1] : 0;
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run Shoutbomb import command
+     */
+    private function runImportShoutbomb(): array
+    {
+        $exitCode = Artisan::call('notices:import-shoutbomb');
+        $output = Artisan::output();
+
+        // Parse output to get record count
+        preg_match('/Imported (\d+)/', $output, $matches);
+        $records = isset($matches[1]) ? (int) $matches[1] : 0;
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run Shoutbomb reports check via external package
+     */
+    private function runImportShoutbombReports(): array
+    {
+        // Preflight: ensure the command is registered so web-triggered Artisan::call works
+        $commands = Artisan::all();
+        if (!array_key_exists('shoutbomb:check-reports', $commands)) {
+            return [
+                'status' => 'error',
+                'message' => "Command 'shoutbomb:check-reports' is not registered. Ensure dcplibrary/shoutbomb-reports is installed and its ServiceProvider registers commands outside runningInConsole.",
+            ];
+        }
+
+        $exitCode = Artisan::call('shoutbomb:check-reports');
+        $output = Artisan::output();
+
+        // Attempt to parse a generic processed count if present
+        preg_match('/Processed\s+(\d+)/i', $output, $matches);
+        $records = isset($matches[1]) ? (int) $matches[1] : null;
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run aggregation command
+     */
+    private function runAggregate(): array
+    {
+        $exitCode = Artisan::call('notices:aggregate');
+        $output = Artisan::output();
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+        ];
+    }
+}
