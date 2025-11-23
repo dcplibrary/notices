@@ -1,31 +1,37 @@
-# Package Merge: NoticeFailureReport Migration Guide
+# Package Merge: Shoutbomb Models Migration Guide
 
 ## Overview
 
-As of version 1.x, the `NoticeFailureReport` model and related database migrations have been **moved from `dcplibrary/shoutbomb-reports` to `dcplibrary/notices`** to consolidate all notice-related data models in one package.
+As of version 1.x, the following models and database migrations have been **moved from `dcplibrary/shoutbomb-reports` to `dcplibrary/notices`** to consolidate all notice-related data models in one package:
+
+- ✅ `NoticeFailureReport` - Shoutbomb failure reports (opted-out, invalid, undelivered)
+- ✅ `ShoutbombMonthlyStat` - Monthly statistics from Shoutbomb comprehensive reports
 
 ## What Changed
 
 ### In `dcplibrary/notices` (this package)
 
 **Added:**
+
+**NoticeFailureReport:**
 - ✅ `src/Models/NoticeFailureReport.php` - Full model with all functionality
 - ✅ `src/Database/Migrations/2025_11_23_000001_create_notice_failure_reports_table.php` - Table creation
 - ✅ `src/Database/factories/NoticeFailureReportFactory.php` - Factory for testing
+- Features: All scopes (optedOut, invalid, forPatron), helper methods (markAsProcessed, isOptedOut)
 
-**Features:**
-- All scopes from shoutbomb-reports (optedOut, invalid, forPatron, etc.)
-- All helper methods (markAsProcessed, isOptedOut, etc.)
-- Backwards-compatible table name configuration
-- Complete factory with states for testing
+**ShoutbombMonthlyStat:**
+- ✅ `src/Models/ShoutbombMonthlyStat.php` - Full model with all functionality
+- ✅ `src/Database/Migrations/2025_11_23_000002_create_shoutbomb_monthly_stats_table.php` - Table creation
+- ✅ `src/Database/factories/ShoutbombMonthlyStatFactory.php` - Factory for testing
+- Features: All scopes (forMonth, forBranch, recent), virtual attributes (total_notices, text_percentage)
 
 ### In `dcplibrary/shoutbomb-reports`
 
 **Changed:**
 - ⚠️ Now **requires** `dcplibrary/notices` as a dependency
-- ⚠️ `NoticeFailureReport` model replaced with class alias (for backwards compatibility)
-- ⚠️ Migrations replaced with deprecation stubs
-- ✅ `CheckReportsCommand` updated to import from notices package
+- ⚠️ `NoticeFailureReport` and `ShoutbombMonthlyStat` models replaced with class aliases
+- ⚠️ All migrations replaced with deprecation stubs
+- ✅ `CheckReportsCommand` updated to import both models from notices package
 
 ## Migration Path
 
@@ -80,15 +86,17 @@ php artisan migrate
 
 ## Code Changes Required
 
-### No Changes Needed (Class Alias)
+### No Changes Needed (Class Aliases)
 
-If you're using the old namespace, it will continue to work via class alias:
+If you're using the old namespaces, they will continue to work via class aliases:
 
 ```php
-// This still works (class alias)
+// These still work (class aliases)
 use Dcplibrary\ShoutbombFailureReports\Models\NoticeFailureReport;
+use Dcplibrary\ShoutbombFailureReports\Models\ShoutbombMonthlyStat;
 
 $failures = NoticeFailureReport::optedOut()->recent(7)->get();
+$stats = ShoutbombMonthlyStat::forMonth(2024, 11)->first();
 ```
 
 ### Recommended: Update Imports
@@ -96,10 +104,12 @@ $failures = NoticeFailureReport::optedOut()->recent(7)->get();
 For clarity and future compatibility, update your imports to the new namespace:
 
 ```php
-// Recommended: Use new namespace
+// Recommended: Use new namespaces
 use Dcplibrary\Notices\Models\NoticeFailureReport;
+use Dcplibrary\Notices\Models\ShoutbombMonthlyStat;
 
 $failures = NoticeFailureReport::optedOut()->recent(7)->get();
+$stats = ShoutbombMonthlyStat::forMonth(2024, 11)->first();
 ```
 
 ## Configuration
@@ -128,12 +138,17 @@ Both packages check the same environment variable, so existing configurations co
 
 ## Breaking Changes
 
-### BREAKING: Namespace Change
+### BREAKING: Namespace Changes
 
+**NoticeFailureReport:**
 - **Old:** `Dcplibrary\ShoutbombFailureReports\Models\NoticeFailureReport`
 - **New:** `Dcplibrary\Notices\Models\NoticeFailureReport`
 
-**Mitigation:** A class alias provides backwards compatibility. Update imports at your convenience.
+**ShoutbombMonthlyStat:**
+- **Old:** `Dcplibrary\ShoutbombFailureReports\Models\ShoutbombMonthlyStat`
+- **New:** `Dcplibrary\Notices\Models\ShoutbombMonthlyStat`
+
+**Mitigation:** Class aliases provide backwards compatibility. Update imports at your convenience.
 
 ### BREAKING: Migration Location
 
@@ -180,15 +195,17 @@ Both packages check the same environment variable, so existing configurations co
 After upgrading, verify the integration:
 
 ```bash
-# Check that the model is accessible
+# Check that both models are accessible
 php artisan tinker
 >>> \Dcplibrary\Notices\Models\NoticeFailureReport::count();
+>>> \Dcplibrary\Notices\Models\ShoutbombMonthlyStat::count();
 
 # Run a test import
 php artisan shoutbomb:check-reports --dry-run
 
 # Verify data is being written
 >>> \Dcplibrary\Notices\Models\NoticeFailureReport::latest()->first();
+>>> \Dcplibrary\Notices\Models\ShoutbombMonthlyStat::latest()->first();
 ```
 
 ## Support
@@ -196,7 +213,7 @@ php artisan shoutbomb:check-reports --dry-run
 If you encounter issues during migration:
 
 1. Check that both packages are updated: `composer show dcplibrary/notices dcplibrary/shoutbomb-reports`
-2. Verify table exists: `php artisan db:show notice_failure_reports`
+2. Verify tables exist: `php artisan db:show notice_failure_reports` and `php artisan db:show shoutbomb_monthly_stats`
 3. Check configuration: `config/notices.php` and `config/shoutbomb-reports.php`
 4. Review logs: `storage/logs/laravel.log`
 
