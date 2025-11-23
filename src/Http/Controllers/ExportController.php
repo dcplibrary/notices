@@ -10,8 +10,8 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Dcplibrary\Notices\Database\Seeders\NotificationStatus;
-use Dcplibrary\Notices\Database\Seeders\NotificationType;
+use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 
 class ExportController extends Controller
 {

@@ -11,8 +11,8 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Dcplibrary\Notices\Database\Seeders\NotificationStatus;
-use Dcplibrary\Notices\Database\Seeders\NotificationType;
+use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 
 class SettingsController extends Controller
 {
