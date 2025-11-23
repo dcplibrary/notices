@@ -534,6 +534,7 @@ Comprehensive documentation is available in the `docs/` directory:
 ### Architecture & Technical Details
 - **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture: controllers, services, commands, models, data flow, and view integration
 - **[Doctrine Annotations](docs/DOCTRINE_ANNOTATIONS.md)** - Why this package doesn't use doctrine/annotations (uses Laravel Eloquent)
+- **[Package Merge Guide](docs/PACKAGE_MERGE.md)** - Migration guide for NoticeFailureReport merge from shoutbomb-reports package
 
 ## Requirements
 
