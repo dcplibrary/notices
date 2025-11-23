@@ -204,6 +204,8 @@ class NoticesServiceProvider extends ServiceProvider
             $settings = $this->app->make(SettingsManager::class);
 
             // Import all notification data daily using the unified import command
+            // This includes: patron lists, phone notices, notification exports,
+            // enrichment, and aggregation - all in one step
             if ($settings->get('scheduler.import_enabled', true)) {
                 $time = $settings->get('scheduler.import_time', '09:00');
                 $schedule->command('notices:import --days=1')
@@ -215,14 +217,6 @@ class NoticesServiceProvider extends ServiceProvider
             if ($settings->get('scheduler.import_email_enabled', true)) {
                 $time = $settings->get('scheduler.import_email_time', '09:30');
                 $schedule->command('notices:import-email-reports --mark-read')
-                    ->dailyAt($time)
-                    ->withoutOverlapping();
-            }
-
-            // Aggregate yesterday's data at midnight
-            if ($settings->get('scheduler.aggregate_enabled', true)) {
-                $time = $settings->get('scheduler.aggregate_time', '00:30');
-                $schedule->command('notices:aggregate')
                     ->dailyAt($time)
                     ->withoutOverlapping();
             }
