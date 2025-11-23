@@ -8,6 +8,7 @@ use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
 use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
+use Dcplibrary\Notices\Commands\SyncAllCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Services\NoticeExportService;
@@ -84,6 +85,7 @@ class NoticesServiceProvider extends ServiceProvider
         // Register commands (must be outside runningInConsole so Artisan::call() from web works)
         $this->commands([
             InstallCommand::class,
+            SyncAllCommand::class,
             ImportNotifications::class,
             ImportShoutbombReports::class,
             ImportEmailReports::class,
