@@ -3,14 +3,16 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
-<div x-data="{ 
+<div x-data="{
     showDatePicker: false,
     showCustomDateModal: false,
     customStartDate: '',
     customEndDate: '',
     syncing: false,
     syncMessage: '',
-    syncStatus: ''
+    syncStatus: '',
+    syncStep: '',
+    reloadCountdown: 0
 }">
     <!-- Header -->
     <div class="sm:flex sm:items-center sm:justify-between mb-6">
@@ -25,15 +27,16 @@
             @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
             <button @click="syncNow()"
                     :disabled="syncing"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg x-show="!syncing" class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    :class="{ 'scale-95': syncing, 'hover:scale-105': !syncing }">
+                <svg x-show="!syncing" class="h-5 w-5 mr-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
                 <svg x-show="syncing" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span x-text="syncing ? 'Syncing...' : 'Sync Now'"></span>
+                <span x-text="syncing ? syncStep || 'Syncing...' : 'Sync Now'"></span>
             </button>
             @endif
             
@@ -153,44 +156,75 @@
     </div>
 
     <!-- Sync Status Toast -->
-    <div x-show="syncMessage" 
+    <div x-show="syncMessage"
          x-cloak
          x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:enter-start="opacity-0 transform translate-y-2 scale-95"
+         x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
          x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed top-4 right-4 z-50 max-w-sm w-full">
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="fixed top-4 right-4 z-50 max-w-md w-full">
         <div :class="{
-            'bg-green-50 border-green-200': syncStatus === 'success',
-            'bg-red-50 border-red-200': syncStatus === 'error',
-            'bg-blue-50 border-blue-200': syncStatus === 'info'
-        }" class="border-l-4 p-4 rounded-lg shadow-lg">
+            'bg-green-50 border-green-500': syncStatus === 'success',
+            'bg-red-50 border-red-500': syncStatus === 'error',
+            'bg-blue-50 border-blue-500': syncStatus === 'info'
+        }" class="border-l-4 p-4 rounded-lg shadow-xl">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
-                    <svg x-show="syncStatus === 'success'" class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>
-                    <svg x-show="syncStatus === 'error'" class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    <svg x-show="syncStatus === 'info'" class="animate-spin h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <!-- Success icon with checkmark animation -->
+                    <template x-if="syncStatus === 'success'">
+                        <div class="relative">
+                            <svg class="h-6 w-6 text-green-500 animate-checkmark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </template>
+                    <!-- Error icon -->
+                    <template x-if="syncStatus === 'error'">
+                        <svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </template>
+                    <!-- Loading spinner -->
+                    <template x-if="syncStatus === 'info'">
+                        <svg class="animate-spin h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </template>
                 </div>
                 <div class="ml-3 flex-1">
-                    <p class="text-sm font-medium" 
+                    <p class="text-sm font-semibold"
                        :class="{
                            'text-green-800': syncStatus === 'success',
                            'text-red-800': syncStatus === 'error',
                            'text-blue-800': syncStatus === 'info'
                        }"
                        x-text="syncMessage"></p>
+                    <!-- Countdown indicator for success -->
+                    <template x-if="syncStatus === 'success' && reloadCountdown > 0">
+                        <div class="mt-2">
+                            <p class="text-xs text-green-600 mb-1">Refreshing in <span x-text="reloadCountdown"></span>s...</p>
+                            <div class="w-full bg-green-200 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-green-500 h-1.5 rounded-full transition-all duration-1000 ease-linear"
+                                     :style="'width: ' + ((3 - reloadCountdown) / 3 * 100) + '%'"></div>
+                            </div>
+                        </div>
+                    </template>
+                    <!-- Progress steps during sync -->
+                    <template x-if="syncStatus === 'info' && syncStep">
+                        <div class="mt-2 flex items-center space-x-1.5">
+                            <span class="inline-flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            <span class="inline-flex h-2 w-2 rounded-full bg-blue-400 animate-pulse animate-pulse-delay-1"></span>
+                            <span class="inline-flex h-2 w-2 rounded-full bg-blue-300 animate-pulse animate-pulse-delay-2"></span>
+                        </div>
+                    </template>
                 </div>
-                <button @click="syncMessage = ''" class="ml-auto flex-shrink-0">
-                    <svg class="h-5 w-5 text-gray-400 hover:text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                <button @click="syncMessage = ''; reloadCountdown = 0"
+                        class="ml-auto flex-shrink-0 rounded-full p-1 hover:bg-gray-200 transition-colors"
+                        x-show="syncStatus !== 'info'">
+                    <svg class="h-5 w-5 text-gray-400 hover:text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                 </button>
@@ -331,6 +365,36 @@
 @push('styles')
 <style>
     [x-cloak] { display: none !important; }
+
+    /* Sync button pulse effect when syncing */
+    @keyframes sync-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+        50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
+    }
+    button[disabled].bg-indigo-600 {
+        animation: sync-pulse 2s infinite;
+    }
+
+    /* Success toast entrance animation */
+    @keyframes toast-success {
+        0% { transform: translateY(-10px) scale(0.95); opacity: 0; }
+        50% { transform: translateY(5px) scale(1.02); }
+        100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* Checkmark draw animation */
+    @keyframes checkmark-draw {
+        0% { stroke-dashoffset: 50; }
+        100% { stroke-dashoffset: 0; }
+    }
+    .animate-checkmark path {
+        stroke-dasharray: 50;
+        animation: checkmark-draw 0.5s ease-out forwards;
+    }
+
+    /* Staggered dot pulse */
+    .animate-pulse-delay-1 { animation-delay: 0.15s; }
+    .animate-pulse-delay-2 { animation-delay: 0.3s; }
 </style>
 @endpush
 
@@ -550,10 +614,21 @@ new Chart(deliveryCtx, {
 window.syncNow = async function() {
     const component = Alpine.$data(document.querySelector('[x-data]'));
     component.syncing = true;
-    component.syncMessage = 'Starting sync...';
+    component.syncStep = 'Starting...';
+    component.syncMessage = 'Initializing sync process...';
     component.syncStatus = 'info';
+    component.reloadCountdown = 0;
+
+    // Progress step simulation for better UX
+    const updateStep = (step, message) => {
+        component.syncStep = step;
+        component.syncMessage = message;
+    };
 
     try {
+        // Show initial progress
+        updateStep('Connecting...', 'Connecting to data sources...');
+
         const response = await fetch('/notices/sync/all', {
             method: 'POST',
             headers: {
@@ -562,33 +637,48 @@ window.syncNow = async function() {
             }
         });
 
+        // Show processing state while parsing response
+        updateStep('Processing...', 'Processing imported data...');
+
         const data = await response.json();
 
         if (data.success) {
             const polarisRecords = data.results?.polaris?.records || 0;
             const shoutbombRecords = data.results?.shoutbomb?.records || 0;
-            component.syncMessage = `✓ Sync complete! Imported ${polarisRecords + shoutbombRecords} records.`;
+            const totalRecords = polarisRecords + shoutbombRecords;
+
+            component.syncing = false;
+            component.syncStep = '';
+            component.syncMessage = `Sync complete! Imported ${totalRecords.toLocaleString()} records.`;
             component.syncStatus = 'success';
-            
-            // Reload page after 3 seconds to show new data
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
+
+            // Start countdown with visual feedback
+            component.reloadCountdown = 3;
+
+            const countdownInterval = setInterval(() => {
+                component.reloadCountdown--;
+                if (component.reloadCountdown <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.reload();
+                }
+            }, 1000);
         } else {
-            component.syncMessage = 'Sync completed with some errors. Check Settings > Sync for details.';
+            component.syncing = false;
+            component.syncStep = '';
+            component.syncMessage = 'Sync completed with errors. Check Settings for details.';
             component.syncStatus = 'error';
             setTimeout(() => {
                 component.syncMessage = '';
-            }, 5000);
+            }, 6000);
         }
     } catch (error) {
+        component.syncing = false;
+        component.syncStep = '';
         component.syncMessage = 'Sync failed: ' + error.message;
         component.syncStatus = 'error';
         setTimeout(() => {
             component.syncMessage = '';
-        }, 5000);
-    } finally {
-        component.syncing = false;
+        }, 6000);
     }
 };
 </script>
