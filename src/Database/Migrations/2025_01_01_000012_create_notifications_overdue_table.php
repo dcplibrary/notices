@@ -90,8 +90,8 @@ return new class extends Migration
 
             // Composite indexes for enrichment queries
             $table->index(['patron_id', 'item_record_id', 'export_timestamp'], 'no_patron_item_timestamp_idx');
-            $table->index(['patron_barcode', 'export_timestamp']);
-            $table->index(['export_timestamp', 'notification_type_id']);
+            $table->index(['patron_barcode', 'export_timestamp'], 'no_barcode_timestamp_idx');
+            $table->index(['export_timestamp', 'notification_type_id'], 'no_timestamp_type_idx');
         });
     }
 
