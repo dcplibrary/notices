@@ -60,7 +60,7 @@ class NoticeFailureReport extends Model
     {
         return Config::get(
             'notices.integrations.shoutbomb_reports.storage.table_name',
-            Config::get('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')
+            'notice_failure_reports'
         );
     }
 
