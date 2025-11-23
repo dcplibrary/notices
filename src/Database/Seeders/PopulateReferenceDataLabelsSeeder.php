@@ -3,6 +3,8 @@
 namespace Dcplibrary\Notices\Database\Seeders;
 
 use Dcplibrary\Notices\Models\DeliveryMethod;
+use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 use Illuminate\Database\Seeder;
 
 class PopulateReferenceDataLabelsSeeder extends Seeder

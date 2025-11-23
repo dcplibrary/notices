@@ -2,6 +2,7 @@
 
 namespace Dcplibrary\Notices\Database\Seeders;
 
+use Dcplibrary\Notices\Models\NotificationType;
 use Illuminate\Database\Seeder;
 
 class NotificationTypeSeeder extends Seeder
