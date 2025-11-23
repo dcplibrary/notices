@@ -14,16 +14,32 @@ This package uses **Laravel Eloquent ORM**, which uses:
 **This package (`dcplibrary/notices`):**
 - ✅ Has NO composer dependencies on other `dcplibrary/*` packages
 - ✅ Has NO `doctrine/annotations` dependency
-- ✅ Has an optional integration with `dcplibrary/shoutbomb-reports` (NOT a hard dependency)
+- ✅ Now owns the `NoticeFailureReport` model (merged from shoutbomb-reports)
 
-**Optional Integration:**
-The package references `dcplibrary/shoutbomb-reports` but intentionally avoids making it a hard dependency by using a lightweight model that reads the table if it exists.
+### About dcplibrary/shoutbomb-reports
 
-To check if `dcplibrary/shoutbomb-reports` (if you use it) has `doctrine/annotations`:
-```bash
-# From your main Laravel application
-composer show dcplibrary/shoutbomb-reports --all | grep -A 20 "requires"
-```
+**Findings from package analysis:**
+- ✅ Does NOT use `doctrine/annotations` in its code
+- ✅ Uses Laravel Eloquent ORM (same as notices package)
+- ✅ Uses standard PHP arrays for model configuration
+- ⚠️ `doctrine/annotations` appears in `composer.lock` as a **transitive dependency**
+  - Pulled in by `microsoft/microsoft-graph` package
+  - Not used by shoutbomb-reports code itself
+  - Safe to ignore - it's a dependency-of-a-dependency
+
+**Package Details:**
+- **Name:** dcplibrary/shoutbomb-reports
+- **Purpose:** Parse Shoutbomb report emails via Microsoft Graph API
+- **Architecture:** Laravel Eloquent models, no Doctrine annotations
+- **Integration:** Now **depends on** dcplibrary/notices package (as of v1.x)
+
+**Recent Changes (Package Merge):**
+As of version 1.x, the `NoticeFailureReport` model and its migration have been moved from shoutbomb-reports to the notices package to consolidate all notice-related models in one place. The shoutbomb-reports package now:
+- Requires `dcplibrary/notices` as a dependency
+- Uses a class alias for backwards compatibility
+- Delegates table creation to the notices package
+
+**Conclusion:** Neither notices nor shoutbomb-reports packages use doctrine/annotations. If you see it in your dependency tree, it's coming from microsoft/microsoft-graph (used by shoutbomb-reports) or other third-party packages.
 
 ## If You See doctrine/annotations in Your Project
 

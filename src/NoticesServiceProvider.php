@@ -119,7 +119,7 @@ class NoticesServiceProvider extends ServiceProvider
                 __DIR__.'/../config/notices.php' => config_path('notices.php'),
             ], 'notices-config');
 
-            // Publish migrations
+            // Publish migrations (optional - package auto-loads them)
             $this->publishes([
                 // Package migrations live in src/Database/Migrations
                 __DIR__.'/Database/Migrations' => database_path('migrations'),
@@ -132,7 +132,11 @@ class NoticesServiceProvider extends ServiceProvider
         }
 
         // Load migrations automatically from the package's migration directory
-        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        // Only if migrations haven't been published to avoid running twice
+        $publishedMigrationPath = database_path('migrations/2025_01_01_000001_create_notification_logs_table.php');
+        if (!file_exists($publishedMigrationPath)) {
+            $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        }
 
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'notices');
