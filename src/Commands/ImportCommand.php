@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\NotificationImportService;
+use Dcplibrary\Notices\Services\NotificationAggregatorService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -31,16 +32,21 @@ class ImportCommand extends Command
                             {--all : Import ALL available historical data from FTP}
                             {--type= : Import specific type only (patron-lists, phone-notices, holds, overdue, renew, failures)}
                             {--skip-enrichment : Skip the enrichment step}
+                            {--skip-aggregate : Skip the aggregation step}
                             {--dry-run : Show what would be imported without actually importing}';
 
-    protected $description = 'Import notification data from FTP exports and email reports';
+    protected $description = 'Import notification data from FTP exports, enrich, and aggregate';
 
     protected NotificationImportService $importService;
+    protected NotificationAggregatorService $aggregatorService;
 
-    public function __construct(NotificationImportService $importService)
-    {
+    public function __construct(
+        NotificationImportService $importService,
+        NotificationAggregatorService $aggregatorService
+    ) {
         parent::__construct();
         $this->importService = $importService;
+        $this->aggregatorService = $aggregatorService;
     }
 
     public function handle(): int
@@ -71,6 +77,7 @@ class ImportCommand extends Command
             'renew' => 0,
             'failures' => 0,
             'enriched' => 0,
+            'aggregated' => 0,
             'errors' => [],
         ];
 
@@ -97,6 +104,11 @@ class ImportCommand extends Command
         // Step 5: Run enrichment
         if (!$this->option('skip-enrichment') && !$isDryRun) {
             $this->runEnrichment($results);
+        }
+
+        // Step 6: Run aggregation
+        if (!$this->option('skip-aggregate') && !$isDryRun) {
+            $this->runAggregation($startDate, $endDate, $results);
         }
 
         // Display summary
@@ -269,6 +281,24 @@ class ImportCommand extends Command
         $this->newLine();
     }
 
+    protected function runAggregation(Carbon $startDate, Carbon $endDate, array &$results): void
+    {
+        $this->line('→ Step 6: Running aggregation...');
+        $this->line('  - Calculating daily notification summaries');
+
+        try {
+            $aggregated = $this->aggregatorService->aggregateDateRange($startDate, $endDate);
+            $results['aggregated'] = $aggregated['combinations_aggregated'] ?? 0;
+            $this->info("  ✓ Aggregated {$results['aggregated']} daily summaries");
+
+        } catch (\Exception $e) {
+            $this->error("  ✗ Aggregation failed: {$e->getMessage()}");
+            $results['errors'][] = "Aggregation: {$e->getMessage()}";
+        }
+
+        $this->newLine();
+    }
+
     protected function displaySummary(array $results): void
     {
         $this->info('═══════════════════════════════════════════════════');
@@ -289,11 +319,16 @@ class ImportCommand extends Command
             ]
         );
 
-        if (!empty($results['enriched'])) {
+        if (!empty($results['enriched']) || !empty($results['aggregated'])) {
             $this->newLine();
-            $this->line('Enrichment:');
-            $this->line("  Notifications enriched: {$results['enriched']['notifications']}");
-            $this->line("  Failures enriched: {$results['enriched']['failures']}");
+            $this->line('Post-processing:');
+            if (!empty($results['enriched'])) {
+                $this->line("  Notifications enriched: {$results['enriched']['notifications']}");
+                $this->line("  Failures enriched: {$results['enriched']['failures']}");
+            }
+            if (!empty($results['aggregated'])) {
+                $this->line("  Daily summaries created: {$results['aggregated']}");
+            }
         }
 
         if (!empty($results['errors'])) {
