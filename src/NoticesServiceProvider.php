@@ -6,6 +6,7 @@ use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
+use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
@@ -82,6 +83,7 @@ class NoticesServiceProvider extends ServiceProvider
     {
         // Register commands (must be outside runningInConsole so Artisan::call() from web works)
         $this->commands([
+            InstallCommand::class,
             ImportNotifications::class,
             ImportShoutbombReports::class,
             ImportEmailReports::class,
