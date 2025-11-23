@@ -16,14 +16,27 @@ This package uses **Laravel Eloquent ORM**, which uses:
 - ✅ Has NO `doctrine/annotations` dependency
 - ✅ Has an optional integration with `dcplibrary/shoutbomb-reports` (NOT a hard dependency)
 
-**Optional Integration:**
-The package references `dcplibrary/shoutbomb-reports` but intentionally avoids making it a hard dependency by using a lightweight model that reads the table if it exists.
+### About dcplibrary/shoutbomb-reports
 
-To check if `dcplibrary/shoutbomb-reports` (if you use it) has `doctrine/annotations`:
-```bash
-# From your main Laravel application
-composer show dcplibrary/shoutbomb-reports --all | grep -A 20 "requires"
-```
+**Findings from package analysis:**
+- ✅ Does NOT use `doctrine/annotations` in its code
+- ✅ Uses Laravel Eloquent ORM (same as notices package)
+- ✅ Uses standard PHP arrays for model configuration
+- ⚠️ `doctrine/annotations` appears in `composer.lock` as a **transitive dependency**
+  - Pulled in by `microsoft/microsoft-graph` package
+  - Not used by shoutbomb-reports code itself
+  - Safe to ignore - it's a dependency-of-a-dependency
+
+**Package Details:**
+- **Name:** dcplibrary/shoutbomb-reports
+- **Purpose:** Parse Shoutbomb report emails via Microsoft Graph API
+- **Architecture:** Laravel Eloquent models, no Doctrine annotations
+- **Integration:** Writes to `notice_failure_reports` table that notices package can read
+
+**Optional Integration:**
+The notices package references `dcplibrary/shoutbomb-reports` but intentionally avoids making it a hard dependency by using a lightweight model that reads the table if it exists.
+
+**Conclusion:** Neither notices nor shoutbomb-reports packages use doctrine/annotations. If you see it in your dependency tree, it's coming from microsoft/microsoft-graph (used by shoutbomb-reports) or other third-party packages.
 
 ## If You See doctrine/annotations in Your Project
 
