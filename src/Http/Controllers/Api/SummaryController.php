@@ -67,7 +67,14 @@ class SummaryController extends Controller
         $startDate = Carbon::parse($request->input('start_date', now()->subDays(30)));
         $endDate = Carbon::parse($request->input('end_date', now()));
 
-        return DailyNotificationSummary::getAggregatedTotals($startDate, $endDate);
+        $totals = DailyNotificationSummary::getAggregatedTotals($startDate, $endDate);
+
+        return [
+            'total_sent' => (int) ($totals['total_sent'] ?? 0),
+            'total_success' => (int) ($totals['total_success'] ?? 0),
+            'total_failed' => (int) ($totals['total_failed'] ?? 0),
+            'success_rate' => (float) ($totals['avg_success_rate'] ?? 0),
+        ];
     }
 
     /**

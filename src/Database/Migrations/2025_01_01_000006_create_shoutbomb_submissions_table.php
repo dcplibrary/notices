@@ -39,7 +39,7 @@ return new class extends Migration
 
             // Submission tracking
             $table->dateTime('submitted_at')->index();
-            $table->string('source_file')->comment('Original filename');
+            $table->string('source_file')->nullable()->comment('Original filename');
             $table->enum('delivery_type', ['voice', 'text'])->nullable()->index();
 
             // Import tracking

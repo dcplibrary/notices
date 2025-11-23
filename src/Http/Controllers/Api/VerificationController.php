@@ -119,6 +119,12 @@ class VerificationController extends Controller
             'notice_id' => $notice->id,
             'patron_barcode' => $notice->patron_barcode,
             'notice_date' => $notice->notification_date->toISOString(),
+            // Backwards-compatible wrapper expected by some API tests
+            'notice' => [
+                'id' => $notice->id,
+                'patron_barcode' => $notice->patron_barcode,
+                'notification_date' => $notice->notification_date->toISOString(),
+            ],
             'verification' => $verification->toArray(),
             'status_message' => $verification->getStatusMessage(),
         ]);
@@ -177,10 +183,20 @@ class VerificationController extends Controller
                     'status_message' => $item['verification']->getStatusMessage(),
                 ];
             }),
-            'statistics' => [
+'statistics' => [
                 'by_type' => $byType,
                 'by_method' => $byMethod,
             ],
+            // Backwards-compatible key expected by some tests
+            'data' => collect($results)->map(function($item) {
+                return [
+                    'id' => $item['notice']->id,
+                    'date' => $item['notice']->notification_date->toISOString(),
+                    'type' => $this->getNoticeTypeName($item['notice']->notification_type_id),
+                    'method' => $this->getDeliveryMethodName($item['notice']->delivery_option_id),
+                    'status' => $item['verification']->overall_status,
+                ];
+            }),
         ]);
     }
 
@@ -261,8 +277,8 @@ class VerificationController extends Controller
         $query->dateRange($dateFrom, $dateTo);
 
         // Pagination
-        $limit = $request->input('limit', 50);
-        $offset = $request->input('offset', 0);
+        $limit = (int) $request->input('limit', 50);
+        $offset = (int) $request->input('offset', 0);
 
         $total = $query->count();
         $notices = $query->orderBy('notification_date', 'desc')
@@ -285,18 +301,23 @@ class VerificationController extends Controller
             })->values();
         }
 
+        $payload = $results->map(function($item) {
+            return [
+                'id' => $item['notice']->id,
+                'date' => $item['notice']->notification_date->toISOString(),
+                'patron_barcode' => $item['notice']->patron_barcode,
+                'type' => $this->getNoticeTypeName($item['notice']->notification_type_id),
+                'method' => $this->getDeliveryMethodName($item['notice']->delivery_option_id),
+                'status' => $item['verification']->overall_status,
+                'status_message' => $item['verification']->getStatusMessage(),
+            ];
+        });
+
         return response()->json([
-            'notices' => $results->map(function($item) {
-                return [
-                    'id' => $item['notice']->id,
-                    'date' => $item['notice']->notification_date->toISOString(),
-                    'patron_barcode' => $item['notice']->patron_barcode,
-                    'type' => $this->getNoticeTypeName($item['notice']->notification_type_id),
-                    'method' => $this->getDeliveryMethodName($item['notice']->delivery_option_id),
-                    'status' => $item['verification']->overall_status,
-                    'status_message' => $item['verification']->getStatusMessage(),
-                ];
-            }),
+            // Primary key used by newer API clients
+            'notices' => $payload,
+            // Backwards-compatible key expected by some tests/clients
+            'data' => $payload,
             'pagination' => [
                 'total' => $total,
                 'limit' => $limit,

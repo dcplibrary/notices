@@ -129,8 +129,8 @@ class ShoutbombFileParser
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line) || strpos($line, 'Patron') !== false) {
-                continue; // Skip headers and empty lines
+            if (empty($line)) {
+                continue; // Skip empty lines
             }
 
             // Parse lines like: "PatronBarcode: 21234567890  Phone: 270-555-0123"
@@ -201,9 +201,19 @@ class ShoutbombFileParser
         // Import registration statistics
         if (isset($data['registration_stats']) && $data['registration_stats']) {
             try {
+                $statsData = $data['registration_stats'];
+
+                // Ensure snapshot_date is stored as YYYY-MM-DD string in DB
+                $snapshotDate = $statsData['snapshot_date'] ?? now();
+                if ($snapshotDate instanceof Carbon) {
+                    $snapshotDate = $snapshotDate->toDateString();
+                } else {
+                    $snapshotDate = (string) $snapshotDate;
+                }
+
                 ShoutbombRegistration::updateOrCreate(
-                    ['snapshot_date' => $data['registration_stats']['snapshot_date']],
-                    $data['registration_stats']
+                    ['snapshot_date' => $snapshotDate],
+                    array_merge($statsData, ['snapshot_date' => $snapshotDate])
                 );
                 $stats['registrations'] = 1;
             } catch (\Exception $e) {

@@ -3,7 +3,6 @@
 namespace Dcplibrary\Notices\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Dcplibrary\Notices\Models\NotificationStatus;
 
 class NotificationStatusSeeder extends Seeder
 {

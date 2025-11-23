@@ -11,7 +11,7 @@ class PolarisPhoneNoticeFactory extends Factory
 
     /**
      * Define the model's default state.
-     * 
+     *
      * Note: PolarisPhoneNotice represents data from Polaris PhoneNotices.csv,
      * which contains phone/SMS notifications only (not email notifications).
      * The phone_number field should always contain a valid phone number.
@@ -19,16 +19,16 @@ class PolarisPhoneNoticeFactory extends Factory
     public function definition(): array
     {
         $deliveryType = $this->faker->randomElement(['V', 'T']); // Voice or Text
-        
+
         // Library codes and names
         $libraries = [
             ['code' => 'DCPL', 'name' => 'Daviess County Public Library'],
             ['code' => 'OWB', 'name' => 'Owensboro Branch'],
             ['code' => 'WHT', 'name' => 'Whitesville Branch'],
         ];
-        
+
         $library = $this->faker->randomElement($libraries);
-        
+
         return [
             'delivery_type' => $deliveryType === 'V' ? 'voice' : 'text',
             'language' => 'eng',

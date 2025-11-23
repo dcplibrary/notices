@@ -30,9 +30,13 @@ return new class extends Migration
 
             // Notification details
             $table->dateTime('notification_date')->index()->comment('NotificationDateTime from Polaris');
-            $table->integer('notification_type_id')->index()->comment('1=Overdue, 2=Hold, 7=AlmostOverdue, etc.');
-            $table->integer('delivery_option_id')->index()->comment('1=Mail, 2=Email, 3=Voice, 8=SMS');
-            $table->integer('notification_status_id')->index()->comment('12=Success, 14=Failed, etc.');
+
+            // These IDs are required for real imported data but are nullable here to
+            // keep tests and exploratory inserts simple. Domain logic/scopes still
+            // treat them as required when present.
+            $table->integer('notification_type_id')->nullable()->index()->comment('1=Overdue, 2=Hold, 7=AlmostOverdue, etc.');
+            $table->integer('delivery_option_id')->nullable()->index()->comment('1=Mail, 2=Email, 3=Voice, 8=SMS');
+            $table->integer('notification_status_id')->nullable()->index()->comment('12=Success, 14=Failed, etc.');
             $table->enum('status', ['completed', 'pending', 'failed'])->default('pending')->index()->comment('Simplified status for queries');
             $table->text('status_description')->nullable()->comment('Human-readable status description');
 

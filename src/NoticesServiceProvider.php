@@ -2,22 +2,22 @@
 
 namespace Dcplibrary\Notices;
 
+use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
+use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
-use Dcplibrary\Notices\Commands\ImportEmailReports;
-use Dcplibrary\Notices\Commands\AggregateNotifications;
-use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
-use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
-use Dcplibrary\Notices\Services\SettingsManager;
-use Dcplibrary\Notices\Services\NoticeVerificationService;
-use Dcplibrary\Notices\Services\NoticeExportService;
-use Dcplibrary\Notices\Services\PluginRegistry;
+use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
-use Illuminate\Support\ServiceProvider;
+use Dcplibrary\Notices\Services\NoticeExportService;
+use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Dcplibrary\Notices\Services\PluginRegistry;
+use Dcplibrary\Notices\Services\SettingsManager;
+use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\ServiceProvider;
 
 class NoticesServiceProvider extends ServiceProvider
 {
@@ -110,7 +110,8 @@ class NoticesServiceProvider extends ServiceProvider
 
             // Publish migrations
             $this->publishes([
-                __DIR__.'/../database/migrations' => database_path('migrations'),
+                // Package migrations live in src/Database/Migrations
+                __DIR__.'/Database/Migrations' => database_path('migrations'),
             ], 'notices-migrations');
 
             // Publish views (if you create them later)
@@ -119,8 +120,8 @@ class NoticesServiceProvider extends ServiceProvider
             ], 'notices-views');
         }
 
-        // Load migrations automatically
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        // Load migrations automatically from the package's migration directory
+        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
 
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'notices');
@@ -136,7 +137,7 @@ class NoticesServiceProvider extends ServiceProvider
             // Prevent double-run in case of nested calls
             if (!defined('NOTICES_REFERENCE_SEEDED')) {
                 define('NOTICES_REFERENCE_SEEDED', true);
-                $seeder = new \Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder();
+                $seeder = new NoticesReferenceSeeder();
                 $seeder->setContainer($this->app);
                 $seeder->run();
             }
@@ -247,9 +248,16 @@ class NoticesServiceProvider extends ServiceProvider
     protected function shouldAutoSeedReference(): bool
     {
         $argv = $_SERVER['argv'] ?? [];
-        if (!is_array($argv)) return false;
+        if (!is_array($argv)) {
+            return false;
+        }
 
-        $isDbSeed = in_array('db:seed', $argv, true) || in_array('migrate:fresh', $argv, true);
+        // Only auto-seed on plain `db:seed`.
+        // For `migrate:fresh --seed`, Laravel will invoke `db:seed` after
+        // migrations have successfully run, so this condition will still be met
+        // but only once tables like `delivery_methods` exist.
+        $isDbSeed = in_array('db:seed', $argv, true);
+
         $hasClass = collect($argv)->contains(function ($arg) {
             return str_starts_with($arg, '--class') || $arg === '--class';
         });

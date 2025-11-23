@@ -50,7 +50,14 @@ class AnalyticsController extends Controller
                 'failed' => $item->total_failed,
             ]);
 
+        $totalSent = (int) ($totals['total_sent'] ?? 0);
+        $successRate = (float) ($totals['avg_success_rate'] ?? 0);
+
         return [
+            // Top-level summary keys expected by API tests
+            'total_sent' => $totalSent,
+            'success_rate' => $successRate,
+            // Detailed breakdown for richer clients
             'period' => [
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),

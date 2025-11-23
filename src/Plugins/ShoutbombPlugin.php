@@ -366,12 +366,19 @@ class ShoutbombPlugin implements NotificationPlugin
 
     /**
      * Get the dashboard widget view for Shoutbomb.
+     *
+     * If the optional widget view has not been published, return null so
+     * dashboards and tests can still render without errors.
      */
     public function getDashboardWidget(Carbon $startDate, Carbon $endDate): ?View
     {
+        if (!view()->exists('notices::plugins.shoutbomb.widget')) {
+            return null;
+        }
+
         $stats = $this->getStatistics($startDate, $endDate);
 
-        return view('notifications::plugins.shoutbomb.widget', compact('stats', 'startDate', 'endDate'));
+        return view('notices::plugins.shoutbomb.widget', compact('stats', 'startDate', 'endDate'));
     }
 
     /**
@@ -392,18 +399,14 @@ class ShoutbombPlugin implements NotificationPlugin
      */
     public function isEnabled(): bool
     {
-        // Prefer DB-backed setting if present
-        try {
-            $settings = app(\Dcplibrary\Notices\Services\SettingsManager::class);
-            $db = $settings->get('integrations.shoutbomb_reports.enabled');
-            if ($db !== null) {
-                return (bool) $db;
-            }
-        } catch (\Throwable $e) {
-            // ignore
+        // Enabled by default; can be overridden via config
+        // config('notices.plugins.shoutbomb.enabled', true) or
+        // legacy config('notices.shoutbomb.enabled', true).
+        $config = $this->getConfig();
+        if (array_key_exists('enabled', $config)) {
+            return (bool) $config['enabled'];
         }
 
-        // Fallback to config/env
-        return (bool) ($this->getConfig()['enabled'] ?? true);
+        return (bool) config('notices.shoutbomb.enabled', true);
     }
 }

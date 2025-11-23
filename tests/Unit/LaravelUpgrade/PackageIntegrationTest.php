@@ -35,14 +35,14 @@ class PackageIntegrationTest extends TestCase
     /** @test */
     public function it_verifies_carbon_date_library_works()
     {
-        $now = \Carbon\Carbon::now();
-        $future = \Carbon\Carbon::now()->addDays(7);
-        $past = \Carbon\Carbon::now()->subDays(7);
+        $now = \Carbon\Carbon::today();
+        $future = $now->copy()->addDays(7);
+        $past = $now->copy()->subDays(7);
 
         $this->assertInstanceOf(\Carbon\Carbon::class, $now);
         $this->assertTrue($future->greaterThan($now));
         $this->assertTrue($past->lessThan($now));
-        $this->assertEquals(14, $future->diffInDays($past));
+        $this->assertEquals(14, $future->diffInDays($past, true));
     }
 
     /** @test */
@@ -75,10 +75,10 @@ class PackageIntegrationTest extends TestCase
         $commands = \Illuminate\Support\Facades\Artisan::all();
 
         // Verify our custom commands are registered
-        $this->assertArrayHasKey('notifications:test-connections', $commands);
-        $this->assertArrayHasKey('notifications:import-polaris', $commands);
-        $this->assertArrayHasKey('notifications:import-shoutbomb', $commands);
-        $this->assertArrayHasKey('notifications:aggregate', $commands);
+        $this->assertArrayHasKey('notices:test-connections', $commands);
+        $this->assertArrayHasKey('notices:import-polaris', $commands);
+        $this->assertArrayHasKey('notices:import-shoutbomb', $commands);
+        $this->assertArrayHasKey('notices:aggregate', $commands);
     }
 
     /** @test */
@@ -88,7 +88,7 @@ class PackageIntegrationTest extends TestCase
         $providers = app()->getLoadedProviders();
 
         $this->assertArrayHasKey(
-            \Dcplibrary\Notices\NotificationsServiceProvider::class,
+            \Dcplibrary\Notices\NoticesServiceProvider::class,
             $providers
         );
     }
@@ -146,7 +146,7 @@ class PackageIntegrationTest extends TestCase
     /** @test */
     public function it_verifies_config_repository_works()
     {
-        $config = config('notifications');
+        $config = config('notices');
 
         $this->assertIsArray($config);
         $this->assertNotEmpty($config);
@@ -218,7 +218,7 @@ class PackageIntegrationTest extends TestCase
 
         $this->assertEquals('John', \Illuminate\Support\Arr::get($array, 'name'));
         $this->assertTrue(\Illuminate\Support\Arr::has($array, 'name'));
-        $this->assertEquals(['name', 'age'], \Illuminate\Support\Arr::keys($array));
+        $this->assertEquals(['name', 'age'], array_keys($array));
     }
 
     /** @test */

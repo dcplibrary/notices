@@ -98,7 +98,7 @@ class NotificationController extends Controller
         }
 
         $total = $query->count();
-        $successful = (clone $query)->successful()->count();
+        $successful = (clone $query)->completed()->count();
         $failed = (clone $query)->failed()->count();
 
         return [

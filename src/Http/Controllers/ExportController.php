@@ -2,16 +2,16 @@
 
 namespace Dcplibrary\Notices\Http\Controllers;
 
-use Dcplibrary\Notices\Models\NotificationType;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DeliveryMethod;
-use Dcplibrary\Notices\Models\NotificationStatus;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Dcplibrary\Notices\Database\Seeders\NotificationStatus;
+use Dcplibrary\Notices\Database\Seeders\NotificationType;
 
 class ExportController extends Controller
 {

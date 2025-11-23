@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Dcplibrary\Notices\Database\Seeders;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Database\Seeder;

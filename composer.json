@@ -22,8 +22,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Dcplibrary\\Notices\\": "src/",
-            "Dcplibrary\\Notices\\Database\\Factories\\": "database/factories/"
+            "Dcplibrary\\Notices\\": "src/"
         }
     },
     "autoload-dev": {

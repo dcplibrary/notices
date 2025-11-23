@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class PolarisNotificationLog extends Model
 {

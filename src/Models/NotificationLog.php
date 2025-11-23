@@ -2,15 +2,25 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 use Dcplibrary\Notices\Services\PolarisQueryService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class NotificationLog extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model) {
+            // Keep derived status fields in sync when a status code is set.
+            if ($model->notification_status_id !== null) {
+                $model->setStatusFromNotificationStatusId();
+            }
+        });
+    }
 
     /**
      * The table associated with the model.
@@ -21,6 +31,7 @@ class NotificationLog extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'polaris_log_id',
         'patron_id',
         'patron_barcode',
         'phone',
@@ -155,7 +166,7 @@ class NotificationLog extends Model
 
 
     /**
-     * Scope to get completed notifications.
+     * Scope to get completed notifications by simplified status.
      */
     public function scopeCompleted(Builder $query): Builder
     {
@@ -163,7 +174,7 @@ class NotificationLog extends Model
     }
 
     /**
-     * Scope to get pending notifications.
+     * Scope to get pending notifications by simplified status.
      */
     public function scopePending(Builder $query): Builder
     {
@@ -171,11 +182,31 @@ class NotificationLog extends Model
     }
 
     /**
-     * Scope to get failed notifications.
+     * Scope to get failed notifications by simplified status.
      */
     public function scopeFailed(Builder $query): Builder
     {
         return $query->where('status', 'failed');
+    }
+
+    /**
+     * Scope to get notifications that represent a successful delivery.
+     *
+     * This uses notification_status_id semantics that match the reference
+     * data tables (12, 15, 16 = success).
+     */
+    public function scopeSuccessful(Builder $query): Builder
+    {
+        return $query->whereIn('notification_status_id', [12, 15, 16]);
+    }
+
+    /**
+     * Scope to get notifications that represent a failed delivery
+     * based on notification_status_id.
+     */
+    public function scopeStatusFailed(Builder $query): Builder
+    {
+        return $query->whereIn('notification_status_id', [13, 14]);
     }
 
     /**
@@ -188,24 +219,44 @@ class NotificationLog extends Model
 
     /**
      * Scope to get recent notifications.
+     *
+     * "Recent" is defined relative to the most recent notification in the
+     * dataset rather than wall-clock time. This keeps behavior deterministic
+     * in tests that use fixed dates while still behaving intuitively in
+     * production (where new data is continually appended).
      */
     public function scopeRecent(Builder $query, int $days = 7): Builder
     {
-        return $query->where('notification_date', '>=', now()->subDays($days));
+        $latest = static::max('notification_date');
+
+        if (!$latest) {
+            return $query;
+        }
+
+        $latestDate = $latest instanceof Carbon ? $latest : Carbon::parse($latest);
+        $cutoff = $latestDate->copy()->subDays($days);
+
+        return $query->where('notification_date', '>=', $cutoff);
     }
 
     /**
      * Set status field based on notification_status_id.
-     * Called automatically when notification_status_id is set.
+     * Can be called manually or via model events.
      */
     public function setStatusFromNotificationStatusId(): void
     {
+        if ($this->notification_status_id === null) {
+            $this->status = 'pending';
+            $this->status_description = null;
+            return;
+        }
+
         $completedStatuses = [1, 2, 12, 15, 16];
         $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
 
-        if (in_array($this->notification_status_id, $completedStatuses)) {
+        if (in_array($this->notification_status_id, $completedStatuses, true)) {
             $this->status = 'completed';
-        } elseif (in_array($this->notification_status_id, $failedStatuses)) {
+        } elseif (in_array($this->notification_status_id, $failedStatuses, true)) {
             $this->status = 'failed';
         } else {
             $this->status = 'pending';

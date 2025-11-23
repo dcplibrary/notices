@@ -37,8 +37,8 @@ class SettingsManager
                 return $setting->getTypedValue();
             }
 
-            // Fallback to config file
-            return Config::get("notifications.{$key}", $default);
+            // Fallback to config file (package config lives under 'notices')
+            return Config::get("notices.{$key}", $default);
         });
     }
 

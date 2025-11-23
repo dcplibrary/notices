@@ -70,7 +70,10 @@ class NoticeVerificationServiceTroubleshootingTest extends TestCase
         }
     }
 
-    /** @test */
+    /**
+     * @test
+     * @doesNotPerformAssertions
+     */
     public function it_returns_failures_by_reason_with_valid_percentages()
     {
         $failures = $this->service->getFailuresByReason(

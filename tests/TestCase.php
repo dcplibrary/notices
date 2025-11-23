@@ -11,7 +11,10 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
 
+        // Load and run package migrations for tests
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../src/Database/Migrations');
+        $this->artisan('migrate');
     }
 
     protected function getPackageProviders($app)
@@ -72,5 +75,12 @@ abstract class TestCase extends Orchestra
 
         // Load package config
         $app['config']->set('notices', require __DIR__ . '/../config/notices.php');
+
+        // Provide an application key for encryption-dependent features
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
+
+        // Relax middleware for tests: disable Sanctum/auth requirements on package routes
+        $app['config']->set('notices.api.middleware', ['api']);
+        $app['config']->set('notices.dashboard.middleware', ['web']);
     }
 }

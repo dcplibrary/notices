@@ -75,10 +75,10 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_summary_routes_are_accessible()
     {
         $routes = [
-            'notifications.api.summaries.index',
-            'notifications.api.summaries.totals',
-            'notifications.api.summaries.by-type',
-            'notifications.api.summaries.by-delivery',
+            'notices.api.summaries.index',
+            'notices.api.summaries.totals',
+            'notices.api.summaries.by-type',
+            'notices.api.summaries.by-delivery',
         ];
 
         foreach ($routes as $routeName) {
@@ -91,10 +91,10 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_analytics_routes_are_accessible()
     {
         $routes = [
-            'notifications.api.analytics.overview',
-            'notifications.api.analytics.time-series',
-            'notifications.api.analytics.top-patrons',
-            'notifications.api.analytics.success-rate-trend',
+            'notices.api.analytics.overview',
+            'notices.api.analytics.time-series',
+            'notices.api.analytics.top-patrons',
+            'notices.api.analytics.success-rate-trend',
         ];
 
         foreach ($routes as $routeName) {
@@ -107,12 +107,12 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_shoutbomb_routes_are_accessible()
     {
         $routes = [
-            'notifications.api.shoutbomb.deliveries',
-            'notifications.api.shoutbomb.deliveries.stats',
-            'notifications.api.shoutbomb.keyword-usage',
-            'notifications.api.shoutbomb.keyword-usage.summary',
-            'notifications.api.shoutbomb.registrations',
-            'notifications.api.shoutbomb.registrations.latest',
+            'notices.api.shoutbomb.deliveries',
+            'notices.api.shoutbomb.deliveries.stats',
+            'notices.api.shoutbomb.keyword-usage',
+            'notices.api.shoutbomb.keyword-usage.summary',
+            'notices.api.shoutbomb.registrations',
+            'notices.api.shoutbomb.registrations.latest',
         ];
 
         foreach ($routes as $routeName) {
@@ -235,7 +235,7 @@ class RoutesAndControllersTest extends TestCase
         $notificationRoute = Route::getRoutes()->getByName('notices.api.logs.index');
         
         $this->assertNotNull($notificationRoute);
-        $this->assertStringContainsString('notifications', $notificationRoute->uri());
+        $this->assertStringContainsString('api/notices', $notificationRoute->uri());
     }
 
     /** @test */

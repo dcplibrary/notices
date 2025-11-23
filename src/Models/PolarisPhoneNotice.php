@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Dcplibrary\Notices\Database\Factories\PolarisPhoneNoticeFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * PolarisPhoneNotice Model

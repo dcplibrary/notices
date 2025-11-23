@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 
 class DailyNotificationSummary extends Model
 {
@@ -106,7 +106,7 @@ class DailyNotificationSummary extends Model
      */
     public static function forDate(Carbon $date): Builder
     {
-        return static::where('summary_date', $date->format('Y-m-d'));
+        return static::whereDate('summary_date', $date->format('Y-m-d'));
     }
 
     /**

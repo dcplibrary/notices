@@ -2,7 +2,7 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
-use Dcplibrary\Notices\NotificationsServiceProvider;
+use Dcplibrary\Notices\NoticesServiceProvider;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -41,16 +41,16 @@ class CoreFunctionalityTest extends TestCase
         $loadedProviders = App::getLoadedProviders();
         
         $this->assertArrayHasKey(
-            NotificationsServiceProvider::class,
+            NoticesServiceProvider::class,
             $loadedProviders,
-            'NotificationsServiceProvider should be loaded'
+            'NoticesServiceProvider should be loaded'
         );
     }
 
     /** @test */
     public function it_verifies_config_is_loaded_correctly()
     {
-        $config = Config::get('notifications');
+        $config = Config::get('notices');
         
         $this->assertIsArray($config, 'Notifications config should be loaded');
         $this->assertArrayHasKey('notification_types', $config);

@@ -2,20 +2,19 @@
 
 namespace Dcplibrary\Notices\Http\Controllers;
 
-use Dcplibrary\Notices\Models\NotificationLog;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
-use Dcplibrary\Notices\Models\NotificationType;
 use Dcplibrary\Notices\Models\DeliveryMethod;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
-use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\NoticeExportService;
+use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {

@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Database\Seeders;
 
-use Illuminate\Database\Seeder;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Services\NotificationAggregatorService;
-use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class NotificationLogSeeder extends Seeder
 {

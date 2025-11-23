@@ -18,8 +18,10 @@ return new class extends Migration
             $table->date('summary_date')->index();
 
             // Notification breakdown
-            $table->integer('notification_type_id')->index();
-            $table->integer('delivery_option_id')->index();
+            // Keep these nullable so tests can create bare summaries and focus on
+            // aggregate math without always specifying IDs.
+            $table->integer('notification_type_id')->nullable()->index();
+            $table->integer('delivery_option_id')->nullable()->index();
 
             // Counts
             $table->integer('total_sent')->default(0);

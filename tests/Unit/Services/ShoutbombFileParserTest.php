@@ -223,8 +223,10 @@ EOT;
         $stats = $this->parser->importParsedData($data, 'Monthly');
 
         $this->assertEquals(1, $stats['registrations']);
+        // SQLite stores date columns with a time component; assert against the
+        // exact stored value rather than a date-only string.
         $this->assertDatabaseHas('shoutbomb_registrations', [
-            'snapshot_date' => '2025-11-08',
+            'snapshot_date' => '2025-11-08 00:00:00',
             'total_text_subscribers' => 13307,
             'total_voice_subscribers' => 5199,
         ]);

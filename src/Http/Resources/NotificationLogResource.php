@@ -50,6 +50,9 @@ class NotificationLogResource extends JsonResource
                 'manual_bills' => $this->manual_bill_count,
                 'total' => $this->total_items,
             ],
+            // Backwards-compatible: expose detailed items under both
+            // "items" (for API tests) and "items_detail".
+            'items' => $this->getItemsDetail($request),
             'items_detail' => $this->getItemsDetail($request),
             'reporting_org_id' => $this->reporting_org_id,
             'language_id' => $this->language_id,

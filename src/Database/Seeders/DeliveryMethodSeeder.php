@@ -2,8 +2,8 @@
 
 namespace Dcplibrary\Notices\Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use Dcplibrary\Notices\Models\DeliveryMethod;
+use Illuminate\Database\Seeder;
 
 class DeliveryMethodSeeder extends Seeder
 {

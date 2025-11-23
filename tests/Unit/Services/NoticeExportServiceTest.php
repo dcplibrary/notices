@@ -256,7 +256,7 @@ class NoticeExportServiceTest extends TestCase
     public function csv_export_uses_utf8_encoding()
     {
         $notice = $this->createSampleNotice();
-        $notice->title = 'Café René's Book © 2025';
+        $notice->title = "Café René's Book © 2025";
 
         $notices = collect([$notice]);
 

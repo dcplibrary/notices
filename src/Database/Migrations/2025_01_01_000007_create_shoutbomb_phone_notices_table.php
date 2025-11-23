@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('patron_barcode', 20)->index()->comment('CSV field 5');
             $table->string('first_name', 50)->nullable()->comment('CSV field 7');
             $table->string('last_name', 50)->nullable()->comment('CSV field 8');
-            $table->string('phone_number', 20)->index()->comment('CSV field 9');
+            $table->string('phone_number', 20)->nullable()->index()->comment('CSV field 9');
             $table->string('email')->nullable()->comment('CSV field 10');
             $table->string('library_code', 20)->nullable()->comment('CSV field 11');
             $table->string('library_name', 100)->nullable()->comment('CSV field 12');
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->integer('bib_record_id')->nullable()->comment('CSV field 22');
 
             // Tracking fields
-            $table->string('source_file')->comment('Original CSV filename');
+            $table->string('source_file')->nullable()->comment('Original CSV filename');
             $table->timestamp('imported_at')->useCurrent();
             $table->timestamps();
 

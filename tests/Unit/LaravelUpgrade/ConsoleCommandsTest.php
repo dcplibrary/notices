@@ -3,9 +3,9 @@
 namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
 use Dcplibrary\Notices\Commands\TestConnections;
-use Dcplibrary\Notices\Commands\ImportNotifications;
-use Dcplibrary\Notices\Commands\ImportShoutbombReports;
-use Dcplibrary\Notices\Commands\AggregateNotifications;
+use Dcplibrary\Notices\Console\Commands\ImportShoutbombCommand;
+use Dcplibrary\Notices\Console\Commands\ImportPolarisCommand;
+use Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,8 +31,8 @@ class ConsoleCommandsTest extends TestCase
     {
         $commands = Artisan::all();
 
-        $this->assertArrayHasKey('notifications:test-connections', $commands);
-        $this->assertInstanceOf(TestConnections::class, $commands['notifications:test-connections']);
+        $this->assertArrayHasKey('notices:test-connections', $commands);
+        $this->assertInstanceOf(TestConnections::class, $commands['notices:test-connections']);
     }
 
     /** @test */
@@ -40,8 +40,8 @@ class ConsoleCommandsTest extends TestCase
     {
         $commands = Artisan::all();
 
-        $this->assertArrayHasKey('notifications:import-polaris', $commands);
-        $this->assertInstanceOf(ImportNotifications::class, $commands['notifications:import-polaris']);
+        $this->assertArrayHasKey('notices:import-polaris', $commands);
+        $this->assertInstanceOf(ImportPolarisCommand::class, $commands['notices:import-polaris']);
     }
 
     /** @test */
@@ -49,8 +49,8 @@ class ConsoleCommandsTest extends TestCase
     {
         $commands = Artisan::all();
 
-        $this->assertArrayHasKey('notifications:import-shoutbomb', $commands);
-        $this->assertInstanceOf(ImportShoutbombReports::class, $commands['notifications:import-shoutbomb']);
+        $this->assertArrayHasKey('notices:import-shoutbomb', $commands);
+        $this->assertInstanceOf(ImportShoutbombCommand::class, $commands['notices:import-shoutbomb']);
     }
 
     /** @test */
@@ -58,16 +58,16 @@ class ConsoleCommandsTest extends TestCase
     {
         $commands = Artisan::all();
 
-        $this->assertArrayHasKey('notifications:aggregate', $commands);
-        $this->assertInstanceOf(AggregateNotifications::class, $commands['notifications:aggregate']);
+        $this->assertArrayHasKey('notices:aggregate', $commands);
+        $this->assertInstanceOf(AggregateNotificationsCommand::class, $commands['notices:aggregate']);
     }
 
     /** @test */
     public function it_verifies_test_connections_command_has_correct_signature()
     {
-        $command = Artisan::all()['notifications:test-connections'];
+        $command = Artisan::all()['notices:test-connections'];
 
-        $this->assertEquals('notifications:test-connections', $command->getName());
+        $this->assertEquals('notices:test-connections', $command->getName());
         $this->assertNotEmpty($command->getDescription());
     }
 
@@ -75,7 +75,7 @@ class ConsoleCommandsTest extends TestCase
     public function it_verifies_commands_can_be_called_via_artisan()
     {
         // Test that Artisan can call our commands (without actually executing them fully)
-        $exitCode = Artisan::call('notifications:test-connections', ['--help' => true]);
+        $exitCode = Artisan::call('notices:test-connections', ['--help' => true]);
 
         // Exit code should be 0 (success) or the help was shown
         $this->assertTrue(in_array($exitCode, [0, 1]));
@@ -98,7 +98,7 @@ class ConsoleCommandsTest extends TestCase
         $exitCode = Artisan::call('list');
 
         $this->assertEquals(0, $exitCode);
-        $this->assertStringContainsString('notifications:', Artisan::output());
+        $this->assertStringContainsString('notices:', Artisan::output());
     }
 
     /** @test */
@@ -118,7 +118,7 @@ class ConsoleCommandsTest extends TestCase
         $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
 
         // Test that schedule can accept task definitions
-        $event = $schedule->command('notifications:import-polaris')->daily();
+        $event = $schedule->command('notices:import-polaris')->daily();
 
         $this->assertInstanceOf(
             \Illuminate\Console\Scheduling\Event::class,
@@ -198,7 +198,7 @@ class ConsoleCommandsTest extends TestCase
     public function it_verifies_artisan_queue_method_works()
     {
         // Test that commands can be queued
-        $result = Artisan::queue('notifications:test-connections');
+        $result = Artisan::queue('notices:test-connections');
 
         $this->assertNotNull($result);
     }
@@ -208,7 +208,7 @@ class ConsoleCommandsTest extends TestCase
     {
         $command = new TestConnections();
 
-        $this->assertEquals('notifications:test-connections', $command->getName());
+        $this->assertEquals('notices:test-connections', $command->getName());
         
         $definition = $command->getDefinition();
         $this->assertNotNull($definition);
@@ -298,10 +298,10 @@ class ConsoleCommandsTest extends TestCase
     public function it_verifies_all_custom_commands_have_descriptions()
     {
         $commands = [
-            'notifications:test-connections',
-            'notifications:import-polaris',
-            'notifications:import-shoutbomb',
-            'notifications:aggregate',
+            'notices:test-connections',
+            'notices:import-polaris',
+            'notices:import-shoutbomb',
+            'notices:aggregate',
         ];
 
         foreach ($commands as $commandName) {

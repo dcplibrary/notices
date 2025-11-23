@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             // Delivery details
-            $table->string('patron_barcode', 20)->index();
+            $table->string('patron_barcode', 20)->nullable()->index();
             $table->string('phone_number', 20)->index();
             $table->enum('delivery_type', ['SMS', 'Voice'])->index();
             $table->string('message_type', 50)->nullable()->comment('Hold, Overdue, AlmostOverdue, etc.');

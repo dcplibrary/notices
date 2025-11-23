@@ -16,8 +16,8 @@ return new class extends Migration
 
             // Keyword interaction details
             $table->string('keyword', 20)->index()->comment('RHL, RA, OI, HL, MYBOOK, STOP');
-            $table->string('patron_barcode', 20)->index();
-            $table->string('phone_number', 20)->index();
+            $table->string('patron_barcode', 20)->nullable()->index();
+            $table->string('phone_number', 20)->nullable()->index();
             $table->dateTime('usage_date')->index();
 
             // Keyword details

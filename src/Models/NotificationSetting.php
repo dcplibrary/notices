@@ -4,10 +4,12 @@ namespace Dcplibrary\Notices\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Crypt;
 
 class NotificationSetting extends Model
 {
+    use HasFactory;
     protected $table = 'notification_settings';
 
     protected $fillable = [
@@ -181,5 +183,13 @@ class NotificationSetting extends Model
         );
 
         return !$validator->fails();
+    }
+
+    /**
+     * Provide the model factory for package context.
+     */
+    protected static function newFactory()
+    {
+        return \Dcplibrary\Notices\Database\Factories\NotificationSettingFactory::new();
     }
 }

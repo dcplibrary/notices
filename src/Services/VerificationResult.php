@@ -54,7 +54,7 @@ class VerificationResult
     /**
      * Determine the overall status based on verification steps.
      */
-    protected function determineOverallStatus(): void
+    public function determineOverallStatus(): void
     {
         if ($this->delivered && $this->delivery_status === 'Delivered') {
             $this->overall_status = 'success';
