@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Facades\Config;
-use Carbon\Carbon;
 
 /**
  * Model for Shoutbomb failure reports.
@@ -96,10 +95,6 @@ class NoticeFailureReport extends Model
         return $query->where('failure_type', 'invalid');
     }
 
-    public function scopeOptedOut($query)
-    {
-        return $query->where('failure_type', 'opted-out');
-    }
 
     public function scopeVoiceNotDelivered($query)
     {
