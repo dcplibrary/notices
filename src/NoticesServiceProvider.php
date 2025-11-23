@@ -18,6 +18,8 @@ use Dcplibrary\Notices\Services\NotificationImportService;
 use Dcplibrary\Notices\Services\PluginRegistry;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Dcplibrary\Notices\Services\ShoutbombFTPService;
+use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
+use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
 use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
@@ -66,6 +68,18 @@ class NoticesServiceProvider extends ServiceProvider
         $this->app->singleton(NotificationImportService::class, function ($app) {
             return new NotificationImportService($app->make(ShoutbombFTPService::class));
         });
+
+        // Register Shoutbomb Graph API service (for Outlook/Graph ingestion)
+        $this->app->singleton(ShoutbombGraphApiService::class, function ($app) {
+            $graphConfig = config('notices.integrations.shoutbomb_reports.graph', []);
+            return new ShoutbombGraphApiService($graphConfig);
+        });
+
+        // Register Shoutbomb failure report parser
+        $this->app->singleton(ShoutbombFailureReportParser::class, function ($app) {
+            $parsingConfig = config('notices.integrations.shoutbomb_reports.parsing', []);
+            return new ShoutbombFailureReportParser($parsingConfig);
+        });
     }
 
     /**
@@ -111,6 +125,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\ImportPolarisCommand::class,
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
+            Commands\CheckShoutbombReportsCommand::class,
         ]);
 
         // Publish configuration file

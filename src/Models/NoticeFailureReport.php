@@ -55,13 +55,13 @@ class NoticeFailureReport extends Model
 
     /**
      * Get the table name from config.
-     * Supports both notices and shoutbomb-reports config keys for backwards compatibility.
      */
     public function getTable()
     {
-        // Prefer our own integration config, fallback to the shoutbomb-reports package's config
-        return Config::get('notices.integrations.shoutbomb_reports.table',
-            Config::get('shoutbomb-reports.storage.table_name', 'notice_failure_reports'));
+        return Config::get(
+            'notices.integrations.shoutbomb_reports.storage.table_name',
+            Config::get('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')
+        );
     }
 
     /**

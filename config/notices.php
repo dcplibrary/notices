@@ -163,14 +163,61 @@ return [
 
 'integrations' => [
         'shoutbomb_reports' => [
-            // When enabled, verification will consult the dcplibrary/shoutbomb-reports
-            // tables to infer delivery failures (and success by absence).
+            // When enabled, verification will consult the Shoutbomb failure report table
+            // to infer delivery failures (and success by absence when a notice was submitted).
             // Prefer an explicit NOTICES_* toggle; fall back to SHOUTBOMB_LOG_PROCESSING if present.
             'enabled' => env('NOTICES_SHOUTBOMB_REPORTS_ENABLED', env('SHOUTBOMB_LOG_PROCESSING', false)),
-            // Name of the failure table (reuse existing SHOUTBOMB_FAILURE_TABLE from the app .env)
+
+            // Name of the failure table (reuses existing SHOUTBOMB_FAILURE_TABLE from the app .env)
             'table' => env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports'),
+
             // Hours around the notice date to search failure emails for a match
             'date_window_hours' => env('SHOUTBOMB_REPORTS_DATE_WINDOW_HOURS', 24),
+
+            // Microsoft Graph API configuration (migrated from dcplibrary/shoutbomb-reports)
+            'graph' => [
+                'tenant_id' => env('SHOUTBOMB_TENANT_ID'),
+                'client_id' => env('SHOUTBOMB_CLIENT_ID'),
+                'client_secret' => env('SHOUTBOMB_CLIENT_SECRET'),
+                'user_email' => env('SHOUTBOMB_USER_EMAIL'),
+                'api_version' => env('SHOUTBOMB_API_VERSION', 'v1.0'),
+            ],
+
+            // Email filtering configuration
+            'filters' => [
+                'folder' => env('SHOUTBOMB_FOLDER', null),
+                'subject_contains' => env('SHOUTBOMB_SUBJECT_FILTER', null),
+                'from_addresses' => env('SHOUTBOMB_FROM_FILTER', null),
+                'max_emails' => env('SHOUTBOMB_MAX_EMAILS', 50),
+                'unread_only' => env('SHOUTBOMB_UNREAD_ONLY', true),
+                'mark_as_read' => env('SHOUTBOMB_MARK_AS_READ', true),
+                'move_to_folder' => env('SHOUTBOMB_MOVE_TO_FOLDER', null),
+            ],
+
+            // Parsing configuration
+            'parsing' => [
+                'recipient_patterns' => [
+                    '/(?:To|Recipient):\s*<?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>?/i',
+                    '/(?:Original recipient|Failed recipient):\s*<?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>?/i',
+                    '/<?([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>?\s*(?:could not be delivered|delivery failed)/i',
+                ],
+                'reason_patterns' => [
+                    '/(?:Diagnostic code|Reason):\s*(.+?)(?:\n|$)/i',
+                    '/(?:Status|Error):\s*(\d{3}\s*.+?)(?:\n|$)/i',
+                    '/(?:Message from|Remote server said):\s*(.+?)(?:\n|$)/i',
+                ],
+                'message_id_patterns' => [
+                    '/Message-ID:\s*<?([^>\s]+)>?/i',
+                    '/Original message ID:\s*<?([^>\s]+)>?/i',
+                ],
+            ],
+
+            // Storage configuration
+            'storage' => [
+                'table_name' => env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports'),
+                'store_raw_content' => env('SHOUTBOMB_STORE_RAW', false),
+                'log_processing' => env('SHOUTBOMB_LOG_PROCESSING', true),
+            ],
         ],
     ],
 
