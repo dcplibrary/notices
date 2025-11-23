@@ -24,8 +24,16 @@ class DashboardController extends Controller
     public function index(Request $request): View
     {
         $days = $request->input('days', config('notices.dashboard.default_date_range', 30));
-        $startDate = now()->subDays($days);
-        $endDate = now();
+
+        // Use data-relative dates: find the latest notification date and work backwards
+        // This ensures the dashboard shows data even if it's older than $days from today
+        $latestDate = NotificationLog::max('notification_date');
+        if ($latestDate) {
+            $endDate = $latestDate instanceof Carbon ? $latestDate : Carbon::parse($latestDate);
+        } else {
+            $endDate = now();
+        }
+        $startDate = $endDate->copy()->subDays($days);
 
         // Get aggregated totals (from analytics table)
         $totals = DailyNotificationSummary::getAggregatedTotals($startDate, $endDate);
