@@ -9,6 +9,22 @@ This package uses **Laravel Eloquent ORM**, which uses:
 - Eloquent model syntax
 - No annotation-based mapping
 
+## dcplibrary Package Dependencies
+
+**This package (`dcplibrary/notices`):**
+- ✅ Has NO composer dependencies on other `dcplibrary/*` packages
+- ✅ Has NO `doctrine/annotations` dependency
+- ✅ Has an optional integration with `dcplibrary/shoutbomb-reports` (NOT a hard dependency)
+
+**Optional Integration:**
+The package references `dcplibrary/shoutbomb-reports` but intentionally avoids making it a hard dependency by using a lightweight model that reads the table if it exists.
+
+To check if `dcplibrary/shoutbomb-reports` (if you use it) has `doctrine/annotations`:
+```bash
+# From your main Laravel application
+composer show dcplibrary/shoutbomb-reports --all | grep -A 20 "requires"
+```
+
 ## If You See doctrine/annotations in Your Project
 
 If `doctrine/annotations` appears in your main Laravel application (not this package), check:
