@@ -68,9 +68,9 @@ return new class extends Migration
             $table->timestamps();
 
             // Composite indexes
-            $table->index(['patron_barcode', 'export_timestamp']);
-            $table->index(['sys_hold_request_id', 'export_timestamp']);
-            $table->index(['export_timestamp', 'notification_type_id']);
+            $table->index(['patron_barcode', 'export_timestamp'], 'nh_barcode_timestamp_idx');
+            $table->index(['sys_hold_request_id', 'export_timestamp'], 'nh_holdreq_timestamp_idx');
+            $table->index(['export_timestamp', 'notification_type_id'], 'nh_timestamp_type_idx');
         });
     }
 

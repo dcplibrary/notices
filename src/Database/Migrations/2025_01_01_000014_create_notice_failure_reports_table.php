@@ -85,11 +85,11 @@ return new class extends Migration
             $table->timestamps();
 
             // Indexes for common queries
-            $table->index(['received_at', 'failure_type']);
-            $table->index(['patron_barcode', 'received_at']);
-            $table->index(['patron_phone', 'received_at']);
-            $table->index(['delivery_method', 'failure_type']);
-            $table->index(['notification_type_id', 'received_at']);
+            $table->index(['received_at', 'failure_type'], 'nfr_received_type_idx');
+            $table->index(['patron_barcode', 'received_at'], 'nfr_barcode_received_idx');
+            $table->index(['patron_phone', 'received_at'], 'nfr_phone_received_idx');
+            $table->index(['delivery_method', 'failure_type'], 'nfr_delivery_failure_idx');
+            $table->index(['notification_type_id', 'received_at'], 'nfr_notiftype_received_idx');
         });
     }
 
