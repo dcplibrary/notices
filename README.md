@@ -531,6 +531,10 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Testing Guide](docs/TESTING.md)** - Running tests and writing new tests
 - **[Screenshots Guide](docs/SCREENSHOTS.md)** - Adding visual documentation
 
+### Architecture & Technical Details
+- **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture: controllers, services, commands, models, data flow, and view integration
+- **[Doctrine Annotations](docs/DOCTRINE_ANNOTATIONS.md)** - Why this package doesn't use doctrine/annotations (uses Laravel Eloquent)
+
 ## Requirements
 
 - PHP 8.1 or higher
