@@ -12,7 +12,8 @@ class SyncShoutbombToLogs extends Command
     protected $signature = 'notices:sync-shoutbomb-to-logs
                             {--date= : Sync data for specific date (YYYY-MM-DD)}
                             {--days=7 : Number of days to sync (default: 7)}
-                            {--dry-run : Show what would be synced without actually syncing}';
+                            {--dry-run : Show what would be synced without actually syncing}
+                            {--force : Skip confirmation prompt}';
 
     protected $description = 'Sync Shoutbomb PhoneNotices data into notification_logs for dashboard visibility';
 
@@ -64,8 +65,8 @@ class SyncShoutbombToLogs extends Command
             return Command::SUCCESS;
         }
 
-        // Confirm before proceeding
-        if (!$this->confirm('Sync these notifications to notification_logs?')) {
+        // Confirm before proceeding (skip if --force is used)
+        if (!$this->option('force') && !$this->confirm('Sync these notifications to notification_logs?')) {
             $this->line('Cancelled');
             return Command::SUCCESS;
         }
