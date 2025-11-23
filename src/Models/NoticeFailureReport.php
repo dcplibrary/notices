@@ -2,6 +2,7 @@
 
 namespace Dcplibrary\Notices\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -84,7 +85,38 @@ class NoticeFailureReport extends Model
      */
     public function scopeOfType(Builder $query, string $type): Builder
     {
-        return $query->where('notice_type', $type);
+        return $query->where('delivery_method', $type);
+    }
+
+    /**
+     * Scope by failure type.
+     */
+    public function scopeInvalidPhone($query)
+    {
+        return $query->where('failure_type', 'invalid');
+    }
+
+    public function scopeOptedOut($query)
+    {
+        return $query->where('failure_type', 'opted-out');
+    }
+
+    public function scopeVoiceNotDelivered($query)
+    {
+        return $query->where('failure_type', 'voice-not-delivered');
+    }
+
+    /**
+     * Scope by delivery method.
+     */
+    public function scopeVoice($query)
+    {
+        return $query->where('delivery_method', 'voice');
+    }
+
+    public function scopeSms($query)
+    {
+        return $query->where('delivery_method', 'sms');
     }
 
     /**
@@ -129,8 +161,20 @@ class NoticeFailureReport extends Model
     public function scopeForPhone(Builder $query, string $phone): Builder
     {
         $digits = preg_replace('/[^0-9]/', '', $phone);
-        // Compare against the rightmost 10 digits of stored phone
-        return $query->whereRaw('RIGHT(REGEXP_REPLACE(patron_phone, "[^0-9]", ""), 10) = ?', [substr($digits, -10)]);
+        return $query->where('patron_phone', substr($digits, -10));
+    }
+
+    /**
+     * Scope by date range.
+     */
+    public function scopeDateRange($query, Carbon $startDate, Carbon $endDate)
+    {
+        return $query->whereBetween('received_at', [$startDate, $endDate]);
+    }
+
+    public function scopeForDate($query, $date)
+    {
+        return $query->whereDate('received_at', $date);
     }
 
     /**

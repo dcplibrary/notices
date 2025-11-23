@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices;
 
 use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
+use Dcplibrary\Notices\Commands\ImportCommand;
 use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
@@ -13,8 +14,10 @@ use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Dcplibrary\Notices\Services\NotificationImportService;
 use Dcplibrary\Notices\Services\PluginRegistry;
 use Dcplibrary\Notices\Services\SettingsManager;
+use Dcplibrary\Notices\Services\ShoutbombFTPService;
 use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
@@ -58,6 +61,11 @@ class NoticesServiceProvider extends ServiceProvider
         $this->app->singleton(NoticeExportService::class, function ($app) {
             return new NoticeExportService($app->make(NoticeVerificationService::class));
         });
+
+        // Register NotificationImportService as a singleton
+        $this->app->singleton(NotificationImportService::class, function ($app) {
+            return new NotificationImportService($app->make(ShoutbombFTPService::class));
+        });
     }
 
     /**
@@ -86,10 +94,10 @@ class NoticesServiceProvider extends ServiceProvider
         $this->commands([
             InstallCommand::class,
             SyncAllCommand::class,
+            ImportCommand::class, // Simplified unified import command
             ImportNotifications::class,
             ImportShoutbombReports::class,
             ImportEmailReports::class,
-            // AggregateNotifications::class, // Replaced by Console\Commands\AggregateNotificationsCommand
             TestConnections::class,
             SeedDemoDataCommand::class,
             BackfillNotificationStatus::class,
@@ -103,7 +111,6 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\ImportPolarisCommand::class,
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
-            Console\Commands\NormalizePhonesCommand::class,
         ]);
 
         // Publish configuration file
@@ -112,7 +119,7 @@ class NoticesServiceProvider extends ServiceProvider
                 __DIR__.'/../config/notices.php' => config_path('notices.php'),
             ], 'notices-config');
 
-            // Publish migrations
+            // Publish migrations (optional - package auto-loads them)
             $this->publishes([
                 // Package migrations live in src/Database/Migrations
                 __DIR__.'/Database/Migrations' => database_path('migrations'),
@@ -125,7 +132,11 @@ class NoticesServiceProvider extends ServiceProvider
         }
 
         // Load migrations automatically from the package's migration directory
-        $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        // Only if migrations haven't been published to avoid running twice
+        $publishedMigrationPath = database_path('migrations/2025_01_01_000001_create_notification_logs_table.php');
+        if (!file_exists($publishedMigrationPath)) {
+            $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        }
 
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'notices');
@@ -196,25 +207,12 @@ class NoticesServiceProvider extends ServiceProvider
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             $settings = $this->app->make(SettingsManager::class);
 
-            // Import Polaris notifications hourly
-            if ($settings->get('scheduler.import_polaris_enabled', true)) {
+            // Import all notification data daily using the unified import command
+            // This includes: patron lists, phone notices, notification exports,
+            // enrichment, and aggregation - all in one step
+            if ($settings->get('scheduler.import_enabled', true)) {
+                $time = $settings->get('scheduler.import_time', '09:00');
                 $schedule->command('notices:import --days=1')
-                    ->hourly()
-                    ->withoutOverlapping();
-            }
-
-            // Import Shoutbomb reports daily at 9 AM
-            if ($settings->get('scheduler.import_shoutbomb_enabled', true)) {
-                $time = $settings->get('scheduler.import_shoutbomb_time', '09:00');
-                $schedule->command('notices:import-shoutbomb')
-                    ->dailyAt($time)
-                    ->withoutOverlapping();
-            }
-
-            // Import Shoutbomb submissions daily at 5:30 AM
-            if ($settings->get('scheduler.import_submissions_enabled', true)) {
-                $time = $settings->get('scheduler.import_submissions_time', '05:30');
-                $schedule->command('notices:import-shoutbomb-submissions')
                     ->dailyAt($time)
                     ->withoutOverlapping();
             }
@@ -223,14 +221,6 @@ class NoticesServiceProvider extends ServiceProvider
             if ($settings->get('scheduler.import_email_enabled', true)) {
                 $time = $settings->get('scheduler.import_email_time', '09:30');
                 $schedule->command('notices:import-email-reports --mark-read')
-                    ->dailyAt($time)
-                    ->withoutOverlapping();
-            }
-
-            // Aggregate yesterday's data at midnight
-            if ($settings->get('scheduler.aggregate_enabled', true)) {
-                $time = $settings->get('scheduler.aggregate_time', '00:30');
-                $schedule->command('notices:aggregate')
                     ->dailyAt($time)
                     ->withoutOverlapping();
             }
