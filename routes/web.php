@@ -66,6 +66,7 @@ Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/polaris', [SyncController::class, 'importPolaris'])->name('polaris');
     Route::post('/shoutbomb', [SyncController::class, 'importShoutbomb'])->name('shoutbomb');
     Route::post('/shoutbomb-reports', [SyncController::class, 'importShoutbombReports'])->name('shoutbomb-reports');
+    Route::post('/shoutbomb-to-logs', [SyncController::class, 'syncShoutbombToLogs'])->name('shoutbomb-to-logs');
     Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
     Route::get('/logs', [SyncController::class, 'logs'])->name('logs');

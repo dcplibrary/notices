@@ -68,7 +68,22 @@ class SyncController extends Controller
             $hasErrors = true;
         }
 
-        // Step 3: Run aggregation (continue even if imports had errors)
+        // Step 3: Sync Shoutbomb phone notices to notification_logs
+        try {
+            $syncResult = $this->runSyncShoutbombToLogs();
+            $results['shoutbomb_sync'] = $syncResult;
+            if ($syncResult['status'] === 'error') {
+                $hasErrors = true;
+            }
+        } catch (\Exception $e) {
+            $results['shoutbomb_sync'] = [
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ];
+            $hasErrors = true;
+        }
+
+        // Step 4: Run aggregation (continue even if imports had errors)
         try {
             $aggregateResult = $this->runAggregate();
             $results['aggregate'] = $aggregateResult;
@@ -84,8 +99,9 @@ class SyncController extends Controller
         }
 
         // Calculate total records processed
-        $totalRecords = ($results['polaris']['records'] ?? 0) + 
-                       ($results['shoutbomb']['records'] ?? 0);
+        $totalRecords = ($results['polaris']['records'] ?? 0) +
+                       ($results['shoutbomb']['records'] ?? 0) +
+                       ($results['shoutbomb_sync']['records'] ?? 0);
 
         if ($hasErrors) {
             $log->markCompletedWithErrors($results, 'One or more operations had errors');
@@ -181,6 +197,37 @@ class SyncController extends Controller
                 $log->markCompleted(['shoutbomb_reports' => $result], $result['records'] ?? 0);
             } else {
                 $log->markCompletedWithErrors(['shoutbomb_reports' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Sync Shoutbomb phone notices to notification_logs
+     */
+    public function syncShoutbombToLogs(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'sync_shoutbomb_to_logs',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runSyncShoutbombToLogs();
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['shoutbomb_sync' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['shoutbomb_sync' => $result], $result['message'] ?? '');
             }
 
             return response()->json($result);
@@ -358,6 +405,28 @@ class SyncController extends Controller
         // Attempt to parse a generic processed count if present
         preg_match('/Processed\s+(\d+)/i', $output, $matches);
         $records = isset($matches[1]) ? (int) $matches[1] : null;
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run sync Shoutbomb to logs command
+     */
+    private function runSyncShoutbombToLogs(): array
+    {
+        $exitCode = Artisan::call('notices:sync-shoutbomb-to-logs', [
+            '--days' => 30,
+            '--force' => true,
+        ]);
+        $output = Artisan::output();
+
+        // Parse output to get record count
+        preg_match('/Synced.*?(\d+)/i', $output, $matches);
+        $records = isset($matches[1]) ? (int) $matches[1] : 0;
 
         return [
             'status' => $exitCode === 0 ? 'success' : 'error',
