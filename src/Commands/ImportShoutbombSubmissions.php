@@ -37,7 +37,7 @@ class ImportShoutbombSubmissions extends Command
     {
         $date = $this->option('date')
             ? Carbon::parse($this->option('date'))
-            : now();
+            : now()->subDays((int) ($this->option('days') ?? 1));
 
         $this->line("📥 Importing submissions from: {$date->format('Y-m-d')}");
 
