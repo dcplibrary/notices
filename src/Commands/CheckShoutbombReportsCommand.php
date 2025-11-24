@@ -4,8 +4,8 @@ namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\ShoutbombMonthlyStat;
-use Dcplibrary\Notices\Parsers\FailureReportParser;
-use Dcplibrary\Notices\Services\GraphApiService;
+use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
+use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,29 +19,29 @@ class CheckShoutbombReportsCommand extends Command
 
     protected $description = 'Check Outlook for Shoutbomb report emails and process them';
 
-    protected GraphApiService $graphApi;
-    protected FailureReportParser $parser;
+    protected ShoutbombGraphApiService $graphApi;
+    protected ShoutbombFailureReportParser $parser;
 
-    public function __construct()
+    public function __construct(ShoutbombGraphApiService $graphApi, ShoutbombFailureReportParser $parser)
     {
         parent::__construct();
+        $this->graphApi = $graphApi;
+        $this->parser   = $parser;
     }
 
     public function handle(): int
     {
         $this->info('Starting Shoutbomb report check...');
 
-        $graphConfig = config('notices.shoutbomb_reports.graph');
-        if (empty($graphConfig['tenant_id']) || empty($graphConfig['client_id'])) {
-            $this->error('Microsoft Graph API not configured. Set SHOUTBOMB_TENANT_ID, SHOUTBOMB_CLIENT_ID, etc. in .env');
+        // Validate Graph configuration (injected service already uses this config)
+        $graphConfig = config('notices.integrations.shoutbomb_reports.graph');
+        if (empty($graphConfig['tenant_id']) || empty($graphConfig['client_id']) || empty($graphConfig['client_secret']) || empty($graphConfig['user_email'])) {
+            $this->error('Microsoft Graph API not configured. Set SHOUTBOMB_TENANT_ID, SHOUTBOMB_CLIENT_ID, SHOUTBOMB_CLIENT_SECRET, SHOUTBOMB_USER_EMAIL, etc. in .env');
             return self::FAILURE;
         }
 
-        $this->graphApi = new GraphApiService($graphConfig);
-        $this->parser = new FailureReportParser();
-
         try {
-            $filters = config('notices.shoutbomb_reports.filters') ?? [];
+            $filters = config('notices.integrations.shoutbomb_reports.filters') ?? [];
 
             if ($limit = $this->option('limit')) {
                 $filters['max_emails'] = (int) $limit;
