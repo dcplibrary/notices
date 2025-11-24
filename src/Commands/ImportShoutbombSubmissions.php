@@ -11,8 +11,11 @@ class ImportShoutbombSubmissions extends Command
     protected $signature = 'notices:import-shoutbomb-submissions
                             {--days=1 : Number of days to import}
                             {--date= : Specific date to import (Y-m-d format)}
+                            {--from= : Start date for multi-day import (Y-m-d)}
+                            {--to= : End date for multi-day import (Y-m-d)}
                             {--file= : Import from local file instead of FTP}
-                            {--type= : Notification type for local file (holds, overdue, renew)}';
+                            {--type= : Notification type for local file (holds, overdue, renew)}
+                            {--all : Import all available submission files from FTP}';
 
     protected $description = 'Import Shoutbomb submission files (what was sent to Shoutbomb)';
 
@@ -26,12 +29,17 @@ class ImportShoutbombSubmissions extends Command
             return $this->importFromFile($importer);
         }
 
-        // Import from FTP
+        // Import a range or all available dates from FTP
+        if ($this->option('all') || $this->option('from') || $this->option('to')) {
+            return $this->importAllFromFTP($importer);
+        }
+
+        // Import a single date from FTP (default: yesterday or --days ago)
         return $this->importFromFTP($importer);
     }
 
     /**
-     * Import from FTP.
+     * Import from FTP for a single date.
      */
     protected function importFromFTP(ShoutbombSubmissionImporter $importer): int
     {
@@ -74,6 +82,58 @@ class ImportShoutbombSubmissions extends Command
         $this->newLine();
 
         return $results['errors'] > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    /**
+     * Import all available submission files from FTP (all dates).
+     */
+    protected function importAllFromFTP(ShoutbombSubmissionImporter $importer): int
+    {
+        $from = $this->option('from') ? Carbon::parse($this->option('from'))->startOfDay() : null;
+        $to = $this->option('to') ? Carbon::parse($this->option('to'))->endOfDay() : null;
+
+        if ($from || $to) {
+            $this->line('📥 Importing Shoutbomb submissions for date range from FTP...');
+        } else {
+            $this->line('📥 Importing ALL available Shoutbomb submission files from FTP...');
+        }
+        $this->newLine();
+
+        $summary = $importer->importAllFromFTP($from, $to);
+
+        $dates = $summary['dates'] ?? [];
+        $totals = $summary['totals'] ?? [];
+
+        if (empty($dates)) {
+            $this->warn('No submission files were found on the FTP server.');
+            return Command::FAILURE;
+        }
+
+        $this->info('Dates processed:');
+        foreach ($dates as $d) {
+            $this->line("  - {$d}");
+        }
+        $this->newLine();
+
+        $this->line('─────────────────────────────────────────');
+        $this->info('✅ Import-all completed!');
+        $this->line('─────────────────────────────────────────');
+
+        $this->table(
+            ['Metric', 'Total'],
+            [
+                ['Holds', $totals['holds'] ?? 0],
+                ['Overdues', $totals['overdues'] ?? 0],
+                ['Renewals', $totals['renewals'] ?? 0],
+                ['Voice Patrons', $totals['voice_patrons'] ?? 0],
+                ['Text Patrons', $totals['text_patrons'] ?? 0],
+                ['Errors', $totals['errors'] ?? 0],
+            ]
+        );
+
+        $this->newLine();
+
+        return ($totals['errors'] ?? 0) > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 
     /**

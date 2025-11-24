@@ -19,7 +19,7 @@ class ShoutbombSubmissionImporter
     }
 
     /**
-     * Import all submission files from FTP.
+     * Import all submission files from FTP for a single date.
      *
      * This imports the OFFICIAL SQL-generated submission files that are
      * sent to Shoutbomb (holds, overdue, renew).
@@ -74,6 +74,114 @@ class ShoutbombSubmissionImporter
         }
 
         return $results;
+    }
+
+    /**
+     * Import all available submission files from FTP across all dates.
+     *
+     * This scans the FTP root for any *_submitted_YYYY-MM-DD_*.txt or
+     * patron list files and runs the single-date import for each distinct date.
+     *
+     * If $from or $to is provided, only dates within that inclusive range
+     * will be imported.
+     */
+    public function importAllFromFTP(?Carbon $from = null, ?Carbon $to = null): array
+    {
+        // Discover all dates present in submission/patron filenames
+        $files = $this->ftpService->listFiles('/');
+        $dates = [];
+
+        foreach ($files as $file) {
+            $basename = basename($file);
+
+            if (preg_match('/(?:holds|overdue|renew)_submitted_(\d{4}-\d{2}-\d{2})_/', $basename, $m)) {
+                $dates[$m[1]] = true;
+            } elseif (preg_match('/(?:voice|text)_patrons_submitted_(\d{4}-\d{2}-\d{2})_/', $basename, $m)) {
+                $dates[$m[1]] = true;
+            }
+        }
+
+        if (empty($dates)) {
+            Log::warning('Shoutbomb submission import-all: no matching files found on FTP');
+            return [
+                'dates' => [],
+                'totals' => [
+                    'holds' => 0,
+                    'overdues' => 0,
+                    'renewals' => 0,
+                    'voice_patrons' => 0,
+                    'text_patrons' => 0,
+                    'errors' => 0,
+                ],
+            ];
+        }
+
+        ksort($dates);
+
+        // Filter by from/to range if provided
+        if ($from || $to) {
+            $dates = array_filter(array_keys($dates), function ($dateString) use ($from, $to) {
+                $d = Carbon::parse($dateString)->startOfDay();
+                if ($from && $d->lt($from->copy()->startOfDay())) {
+                    return false;
+                }
+                if ($to && $d->gt($to->copy()->startOfDay())) {
+                    return false;
+                }
+                return true;
+            });
+
+            if (empty($dates)) {
+                Log::warning('Shoutbomb submission import-all: no dates within requested range', [
+                    'from' => $from?->toDateString(),
+                    'to' => $to?->toDateString(),
+                ]);
+
+                return [
+                    'dates' => [],
+                    'totals' => [
+                        'holds' => 0,
+                        'overdues' => 0,
+                        'renewals' => 0,
+                        'voice_patrons' => 0,
+                        'text_patrons' => 0,
+                        'errors' => 0,
+                    ],
+                ];
+            }
+        } else {
+            $dates = array_keys($dates);
+        }
+
+        $aggregate = [
+            'holds' => 0,
+            'overdues' => 0,
+            'renewals' => 0,
+            'voice_patrons' => 0,
+            'text_patrons' => 0,
+            'errors' => 0,
+        ];
+
+        foreach ($dates as $dateString) {
+            $date = Carbon::parse($dateString);
+
+            Log::info('Shoutbomb submission import-all: importing date', [
+                'date' => $dateString,
+            ]);
+
+            $results = $this->importFromFTP($date);
+
+            foreach ($aggregate as $key => $_) {
+                if (isset($results[$key])) {
+                    $aggregate[$key] += (int) $results[$key];
+                }
+            }
+        }
+
+        return [
+            'dates' => array_values($dates),
+            'totals' => $aggregate,
+        ];
     }
 
     /**
