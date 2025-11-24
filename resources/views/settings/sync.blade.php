@@ -36,8 +36,17 @@
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                     </svg>
                 </div>
-                <div class="ml-3">
-                    <p class="text-sm" x-text="message"></p>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium" x-text="message"></p>
+                    <!-- Progress bar for info messages (loading state) -->
+                    <div x-show="messageType === 'info' && loading" class="mt-2">
+                        <div class="relative pt-1">
+                            <div class="overflow-hidden h-2 text-xs flex rounded bg-blue-200">
+                                <div class="animate-pulse shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <p x-show="currentFile" class="text-xs mt-1 text-blue-600" x-text="'Processing: ' + currentFile"></p>
+                    </div>
                 </div>
                 <div class="ml-auto pl-3">
                     <button @click="message = ''" class="inline-flex text-gray-400 hover:text-gray-500">
@@ -349,6 +358,7 @@ function syncManager() {
         loading: false,
         message: '',
         messageType: 'info',
+        currentFile: '',
         connectionResults: null,
         ftpStartDate: new Date().toISOString().split('T')[0],
         ftpEndDate: new Date().toISOString().split('T')[0],
@@ -406,8 +416,9 @@ function syncManager() {
 
         async importFTPFiles() {
             this.loading = true;
-            this.message = 'Import FTP Files in progress...';
+            this.message = `Importing FTP files from ${this.ftpStartDate} to ${this.ftpEndDate}...`;
             this.messageType = 'info';
+            this.currentFile = 'Connecting to FTP server...';
 
             try {
                 const response = await fetch('/notices/sync/ftp-files', {
@@ -423,23 +434,57 @@ function syncManager() {
                     })
                 });
 
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Unexpected ${response.status} response from server`);
+                // Handle HTTP error statuses with specific messages
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    let errorDetail = '';
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const errorData = await response.json();
+                            errorDetail = errorData.message || errorData.error || '';
+                        } catch (e) {
+                            // JSON parsing failed, use text instead
+                        }
+                    }
+
+                    if (!errorDetail) {
+                        const text = await response.text();
+                        errorDetail = text ? ` Details: ${text.substring(0, 200)}` : '';
+                    }
+
+                    throw new Error(`Server returned ${response.status} ${response.statusText}.${errorDetail}`);
                 }
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    this.message = `Import FTP Files completed successfully! ${data.records ? 'Processed ' + data.records + ' records.' : ''}`;
+                    this.currentFile = '';
+
+                    // Extract file information from message if available
+                    let filesInfo = '';
+                    if (data.message && data.message.includes('Files:')) {
+                        const filesMatch = data.message.match(/Files: ([^\n]+)/);
+                        if (filesMatch) {
+                            filesInfo = ` Files imported: ${filesMatch[1]}`;
+                        }
+                    }
+
+                    this.message = `Import FTP Files completed successfully! ${data.records ? 'Processed ' + data.records + ' records.' : ''}${filesInfo}`;
                     this.messageType = 'success';
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    this.message = `Import FTP Files failed: ${data.message}`;
+                    this.currentFile = '';
+                    // Provide detailed error information
+                    let errorMsg = data.message || 'Unknown error';
+                    if (data.error) {
+                        errorMsg += ` (${data.error})`;
+                    }
+                    this.message = `Import FTP Files failed: ${errorMsg}`;
                     this.messageType = 'error';
                 }
             } catch (error) {
+                this.currentFile = '';
                 this.message = 'Import FTP Files failed: ' + error.message;
                 this.messageType = 'error';
             } finally {
@@ -466,10 +511,26 @@ function syncManager() {
                     }
                 });
 
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Unexpected ${response.status} response from server`);
+                // Handle HTTP error statuses with specific messages
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    let errorDetail = '';
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const errorData = await response.json();
+                            errorDetail = errorData.message || errorData.error || '';
+                        } catch (e) {
+                            // JSON parsing failed
+                        }
+                    }
+
+                    if (!errorDetail) {
+                        const text = await response.text();
+                        errorDetail = text ? ` Details: ${text.substring(0, 200)}` : '';
+                    }
+
+                    throw new Error(`Server returned ${response.status} ${response.statusText}.${errorDetail}`);
                 }
 
                 const data = await response.json();
@@ -479,7 +540,12 @@ function syncManager() {
                     this.messageType = 'success';
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    this.message = `${label} failed: ${data.message}`;
+                    // Provide detailed error information
+                    let errorMsg = data.message || 'Unknown error';
+                    if (data.error) {
+                        errorMsg += ` (${data.error})`;
+                    }
+                    this.message = `${label} failed: ${errorMsg}`;
                     this.messageType = 'error';
                 }
             } catch (error) {
