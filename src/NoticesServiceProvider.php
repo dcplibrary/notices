@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices;
 
 use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
+use Dcplibrary\Notices\Commands\CheckShoutbombReportsCommand;
 use Dcplibrary\Notices\Commands\ImportCommand;
 use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\ImportNotifications;
@@ -111,6 +112,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\Commands\ImportPolarisCommand::class,
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
+            CheckShoutbombReportsCommand::class,
         ]);
 
         // Publish configuration file

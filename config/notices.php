@@ -176,6 +176,53 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shoutbomb Email Reports (Microsoft Graph API)
+    |--------------------------------------------------------------------------
+    |
+    | Configure Microsoft Graph API access for reading Shoutbomb failure reports
+    | from Outlook mailbox. This replaces the dcplibrary/shoutbomb-reports package.
+    |
+    */
+
+    'shoutbomb_reports' => [
+        'graph' => [
+            // Azure AD Tenant ID
+            'tenant_id' => env('SHOUTBOMB_TENANT_ID'),
+            // Azure AD Application (client) ID
+            'client_id' => env('SHOUTBOMB_CLIENT_ID'),
+            // Azure AD Application client secret
+            'client_secret' => env('SHOUTBOMB_CLIENT_SECRET'),
+            // User email address to access
+            'user_email' => env('SHOUTBOMB_USER_EMAIL'),
+            // Graph API version
+            'api_version' => env('SHOUTBOMB_API_VERSION', 'v1.0'),
+        ],
+
+        'filters' => [
+            // Folder to monitor (null for inbox)
+            'folder' => env('SHOUTBOMB_FOLDER', null),
+            // Subject line filter
+            'subject_contains' => env('SHOUTBOMB_SUBJECT_FILTER', null),
+            // Maximum emails to process per run
+            'max_emails' => env('SHOUTBOMB_MAX_EMAILS', 50),
+            // Only process unread emails
+            'unread_only' => env('SHOUTBOMB_UNREAD_ONLY', true),
+            // Mark emails as read after processing
+            'mark_as_read' => env('SHOUTBOMB_MARK_AS_READ', true),
+            // Move processed emails to folder (null to keep in place)
+            'move_to_folder' => env('SHOUTBOMB_MOVE_TO_FOLDER', null),
+        ],
+
+        'storage' => [
+            // Store raw email content for debugging
+            'store_raw_content' => env('SHOUTBOMB_STORE_RAW', false),
+            // Log processing to Laravel log
+            'log_processing' => env('SHOUTBOMB_LOG_PROCESSING', true),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Reporting Organization
     |--------------------------------------------------------------------------
     |
