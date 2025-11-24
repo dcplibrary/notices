@@ -28,6 +28,9 @@ class SyncController extends Controller
      */
     public function syncAll(): JsonResponse
     {
+        // Increase execution time limit for multiple operations (5 minutes)
+        set_time_limit(300);
+
         $log = SyncLog::create([
             'operation_type' => 'sync_all',
             'status' => 'running',
@@ -136,6 +139,9 @@ class SyncController extends Controller
      */
     public function importShoutbombReports(): JsonResponse
     {
+        // Increase execution time limit for email processing (5 minutes)
+        set_time_limit(300);
+
         $log = SyncLog::create([
             'operation_type' => 'import_shoutbomb_reports',
             'status' => 'running',
@@ -167,6 +173,9 @@ class SyncController extends Controller
      */
     public function importShoutbombSubmissions(): JsonResponse
     {
+        // Increase execution time limit for large datasets (5 minutes)
+        set_time_limit(300);
+
         $log = SyncLog::create([
             'operation_type' => 'import_shoutbomb_submissions',
             'status' => 'running',
@@ -198,6 +207,9 @@ class SyncController extends Controller
      */
     public function importFTPFiles(Request $request): JsonResponse
     {
+        // Increase execution time limit for large imports (5 minutes)
+        set_time_limit(300);
+
         $log = SyncLog::create([
             'operation_type' => 'import_ftp_files',
             'status' => 'running',
