@@ -367,21 +367,39 @@ class NoticeVerificationService
      *
      * Returns:
      * - submitted_not_verified: Notices submitted to Shoutbomb but missing from PhoneNotices
-     * - verified_not_delivered: Notices in PhoneNotices but no delivery report
+     * - pending_verification: Notices < 24 hours old, no failure report yet
+     * - actually_failed: Notices with failure reports from Shoutbomb
+     *
+     * NOTE: Per Shoutbomb documentation, they only report FAILURES. Absence of a failure
+     * report after 24 hours = assumed successful delivery (silent success model).
      */
     public function getMismatches(?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         $startDate = $startDate ?? now()->subDays(1);
         $endDate = $endDate ?? now();
+        $now = now();
+        $cutoff24Hours = $now->copy()->subHours(24);
 
         // Find submissions without matching phone notices
+        // Allow for timing offset: PhoneNotices exports at ~8:04 AM, submissions can happen after
+        // Only flag as mismatch if submission is >24 hours old
         $submissions = ShoutbombSubmission::dateRange($startDate, $endDate)->get();
         $submittedNotVerified = [];
 
         foreach ($submissions as $submission) {
-            // Check if there's a matching phone notice
+            $submittedAt = Carbon::parse($submission->submitted_at);
+
+            // Skip if less than 24 hours old (might not be in PhoneNotices yet due to timing)
+            if ($submittedAt->isAfter($cutoff24Hours)) {
+                continue;
+            }
+
+            // Check if there's a matching phone notice (same day or next day due to timing offset)
             $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $submission->patron_barcode)
-                ->whereDate('notice_date', Carbon::parse($submission->submitted_at)->format('Y-m-d'))
+                ->where(function($query) use ($submittedAt) {
+                    $query->whereDate('notice_date', $submittedAt->format('Y-m-d'))
+                          ->orWhereDate('notice_date', $submittedAt->copy()->addDay()->format('Y-m-d'));
+                })
                 ->first();
 
             if (!$phoneNotice) {
@@ -401,71 +419,119 @@ class NoticeVerificationService
             }
         }
 
-        // Find phone notices without matching deliveries
+        // Categorize phone notices by verification status based on 24-hour rule
         $phoneNotices = PolarisPhoneNotice::dateRange($startDate, $endDate)->get();
-        $verifiedNotDelivered = [];
+        $pendingVerification = [];
+        $actuallyFailed = [];
 
         foreach ($phoneNotices as $phoneNotice) {
-            // Check if there's a matching delivery
-            $delivery = ShoutbombDelivery::where('phone_number', $phoneNotice->phone_number)
-                ->whereDate('sent_date', Carbon::parse($phoneNotice->notice_date)->format('Y-m-d'))
+            $noticeDate = Carbon::parse($phoneNotice->notice_date);
+
+            // Check for failure report (Shoutbomb only reports failures)
+            $failureReport = ShoutbombDelivery::where('phone_number', $phoneNotice->phone_number)
+                ->where('status', 'failed')
+                ->where(function($query) use ($noticeDate) {
+                    // Match same day or within 24 hours
+                    $query->whereDate('sent_date', $noticeDate->format('Y-m-d'))
+                          ->orWhereBetween('sent_date', [
+                              $noticeDate->copy()->subHours(2),
+                              $noticeDate->copy()->addHours(24)
+                          ]);
+                })
                 ->first();
 
-            if (!$delivery) {
-                $verifiedNotDelivered[] = [
+            // If there's a failure report, it actually failed
+            if ($failureReport) {
+                $actuallyFailed[] = [
                     'id' => $phoneNotice->id,
                     'patron_barcode' => $phoneNotice->patron_barcode,
                     'phone' => $phoneNotice->phone_number,
                     'item_barcode' => $phoneNotice->item_barcode,
                     'notice_date' => $phoneNotice->notice_date,
                     'delivery_type' => $phoneNotice->delivery_type,
+                    'failure_reason' => $failureReport->failure_reason ?? 'Unknown',
+                    'status' => $failureReport->status,
                 ];
             }
+            // If less than 24 hours old and no failure report, pending verification
+            elseif ($noticeDate->isAfter($cutoff24Hours)) {
+                $pendingVerification[] = [
+                    'id' => $phoneNotice->id,
+                    'patron_barcode' => $phoneNotice->patron_barcode,
+                    'phone' => $phoneNotice->phone_number,
+                    'item_barcode' => $phoneNotice->item_barcode,
+                    'notice_date' => $phoneNotice->notice_date,
+                    'delivery_type' => $phoneNotice->delivery_type,
+                    'hours_since_notice' => round($noticeDate->diffInHours($now), 1),
+                ];
+            }
+            // If more than 24 hours old and no failure report, assumed successful (silent success)
+            // Do not add to any problem list - this is the expected normal case!
 
             // Limit results
-            if (count($verifiedNotDelivered) >= 50) {
+            if (count($actuallyFailed) >= 50 || count($pendingVerification) >= 50) {
                 break;
             }
         }
 
         return [
             'submitted_not_verified' => $submittedNotVerified,
-            'verified_not_delivered' => $verifiedNotDelivered,
+            'pending_verification' => $pendingVerification,
+            'actually_failed' => $actuallyFailed,
+            'verified_not_delivered' => $actuallyFailed, // Legacy compatibility - redirect to actually_failed
             'summary' => [
                 'submitted_not_verified_count' => count($submittedNotVerified),
-                'verified_not_delivered_count' => count($verifiedNotDelivered),
+                'pending_verification_count' => count($pendingVerification),
+                'actually_failed_count' => count($actuallyFailed),
+                'verified_not_delivered_count' => count($actuallyFailed), // Legacy compatibility
             ],
         ];
     }
 
     /**
      * Get troubleshooting summary statistics.
+     *
+     * Implements proper 24-hour verification window:
+     * - Actually failed: Has failure report from Shoutbomb
+     * - Pending verification: < 24 hours old, no failure report yet
+     * - Assumed successful: > 24 hours old, no failure report (silent success)
      */
     public function getTroubleshootingSummary(?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
         $startDate = $startDate ?? now()->subDays(7);
         $endDate = $endDate ?? now();
+        $cutoff24Hours = now()->subHours(24);
 
-        // Total notices
-        $totalNotices = NotificationLog::dateRange($startDate, $endDate)->count();
+        // Total notices in PhoneNotices (verification baseline)
+        $totalNotices = PolarisPhoneNotice::dateRange($startDate, $endDate)->count();
 
-        // Failed deliveries
-        $failedCount = ShoutbombDelivery::failed()
-            ->dateRange($startDate, $endDate)
-            ->count();
-
-        // Success rate
-        $successRate = $totalNotices > 0 ? round((($totalNotices - $failedCount) / $totalNotices) * 100, 2) : 0;
-
-        // Get mismatches
+        // Get mismatches (now includes proper 24-hour logic)
         $mismatches = $this->getMismatches($startDate, $endDate);
+
+        // Actually failed: Has failure report
+        $failedCount = $mismatches['summary']['actually_failed_count'];
+
+        // Pending verification: < 24 hours old, no failure report yet
+        $pendingCount = $mismatches['summary']['pending_verification_count'];
+
+        // Assumed successful: Everything else (> 24 hours, no failure = silent success)
+        $assumedSuccessful = $totalNotices - $failedCount - $pendingCount;
+
+        // Success rate calculation:
+        // Only count verified notices (> 24 hours old) to avoid skewing with pending
+        $verifiedNotices = $totalNotices - $pendingCount;
+        $successRate = $verifiedNotices > 0
+            ? round((($verifiedNotices - $failedCount) / $verifiedNotices) * 100, 2)
+            : 0;
 
         return [
             'total_notices' => $totalNotices,
             'failed_count' => $failedCount,
+            'pending_count' => $pendingCount,
+            'assumed_successful' => max(0, $assumedSuccessful), // Ensure non-negative
             'success_rate' => $successRate,
             'submitted_not_verified' => $mismatches['summary']['submitted_not_verified_count'],
-            'verified_not_delivered' => $mismatches['summary']['verified_not_delivered_count'],
+            'verified_not_delivered' => $failedCount, // Legacy: Now means "actually failed"
         ];
     }
 }
