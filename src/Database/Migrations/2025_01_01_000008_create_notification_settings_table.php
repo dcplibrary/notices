@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Database\Migrations;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -48,6 +49,26 @@ return new class extends Migration {
             $table->index(['scope', 'scope_id']);
             $table->index(['group', 'key']);
         });
+
+        // Insert default settings
+        DB::table('notification_settings')->insert([
+            [
+                'scope' => null,
+                'scope_id' => null,
+                'group' => 'integrations',
+                'key' => 'shoutbomb_reports.enabled',
+                'value' => 'false',
+                'type' => 'boolean',
+                'description' => 'Enable Shoutbomb email reports integration to ingest failure reports from Outlook.',
+                'is_public' => true,
+                'is_editable' => true,
+                'is_sensitive' => false,
+                'validation_rules' => json_encode(['boolean']),
+                'updated_by' => 'system',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
     }
 
     /**
