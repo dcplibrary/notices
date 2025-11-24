@@ -3,25 +3,21 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Config;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * This table stores delivery failures from ShoutBomb with enrichment capabilities.
-     *
-     * Source Files (Email Reports):
-     *   1. "Invalid patron phone number [Date]" - Daily invalid/opted-out phones (6am)
-     *   2. "Voice notices that were not delivered on [Date]" - Daily voice failures (4:10pm)
-     *
-     * This enhanced table supports linking failures back to:
-     *   - PhoneNotices.csv (validation baseline)
-     *   - Notification exports (holds, overdue, renew)
      */
     public function up(): void
     {
-        Schema::create('notice_failure_reports', function (Blueprint $table) {
+        $tableName = Config::get(
+            'notices.integrations.shoutbomb_reports.storage.table_name',
+            Config::get('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')
+        );
+
+        Schema::create($tableName, function (Blueprint $table) {
             $table->id();
 
             // Email source identification
@@ -35,6 +31,9 @@ return new class extends Migration
             $table->string('patron_barcode', 20)->nullable()->index()->comment('May be partial (last 4 digits)');
             $table->boolean('barcode_partial')->default(false)->comment('True if barcode is XXXX#### redacted format');
             $table->string('patron_name', 255)->nullable()->comment('LAST, FIRST format from voice failure emails');
+
+            // Logical notice type used by the UI / factory (e.g. SMS, Voice)
+            $table->string('notice_type', 20)->nullable()->index();
 
             // Contact type/value (NEW fields for flexibility)
             $table->enum('contact_type', ['phone', 'email'])->default('phone')->comment('Type of contact that failed');
@@ -90,6 +89,9 @@ return new class extends Migration
             $table->index(['patron_phone', 'received_at'], 'nfr_phone_received_idx');
             $table->index(['delivery_method', 'failure_type'], 'nfr_delivery_failure_idx');
             $table->index(['notification_type_id', 'received_at'], 'nfr_notiftype_received_idx');
+
+            // Unique constraint: same failure shouldn't be recorded twice from same email
+            $table->unique(['outlook_message_id', 'patron_phone', 'patron_id'], 'unique_failure_per_email');
         });
     }
 
@@ -98,6 +100,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notice_failure_reports');
+        $tableName = Config::get(
+            'notices.integrations.shoutbomb_reports.storage.table_name',
+            Config::get('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')
+        );
+
+        Schema::dropIfExists($tableName);
     }
 };
