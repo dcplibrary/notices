@@ -322,6 +322,7 @@ class SettingsController extends Controller
         $lastSyncAll = SyncLog::latestFor('sync_all');
         $lastPolaris = SyncLog::latestFor('import_polaris');
         $lastShoutbomb = SyncLog::latestFor('import_shoutbomb');
+        $lastShoutbombSubmissions = SyncLog::latestFor('import_shoutbomb_submissions');
         $lastShoutbombReports = SyncLog::latestFor('import_shoutbomb_reports');
         $lastAggregate = SyncLog::latestFor('aggregate');
 
@@ -336,6 +337,7 @@ class SettingsController extends Controller
             'lastSyncAll',
             'lastPolaris',
             'lastShoutbomb',
+            'lastShoutbombSubmissions',
             'lastShoutbombReports',
             'lastAggregate',
             'recentSyncs',
