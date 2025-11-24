@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * PolarisPhoneNoticeImporter
- * 
+ *
  * Imports PhoneNotices.csv - a Polaris-generated export file used for
  * VERIFICATION/CORROBORATION of notices sent to Shoutbomb.
  */
@@ -101,6 +101,11 @@ class PolarisPhoneNoticeImporter
                 $localPath = $this->ftpService->downloadFile('/' . ltrim($fileInfo['path'], '/'));
 
                 if ($localPath) {
+                    // Notify callback that we're starting a new file
+                    if ($progressCallback) {
+                        $progressCallback(0, 0, $fileInfo['basename'], true);
+                    }
+
                     $count = $this->importPhoneNoticesFile(
                         $localPath,
                         $fileInfo['basename'],
@@ -149,7 +154,7 @@ class PolarisPhoneNoticeImporter
      *
      * @param string $filePath Local path to the downloaded file
      * @param string $filename Original filename
-     * @param callable|null $progressCallback Progress callback
+     * @param callable|null $progressCallback Progress callback (current, total, filename, isNewFile)
      * @param Carbon|null $startDate Start of date range filter
      * @param Carbon|null $endDate End of date range filter
      * @param Carbon|null $fileDate Date extracted from filename (for dated files) or default date
@@ -170,14 +175,14 @@ class PolarisPhoneNoticeImporter
                         if ($nd->lt($startDate->copy()->startOfDay()) || $nd->gt($endDate->copy()->endOfDay())) {
                             // Outside desired window; skip
                             if ($progressCallback) {
-                                $progressCallback($index + 1, $total);
+                                $progressCallback($index + 1, $total, $filename, false);
                             }
                             continue;
                         }
                     } catch (\Exception $e) {
                         // If date parsing fails, skip record
                         if ($progressCallback) {
-                            $progressCallback($index + 1, $total);
+                            $progressCallback($index + 1, $total, $filename, false);
                         }
                         continue;
                     }
@@ -200,7 +205,7 @@ class PolarisPhoneNoticeImporter
 
                 // Call progress callback if provided
                 if ($progressCallback) {
-                    $progressCallback($index + 1, $total);
+                    $progressCallback($index + 1, $total, $filename, false);
                 }
 
             } catch (\Exception $e) {

@@ -54,16 +54,24 @@ class ImportFTPFiles extends Command
         ];
 
         // Step 1: Import PhoneNotices
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         $this->info('📞 Importing PhoneNotices...');
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         try {
             $phoneResults = $phoneNoticeImporter->importFromFTP(
-                function ($current, $total) {
-                    // Simple progress indicator
-                    if ($current % 100 === 0 || $current === $total) {
-                        $this->output->write("\r   Processing: {$current}/{$total}");
+                function ($current, $total, $filename = null, $isNewFile = false) {
+                    // Display filename when starting a new file
+                    if ($isNewFile && $filename) {
+                        $this->newLine();
+                        $this->line("   📄 Importing: <comment>{$filename}</comment>");
+                    }
+
+                    // Display progress for current file
+                    if (!$isNewFile && $current > 0 && $total > 0) {
+                        if ($current % 100 === 0 || $current === $total) {
+                            $this->output->write("\r   Processing: {$current}/{$total}");
+                        }
                     }
                 },
                 $startDate,
@@ -91,9 +99,9 @@ class ImportFTPFiles extends Command
         $this->newLine();
 
         // Step 2: Import Shoutbomb Submissions
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         $this->info('📋 Importing Shoutbomb Submissions...');
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         try {
             if ($this->option('all') || ($startDate && $endDate && !$startDate->isSameDay($endDate))) {
@@ -142,9 +150,9 @@ class ImportFTPFiles extends Command
         $this->newLine();
 
         // Summary
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         $this->info('📊 Import Summary');
-        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         $this->table(
             ['Category', 'Count'],
