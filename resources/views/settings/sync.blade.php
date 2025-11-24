@@ -38,15 +38,6 @@
                 </div>
                 <div class="ml-3 flex-1">
                     <p class="text-sm font-medium" x-text="message"></p>
-                    <!-- Progress bar for info messages (loading state) -->
-                    <div x-show="messageType === 'info' && loading" class="mt-2">
-                        <div class="relative pt-1">
-                            <div class="overflow-hidden h-2 text-xs flex rounded bg-blue-200">
-                                <div class="animate-pulse shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <p x-show="currentFile" class="text-xs mt-1 text-blue-600" x-text="'Processing: ' + currentFile"></p>
-                    </div>
                 </div>
                 <div class="ml-auto pl-3">
                     <button @click="message = ''" class="inline-flex text-gray-400 hover:text-gray-500">
@@ -481,7 +472,6 @@ function syncManager() {
         loading: false,
         message: '',
         messageType: 'info',
-        currentFile: '',
         connectionResults: null,
         ftpStartDate: new Date().toISOString().split('T')[0],
         ftpEndDate: new Date().toISOString().split('T')[0],
@@ -542,9 +532,8 @@ function syncManager() {
 
         async importFTPFiles() {
             this.loading = true;
-            this.message = `Importing FTP files from ${this.ftpStartDate} to ${this.ftpEndDate}...`;
+            this.message = `Importing FTP files from ${this.ftpStartDate} to ${this.ftpEndDate}... This may take several minutes.`;
             this.messageType = 'info';
-            this.currentFile = 'Connecting to FTP server...';
 
             try {
                 const response = await fetch('/notices/sync/ftp-files', {
@@ -562,6 +551,11 @@ function syncManager() {
 
                 // Handle HTTP error statuses with specific messages
                 if (!response.ok) {
+                    // Special handling for 524 timeout errors
+                    if (response.status === 524) {
+                        throw new Error('Import timed out after ~100 seconds (Cloudflare/proxy timeout). The import may still be running on the server. Please check the sync history in a few minutes to see if it completed. For large date ranges, consider importing smaller ranges (e.g., one week at a time).');
+                    }
+
                     const contentType = response.headers.get('content-type') || '';
                     let errorDetail = '';
 
@@ -570,23 +564,25 @@ function syncManager() {
                             const errorData = await response.json();
                             errorDetail = errorData.message || errorData.error || '';
                         } catch (e) {
-                            // JSON parsing failed, use text instead
+                            // JSON parsing failed
                         }
                     }
 
-                    if (!errorDetail) {
-                        const text = await response.text();
-                        errorDetail = text ? ` Details: ${text.substring(0, 200)}` : '';
+                    // Don't include HTML error pages in the error message
+                    if (!errorDetail || errorDetail.includes('<!DOCTYPE') || errorDetail.includes('<html')) {
+                        errorDetail = '';
                     }
 
-                    throw new Error(`Server returned ${response.status} ${response.statusText}.${errorDetail}`);
+                    const errorMsg = errorDetail
+                        ? `Server returned ${response.status} ${response.statusText}. ${errorDetail}`
+                        : `Server returned ${response.status} ${response.statusText}`;
+
+                    throw new Error(errorMsg);
                 }
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    this.currentFile = '';
-
                     // Extract file information from message if available
                     let filesInfo = '';
                     if (data.message && data.message.includes('Files:')) {
@@ -600,7 +596,6 @@ function syncManager() {
                     this.messageType = 'success';
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    this.currentFile = '';
                     // Provide detailed error information
                     let errorMsg = data.message || 'Unknown error';
                     if (data.error) {
@@ -610,7 +605,6 @@ function syncManager() {
                     this.messageType = 'error';
                 }
             } catch (error) {
-                this.currentFile = '';
                 this.message = 'Import FTP Files failed: ' + error.message;
                 this.messageType = 'error';
             } finally {
