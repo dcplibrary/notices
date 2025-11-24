@@ -116,6 +116,7 @@ class NoticesServiceProvider extends ServiceProvider
             TestConnections::class,
             SeedDemoDataCommand::class,
             BackfillNotificationStatus::class,
+            Commands\CheckShoutbombReportsCommand::class,
             Commands\ImportShoutbombSubmissions::class,
             Commands\ImportPolarisPhoneNotices::class,
             Commands\ListShoutbombFiles::class,

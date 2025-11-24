@@ -31,7 +31,6 @@ class CheckShoutbombReportsCommand extends Command
     {
         $this->info('Starting Shoutbomb report check...');
 
-        // Check if Graph API is configured
         $graphConfig = config('notices.shoutbomb_reports.graph');
         if (empty($graphConfig['tenant_id']) || empty($graphConfig['client_id'])) {
             $this->error('Microsoft Graph API not configured. Set SHOUTBOMB_TENANT_ID, SHOUTBOMB_CLIENT_ID, etc. in .env');
@@ -122,9 +121,6 @@ class CheckShoutbombReportsCommand extends Command
         }
     }
 
-    /**
-     * Process a single message
-     */
     protected function processMessage(array $message, ?array $filters = []): int
     {
         $filters = $filters ?? [];

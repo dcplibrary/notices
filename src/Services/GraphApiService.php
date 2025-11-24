@@ -19,9 +19,6 @@ class GraphApiService
         $this->baseUrl = "https://graph.microsoft.com/{$config['api_version']}";
     }
 
-    /**
-     * Get access token using client credentials flow
-     */
     public function getAccessToken(): string
     {
         $cacheKey = 'outlook_failure_reports_token';
@@ -44,9 +41,6 @@ class GraphApiService
         });
     }
 
-    /**
-     * Get messages from user's mailbox with filters
-     */
     public function getMessages(?array $filters = []): array
     {
         $filters = $filters ?? [];
@@ -103,9 +97,6 @@ class GraphApiService
         }
     }
 
-    /**
-     * Get message by ID
-     */
     public function getMessage(string $messageId): ?array
     {
         $token = $this->getAccessToken();
@@ -131,9 +122,6 @@ class GraphApiService
         }
     }
 
-    /**
-     * Mark message as read
-     */
     public function markAsRead(string $messageId): bool
     {
         $token = $this->getAccessToken();
@@ -162,9 +150,6 @@ class GraphApiService
         }
     }
 
-    /**
-     * Move message to folder
-     */
     public function moveMessage(string $messageId, string $folderName): bool
     {
         $token = $this->getAccessToken();
@@ -200,9 +185,6 @@ class GraphApiService
         }
     }
 
-    /**
-     * Get folder ID by name
-     */
     protected function getFolderId(string $userEmail, string $folderName): ?string
     {
         $cacheKey = "outlook_folder_id_{$folderName}";
@@ -231,9 +213,6 @@ class GraphApiService
         });
     }
 
-    /**
-     * Get message body content (text or HTML)
-     */
     public function getMessageBody(array $message, string $preferredType = 'text'): ?string
     {
         if (!isset($message['body'])) {

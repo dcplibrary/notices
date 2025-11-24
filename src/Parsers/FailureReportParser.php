@@ -13,24 +13,18 @@ class FailureReportParser
         $this->config = $config ?: config('notices.shoutbomb_reports.parsing', []);
     }
 
-    /**
-     * Parse a Shoutbomb failure report email and extract all failures
-     * Returns an array of failure records (one email can have multiple failures)
-     */
     public function parse(array $message, ?string $bodyContent = null): array
     {
         if (!$bodyContent) {
             $bodyContent = $message['body']['content'] ?? '';
         }
 
-        // Strip HTML tags if content is HTML
         if (($message['body']['contentType'] ?? '') === 'html') {
             $bodyContent = strip_tags($bodyContent);
         }
 
         $failures = [];
 
-        // Check if this is a Shoutbomb report
         if (!$this->isShoutbombReport($message, $bodyContent)) {
             Log::warning('Email does not appear to be a Shoutbomb report', [
                 'subject' => $message['subject'] ?? 'unknown',
@@ -38,7 +32,6 @@ class FailureReportParser
             return [];
         }
 
-        // Extract common metadata
         $metadata = [
             'outlook_message_id' => $message['id'] ?? null,
             'subject' => $message['subject'] ?? null,
@@ -49,7 +42,6 @@ class FailureReportParser
                 : null,
         ];
 
-        // Detect report type from subject
         $subject = $message['subject'] ?? '';
 
         if (stripos($subject, 'Voice notices that were not delivered') !== false) {
@@ -76,9 +68,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Check if this is a Shoutbomb report email
-     */
     protected function isShoutbombReport(array $message, string $content): bool
     {
         $subject = $message['subject'] ?? '';
@@ -104,9 +93,6 @@ class FailureReportParser
         return false;
     }
 
-    /**
-     * Parse the "OPTED-OUT" section
-     */
     protected function parseOptedOutSection(string $content, array $metadata): array
     {
         $failures = [];
@@ -119,9 +105,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Parse the "INVALID" section
-     */
     protected function parseInvalidSection(string $content, array $metadata): array
     {
         $failures = [];
@@ -134,9 +117,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Parse individual failure lines
-     */
     protected function parseFailureLines(string $section, array $metadata, string $failureType): array
     {
         $failures = [];
@@ -194,9 +174,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Parse Voice failure report
-     */
     protected function parseVoiceFailures(string $content, array $metadata): array
     {
         $failures = [];
@@ -253,9 +230,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Parse invalid/removed patron barcodes section from monthly reports
-     */
     protected function parseInvalidBarcodesSection(string $content, array $metadata): array
     {
         $failures = [];
@@ -296,9 +270,6 @@ class FailureReportParser
         return $failures;
     }
 
-    /**
-     * Get human-readable failure reason
-     */
     protected function getFailureReason(string $failureType): string
     {
         return match($failureType) {
@@ -310,9 +281,6 @@ class FailureReportParser
         };
     }
 
-    /**
-     * Validate a single parsed failure
-     */
     public function validate(array $parsedData): bool
     {
         if (!empty($parsedData['barcode_partial']) && !empty($parsedData['patron_barcode'])) {
@@ -327,9 +295,6 @@ class FailureReportParser
         return true;
     }
 
-    /**
-     * Parse monthly statistics from "Shoutbomb Rpt" emails
-     */
     public function parseMonthlyStats(array $message, ?string $bodyContent = null): ?array
     {
         $subject = $message['subject'] ?? '';
@@ -352,7 +317,6 @@ class FailureReportParser
             'received_at' => $message['receivedDateTime'] ?? null,
         ];
 
-        // Extract report month
         if (preg_match('/Shoutbomb Rpt\s+(\w+)\s+(\d{4})/i', $subject, $matches)) {
             $monthName = $matches[1];
             $year = $matches[2];
@@ -363,12 +327,10 @@ class FailureReportParser
             }
         }
 
-        // Extract branch name
         if (preg_match('/Branch::\s*([^\n]+)/i', $bodyContent, $matches)) {
             $stats['branch_name'] = trim($matches[1]);
         }
 
-        // Extract various statistics
         $this->extractStats($bodyContent, $stats);
 
         Log::info("Parsed monthly statistics for " . ($stats['report_month'] ?? 'unknown month'));
@@ -376,9 +338,6 @@ class FailureReportParser
         return $stats;
     }
 
-    /**
-     * Extract statistics from body content
-     */
     protected function extractStats(string $bodyContent, array &$stats): void
     {
         $patterns = [
@@ -400,7 +359,6 @@ class FailureReportParser
             }
         }
 
-        // Extract keyword usage
         $keywords = [];
         if (preg_match_all('/^(\w+)\s+was used\s+(\d+)\s+times?\./im', $bodyContent, $matches, PREG_SET_ORDER)) {
             foreach ($matches as $match) {

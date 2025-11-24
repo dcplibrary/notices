@@ -110,57 +110,36 @@ class ShoutbombMonthlyStat extends Model
         'invalid_numbers_count' => 'integer',
     ];
 
-    /**
-     * Scope to filter by month.
-     */
     public function scopeForMonth($query, $date)
     {
         return $query->where('report_month', $date);
     }
 
-    /**
-     * Scope to get recent reports.
-     */
     public function scopeRecent($query, int $months = 12)
     {
         return $query->where('report_month', '>=', now()->subMonths($months)->startOfMonth());
     }
 
-    /**
-     * Scope to filter by branch.
-     */
     public function scopeForBranch($query, string $branchName)
     {
         return $query->where('branch_name', $branchName);
     }
 
-    /**
-     * Get total notifications sent (text + voice).
-     */
     public function getTotalSentAttribute(): int
     {
         return $this->total_text_sent + $this->total_voice_sent;
     }
 
-    /**
-     * Get total notifications delivered.
-     */
     public function getTotalDeliveredAttribute(): int
     {
         return $this->total_text_delivered + $this->total_voice_delivered;
     }
 
-    /**
-     * Get total failures.
-     */
     public function getTotalFailedAttribute(): int
     {
         return $this->total_text_failed + $this->total_voice_failed;
     }
 
-    /**
-     * Get delivery success rate as percentage.
-     */
     public function getDeliveryRateAttribute(): float
     {
         $total = $this->total_sent;
