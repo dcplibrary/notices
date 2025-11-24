@@ -127,13 +127,35 @@
                         </p>
                         @endif
                     </div>
-                    <button @click="importShoutbomb()" 
+                    <button @click="importShoutbomb()"
                             :disabled="loading"
                             class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
                         <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                         Import
+                    </button>
+                </div>
+
+                <!-- Import Shoutbomb Submissions (SQL exports) -->
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900">Import Shoutbomb Submissions</h4>
+                        <p class="text-xs text-gray-500">Import what was sent to Shoutbomb (holds, overdues, renewals)</p>
+                        @if($lastShoutbombSubmissions ?? false)
+                        <p class="text-xs text-gray-400 mt-1">
+                            Last: {{ $lastShoutbombSubmissions->started_at->diffForHumans() }}
+                            ({{ $lastShoutbombSubmissions->records_processed ?? 0 }} records)
+                        </p>
+                        @endif
+                    </div>
+                    <button @click="importShoutbombSubmissions()"
+                            :disabled="loading"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                        <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Import Submissions
                     </button>
                 </div>
 
@@ -381,7 +403,11 @@ function syncManager() {
         },
 
         async importShoutbombReports() {
-await this.runOperation('shoutbomb-reports', 'Sync Shoutbomb Report Emails');
+            await this.runOperation('shoutbomb-reports', 'Sync Shoutbomb Report Emails');
+        },
+
+        async importShoutbombSubmissions() {
+            await this.runOperation('shoutbomb-submissions', 'Import Shoutbomb Submissions');
         },
 
         async aggregate() {

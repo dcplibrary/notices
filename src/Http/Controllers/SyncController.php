@@ -210,6 +210,37 @@ class SyncController extends Controller
     }
 
     /**
+     * Import Shoutbomb Submissions (what was sent to Shoutbomb)
+     */
+    public function importShoutbombSubmissions(): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_shoutbomb_submissions',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportShoutbombSubmissions();
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['shoutbomb_submissions' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['shoutbomb_submissions' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Sync Shoutbomb phone notices to notification_logs
      */
     public function syncShoutbombToLogs(): JsonResponse
@@ -446,6 +477,33 @@ class SyncController extends Controller
         return [
             'status' => $exitCode === 0 ? 'success' : 'error',
             'message' => trim($output),
+        ];
+    }
+
+    /**
+     * Run Shoutbomb submissions import command
+     */
+    private function runImportShoutbombSubmissions(): array
+    {
+        $exitCode = Artisan::call('notices:import-shoutbomb-submissions', ['--all' => true]);
+        $output = Artisan::output();
+
+        // Parse output to get record counts
+        $records = 0;
+        if (preg_match('/Holds[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Overdues[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Renewals[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
         ];
     }
 }
