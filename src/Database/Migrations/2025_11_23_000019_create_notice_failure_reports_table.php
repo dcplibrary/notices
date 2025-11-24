@@ -17,6 +17,12 @@ return new class extends Migration
             Config::get('notices.integrations.shoutbomb_reports.table', 'notice_failure_reports')
         );
 
+        // Guard against running this migration when the table already exists (e.g. in tests or
+        // when upgrading from a previous version that created the table manually).
+        if (Schema::hasTable($tableName)) {
+            return;
+        }
+
         Schema::create($tableName, function (Blueprint $table) {
             $table->id();
 
