@@ -67,7 +67,7 @@
                 </div>
                 <div class="mt-4">
                     <p class="text-sm text-gray-600">
-                        Use dcplibrary/shoutbomb-reports data to mark failed deliveries. Absence of a failure implies success when a notice has been submitted.
+                        Use Shoutbomb failure reports to mark failed deliveries. When a notice has been submitted and no matching failure is found, delivery is inferred as successful.
                     </p>
 
                     @php
@@ -345,10 +345,9 @@
           <div class="mt-2">
             <p class="text-sm text-gray-500">If not already installed in your Laravel app, follow these steps:</p>
             <ol class="mt-3 text-left text-sm text-gray-700 list-decimal list-inside space-y-2">
-              <li>Add the package: <code class="bg-gray-100 px-2 py-1 rounded">composer require dcplibrary/shoutbomb-reports</code></li>
-              <li>Publish and run migrations:
+              <li>Ensure the dcplibrary/notices package is installed and migrated:
                 <div class="mt-1">
-                  <code class="bg-gray-100 px-2 py-1 rounded text-xs">php artisan vendor:publish --provider="Dcplibrary\ShoutbombReports\ShoutbombReportsServiceProvider" --tag=migrations</code><br>
+                  <code class="bg-gray-100 px-2 py-1 rounded text-xs">composer require dcplibrary/notices</code><br>
                   <code class="bg-gray-100 px-2 py-1 rounded text-xs">php artisan migrate</code>
                 </div>
               </li>
@@ -367,7 +366,12 @@
                   NOTICES_SHOUTBOMB_REPORTS_ENABLED=true
                 </div>
               </li>
-              <li>Schedule the package’s sync/ingest commands in your app’s scheduler.</li>
+              <li>Schedule the Shoutbomb check command in your app’s scheduler:
+                <div class="mt-1 text-xs">
+                  php artisan shoutbomb:check-reports --dry-run<br>
+                  # then remove --dry-run and schedule to run regularly
+                </div>
+              </li>
             </ol>
           </div>
         </div>
