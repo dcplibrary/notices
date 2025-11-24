@@ -125,6 +125,7 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\DiagnoseDataIssues::class,
             Commands\SyncShoutbombToLogs::class,
             Console\Commands\DiagnosePatronDataCommand::class,
+            Console\Commands\DiagnosePatronDataCommand::class,
             Console\Commands\ImportPolarisCommand::class,
             Console\Commands\ImportShoutbombCommand::class,
             Console\Commands\AggregateNotificationsCommand::class,
