@@ -331,13 +331,13 @@ class ImportFTPFiles extends Command
             return [null, null];
         }
 
-        if ($this->option('start-date') || $this->option('end-date')) {
-            $startDate = $this->option('start-date')
-                ? Carbon::parse($this->option('start-date'))->startOfDay()
+        if ($this->option('from') || $this->option('to')) {
+            $startDate = $this->option('from')
+                ? Carbon::parse($this->option('from'))->startOfDay()
                 : now()->startOfDay();
 
-            $endDate = $this->option('end-date')
-                ? Carbon::parse($this->option('end-date'))->endOfDay()
+            $endDate = $this->option('to')
+                ? Carbon::parse($this->option('to'))->endOfDay()
                 : now()->endOfDay();
 
             return [$startDate, $endDate];
