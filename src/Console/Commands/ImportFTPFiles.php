@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notices\Commands;
+namespace Dcplibrary\Notices\Console\Commands;
 
 use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
