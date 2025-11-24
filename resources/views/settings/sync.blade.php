@@ -36,8 +36,17 @@
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
                     </svg>
                 </div>
-                <div class="ml-3">
-                    <p class="text-sm" x-text="message"></p>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm font-medium" x-text="message"></p>
+                    <!-- Progress bar for info messages (loading state) -->
+                    <div x-show="messageType === 'info' && loading" class="mt-2">
+                        <div class="relative pt-1">
+                            <div class="overflow-hidden h-2 text-xs flex rounded bg-blue-200">
+                                <div class="animate-pulse shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <p x-show="currentFile" class="text-xs mt-1 text-blue-600" x-text="'Processing: ' + currentFile"></p>
+                    </div>
                 </div>
                 <div class="ml-auto pl-3">
                     <button @click="message = ''" class="inline-flex text-gray-400 hover:text-gray-500">
@@ -302,6 +311,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Records</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -328,16 +338,138 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $sync->records_processed ?? '-' }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button @click="viewLogDetails({{ $sync->id }})"
+                                    class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                View Details
+                            </button>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                             No sync history yet. Click "Sync All Now" to get started.
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Log Details Modal -->
+    <div x-show="showLogModal"
+         x-cloak
+         class="fixed inset-0 z-50 overflow-y-auto"
+         aria-labelledby="modal-title"
+         role="dialog"
+         aria-modal="true"
+         @keydown.escape.window="showLogModal = false">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+                 aria-hidden="true"
+                 @click="showLogModal = false"></div>
+
+            <!-- Modal panel -->
+            <div class="inline-block w-full max-w-4xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
+                <!-- Modal header -->
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-gray-900" id="modal-title">
+                            Sync Log Details
+                        </h3>
+                        <button @click="showLogModal = false"
+                                class="text-gray-400 hover:text-gray-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal body -->
+                <div class="px-6 py-4 max-h-96 overflow-y-auto">
+                    <div x-show="loadingLog" class="text-center py-8">
+                        <svg class="animate-spin h-8 w-8 mx-auto text-indigo-600" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-2 text-sm text-gray-500">Loading log details...</p>
+                    </div>
+
+                    <div x-show="!loadingLog && currentLog" class="space-y-4">
+                        <!-- Summary Section -->
+                        <div>
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Summary</h4>
+                            <dl class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <dt class="font-medium text-gray-500">Operation</dt>
+                                    <dd class="mt-1 text-gray-900" x-text="currentLog?.operation_type?.replace(/_/g, ' ')"></dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-500">Status</dt>
+                                    <dd class="mt-1">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                              :class="{
+                                                  'bg-green-100 text-green-800': currentLog?.status === 'completed',
+                                                  'bg-red-100 text-red-800': currentLog?.status === 'failed',
+                                                  'bg-yellow-100 text-yellow-800': currentLog?.status === 'completed_with_errors',
+                                                  'bg-blue-100 text-blue-800': currentLog?.status === 'running'
+                                              }"
+                                              x-text="currentLog?.status?.replace(/_/g, ' ')"></span>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-500">Started</dt>
+                                    <dd class="mt-1 text-gray-900" x-text="currentLog?.started_at"></dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-500">Duration</dt>
+                                    <dd class="mt-1 text-gray-900" x-text="currentLog?.duration_seconds ? currentLog.duration_seconds + 's' : '-'"></dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-500">Records Processed</dt>
+                                    <dd class="mt-1 text-gray-900" x-text="currentLog?.records_processed || '-'"></dd>
+                                </div>
+                                <div x-show="currentLog?.user_id">
+                                    <dt class="font-medium text-gray-500">Triggered By</dt>
+                                    <dd class="mt-1 text-gray-900" x-text="'User ID: ' + currentLog?.user_id"></dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Error Message (if any) -->
+                        <div x-show="currentLog?.error_message" class="bg-red-50 border-l-4 border-red-400 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-semibold text-red-800">Error</h4>
+                                    <p class="mt-1 text-sm text-red-700" x-text="currentLog?.error_message"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Section -->
+                        <div x-show="currentLog?.results">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Detailed Results</h4>
+                            <pre class="bg-gray-50 p-4 rounded-md text-xs overflow-x-auto border border-gray-200" x-text="JSON.stringify(currentLog?.results, null, 2)"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <button @click="showLogModal = false"
+                            class="w-full inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Close
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -349,9 +481,13 @@ function syncManager() {
         loading: false,
         message: '',
         messageType: 'info',
+        currentFile: '',
         connectionResults: null,
         ftpStartDate: new Date().toISOString().split('T')[0],
         ftpEndDate: new Date().toISOString().split('T')[0],
+        showLogModal: false,
+        loadingLog: false,
+        currentLog: null,
 
         async syncAll() {
             this.loading = true;
@@ -406,8 +542,9 @@ function syncManager() {
 
         async importFTPFiles() {
             this.loading = true;
-            this.message = 'Import FTP Files in progress...';
+            this.message = `Importing FTP files from ${this.ftpStartDate} to ${this.ftpEndDate}...`;
             this.messageType = 'info';
+            this.currentFile = 'Connecting to FTP server...';
 
             try {
                 const response = await fetch('/notices/sync/ftp-files', {
@@ -423,23 +560,57 @@ function syncManager() {
                     })
                 });
 
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Unexpected ${response.status} response from server`);
+                // Handle HTTP error statuses with specific messages
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    let errorDetail = '';
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const errorData = await response.json();
+                            errorDetail = errorData.message || errorData.error || '';
+                        } catch (e) {
+                            // JSON parsing failed, use text instead
+                        }
+                    }
+
+                    if (!errorDetail) {
+                        const text = await response.text();
+                        errorDetail = text ? ` Details: ${text.substring(0, 200)}` : '';
+                    }
+
+                    throw new Error(`Server returned ${response.status} ${response.statusText}.${errorDetail}`);
                 }
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    this.message = `Import FTP Files completed successfully! ${data.records ? 'Processed ' + data.records + ' records.' : ''}`;
+                    this.currentFile = '';
+
+                    // Extract file information from message if available
+                    let filesInfo = '';
+                    if (data.message && data.message.includes('Files:')) {
+                        const filesMatch = data.message.match(/Files: ([^\n]+)/);
+                        if (filesMatch) {
+                            filesInfo = ` Files imported: ${filesMatch[1]}`;
+                        }
+                    }
+
+                    this.message = `Import FTP Files completed successfully! ${data.records ? 'Processed ' + data.records + ' records.' : ''}${filesInfo}`;
                     this.messageType = 'success';
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    this.message = `Import FTP Files failed: ${data.message}`;
+                    this.currentFile = '';
+                    // Provide detailed error information
+                    let errorMsg = data.message || 'Unknown error';
+                    if (data.error) {
+                        errorMsg += ` (${data.error})`;
+                    }
+                    this.message = `Import FTP Files failed: ${errorMsg}`;
                     this.messageType = 'error';
                 }
             } catch (error) {
+                this.currentFile = '';
                 this.message = 'Import FTP Files failed: ' + error.message;
                 this.messageType = 'error';
             } finally {
@@ -466,10 +637,26 @@ function syncManager() {
                     }
                 });
 
-                const contentType = response.headers.get('content-type') || '';
-                if (!contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Unexpected ${response.status} response from server`);
+                // Handle HTTP error statuses with specific messages
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type') || '';
+                    let errorDetail = '';
+
+                    if (contentType.includes('application/json')) {
+                        try {
+                            const errorData = await response.json();
+                            errorDetail = errorData.message || errorData.error || '';
+                        } catch (e) {
+                            // JSON parsing failed
+                        }
+                    }
+
+                    if (!errorDetail) {
+                        const text = await response.text();
+                        errorDetail = text ? ` Details: ${text.substring(0, 200)}` : '';
+                    }
+
+                    throw new Error(`Server returned ${response.status} ${response.statusText}.${errorDetail}`);
                 }
 
                 const data = await response.json();
@@ -479,7 +666,12 @@ function syncManager() {
                     this.messageType = 'success';
                     setTimeout(() => window.location.reload(), 2000);
                 } else {
-                    this.message = `${label} failed: ${data.message}`;
+                    // Provide detailed error information
+                    let errorMsg = data.message || 'Unknown error';
+                    if (data.error) {
+                        errorMsg += ` (${data.error})`;
+                    }
+                    this.message = `${label} failed: ${errorMsg}`;
                     this.messageType = 'error';
                 }
             } catch (error) {
@@ -511,9 +703,9 @@ function syncManager() {
                 const data = await response.json();
 
                 this.connectionResults = data;
-                
+
                 const allSuccess = Object.values(data).every(r => r.status === 'success' || r.status === 'disabled');
-                
+
                 if (allSuccess) {
                     this.message = 'All connections tested successfully!';
                     this.messageType = 'success';
@@ -526,6 +718,32 @@ function syncManager() {
                 this.messageType = 'error';
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async viewLogDetails(logId) {
+            this.showLogModal = true;
+            this.loadingLog = true;
+            this.currentLog = null;
+
+            try {
+                const response = await fetch(`/notices/sync/log/${logId}`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load log details: ${response.status} ${response.statusText}`);
+                }
+
+                this.currentLog = await response.json();
+            } catch (error) {
+                this.message = 'Failed to load log details: ' + error.message;
+                this.messageType = 'error';
+                this.showLogModal = false;
+            } finally {
+                this.loadingLog = false;
             }
         }
     }

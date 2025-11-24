@@ -13,7 +13,7 @@ class ShoutbombSubmissionParser
     public function parseHoldsFile(string $filePath): array
     {
         $submissions = [];
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = $this->readFileWithEncoding($filePath);
 
         foreach ($lines as $lineNumber => $line) {
             try {
@@ -68,7 +68,7 @@ class ShoutbombSubmissionParser
     public function parseOverdueFile(string $filePath): array
     {
         $submissions = [];
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = $this->readFileWithEncoding($filePath);
 
         foreach ($lines as $lineNumber => $line) {
             try {
@@ -123,7 +123,7 @@ class ShoutbombSubmissionParser
     public function parseRenewFile(string $filePath): array
     {
         $submissions = [];
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = $this->readFileWithEncoding($filePath);
 
         foreach ($lines as $lineNumber => $line) {
             try {
@@ -180,7 +180,7 @@ class ShoutbombSubmissionParser
     public function parsePatronList(string $filePath): array
     {
         $patrons = [];
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = $this->readFileWithEncoding($filePath);
 
         foreach ($lines as $line) {
             $parts = explode('|', $line);
@@ -201,15 +201,25 @@ class ShoutbombSubmissionParser
     {
         $submissions = [];
 
-        if (($handle = fopen($filePath, 'r')) === false) {
+        // Read file with proper UTF-8 encoding
+        $content = $this->readFileContentWithEncoding($filePath);
+        if ($content === false) {
             return [];
         }
 
+        // Parse CSV from string
+        $lines = str_getcsv($content, "\n");
         $lineNumber = 0;
-        while (($data = fgetcsv($handle)) !== false) {
+
+        foreach ($lines as $line) {
             $lineNumber++;
 
             try {
+                $data = str_getcsv($line);
+                if ($data === false || empty($data)) {
+                    continue;
+                }
+
                 $parsed = $this->parsePhoneNoticesLine($data);
                 if ($parsed) {
                     $submissions[] = $parsed;
@@ -217,12 +227,11 @@ class ShoutbombSubmissionParser
             } catch (\Exception $e) {
                 Log::warning("Failed to parse PhoneNotices.csv line {$lineNumber}", [
                     'error' => $e->getMessage(),
-                    'line' => implode(',', $data),
+                    'line' => $line,
                 ]);
             }
         }
 
-        fclose($handle);
         return $submissions;
     }
 
@@ -358,5 +367,58 @@ class ShoutbombSubmissionParser
 
         // Return as-is (you can add more formatting if needed)
         return $phone;
+    }
+
+    /**
+     * Read file with proper encoding detection and conversion to UTF-8.
+     * Handles Windows-1252, ISO-8859-1, and UTF-8 encoded files.
+     * Returns an array of lines without newlines or empty lines.
+     */
+    protected function readFileWithEncoding(string $filePath): array
+    {
+        $content = $this->readFileContentWithEncoding($filePath);
+        if ($content === false) {
+            return [];
+        }
+
+        // Split into lines, remove empty lines
+        return array_filter(
+            array_map('trim', explode("\n", $content)),
+            fn($line) => $line !== ''
+        );
+    }
+
+    /**
+     * Read file content with proper encoding detection and conversion to UTF-8.
+     * Handles BOM (Byte Order Mark) and common encodings.
+     */
+    protected function readFileContentWithEncoding(string $filePath): string|false
+    {
+        $content = file_get_contents($filePath);
+        if ($content === false) {
+            return false;
+        }
+
+        // Remove BOM if present (UTF-8 BOM: EF BB BF)
+        $bom = pack('H*', 'EFBBBF');
+        if (str_starts_with($content, $bom)) {
+            $content = substr($content, 3);
+        }
+
+        // Detect encoding and convert to UTF-8
+        $encoding = mb_detect_encoding($content, ['UTF-8', 'Windows-1252', 'ISO-8859-1', 'ASCII'], true);
+
+        if ($encoding && $encoding !== 'UTF-8') {
+            $content = mb_convert_encoding($content, 'UTF-8', $encoding);
+            Log::debug("Converted file encoding from {$encoding} to UTF-8", ['file' => basename($filePath)]);
+        }
+
+        // Ensure valid UTF-8
+        if (!mb_check_encoding($content, 'UTF-8')) {
+            // Last resort: try to clean invalid UTF-8 sequences
+            $content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
+        }
+
+        return $content;
     }
 }
