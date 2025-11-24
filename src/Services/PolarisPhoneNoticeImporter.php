@@ -25,20 +25,25 @@ class PolarisPhoneNoticeImporter
     }
 
     /**
-     * Import PhoneNotices.csv from FTP.
+     * Import PhoneNotices files from FTP.
      *
-     * PhoneNotices.csv is a Polaris native export that serves as
+     * Supports two filename patterns:
+     * - PhoneNotices.csv (undated - uses current date with 09:00:00 time)
+     * - PhoneNotices_YYYY-MM-DD_HH-MM-SS.txt (dated files with timestamp in name)
+     *
+     * PhoneNotices is a Polaris native export that serves as
      * VERIFICATION/CORROBORATION of the official SQL-generated submissions.
      */
     public function importFromFTP(?callable $progressCallback = null, ?Carbon $startDate = null, ?Carbon $endDate = null): array
     {
-        Log::info("Starting PhoneNotices.csv import for verification/corroboration");
+        Log::info("Starting PhoneNotices import for verification/corroboration");
 
         $results = [
             'imported' => 0,
             'skipped' => 0,
             'errors' => 0,
             'file' => null,
+            'files_processed' => [],
         ];
 
         try {
@@ -54,39 +59,79 @@ class PolarisPhoneNoticeImporter
                 throw new \Exception('Failed to connect to FTP');
             }
 
-            // Find PhoneNotices.csv file
+            // Find PhoneNotices files (both .csv and dated .txt patterns)
             $files = $this->ftpService->listFiles('/');
+            $phoneNoticesFiles = [];
 
             foreach ($files as $file) {
-                if (str_contains(strtolower($file), 'phonenotices.csv')) {
-                    $results['file'] = basename($file);
-                    $localPath = $this->ftpService->downloadFile('/' . $file);
+                $basename = strtolower(basename($file));
 
-                    if ($localPath) {
-                        $count = $this->importPhoneNoticesFile($localPath, basename($file), $progressCallback, $startDate, $endDate);
-                        $results['imported'] = $count;
+                // Match PhoneNotices.csv (undated)
+                if ($basename === 'phonenotices.csv') {
+                    $phoneNoticesFiles[] = [
+                        'path' => $file,
+                        'basename' => basename($file),
+                        'dated' => false,
+                        'file_date' => now()->setTime(9, 0, 0), // Default to today at 09:00:00
+                    ];
+                }
+                // Match PhoneNotices_YYYY-MM-DD_HH-MM-SS.txt
+                elseif (preg_match('/^phonenotices_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.txt$/i', basename($file), $matches)) {
+                    $fileDate = Carbon::createFromFormat(
+                        'Y-m-d H-i-s',
+                        $matches[1] . ' ' . $matches[2]
+                    );
 
-                        Log::info("Imported PhoneNotices.csv", [
-                            'file' => basename($file),
-                            'count' => $count,
-                            'start' => $startDate->format('Y-m-d'),
-                            'end' => $endDate->format('Y-m-d'),
-                        ]);
-
-                        // Only process first PhoneNotices.csv found
-                        break;
+                    // Only include files within the date range
+                    if ($fileDate->startOfDay()->gte($startDate->startOfDay()) &&
+                        $fileDate->startOfDay()->lte($endDate->endOfDay())) {
+                        $phoneNoticesFiles[] = [
+                            'path' => $file,
+                            'basename' => basename($file),
+                            'dated' => true,
+                            'file_date' => $fileDate,
+                        ];
                     }
                 }
             }
 
-            if (!$results['file']) {
-                Log::warning("PhoneNotices.csv not found on FTP");
+            // Process all matching files
+            $totalImported = 0;
+            foreach ($phoneNoticesFiles as $fileInfo) {
+                $localPath = $this->ftpService->downloadFile('/' . ltrim($fileInfo['path'], '/'));
+
+                if ($localPath) {
+                    $count = $this->importPhoneNoticesFile(
+                        $localPath,
+                        $fileInfo['basename'],
+                        $progressCallback,
+                        $startDate,
+                        $endDate,
+                        $fileInfo['file_date']
+                    );
+                    $totalImported += $count;
+                    $results['files_processed'][] = $fileInfo['basename'];
+
+                    Log::info("Imported PhoneNotices file", [
+                        'file' => $fileInfo['basename'],
+                        'dated' => $fileInfo['dated'],
+                        'file_date' => $fileInfo['file_date']->format('Y-m-d H:i:s'),
+                        'count' => $count,
+                    ]);
+                }
+            }
+
+            $results['imported'] = $totalImported;
+            $results['file'] = implode(', ', $results['files_processed']);
+
+            if (empty($results['files_processed'])) {
+                Log::warning("No PhoneNotices files found on FTP");
             }
 
             $this->ftpService->disconnect();
 
         } catch (\Exception $e) {
-            Log::error("PhoneNotices.csv import failed", [
+            Log::error("PhoneNotices import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -97,12 +142,19 @@ class PolarisPhoneNoticeImporter
     }
 
     /**
-     * Import PhoneNotices.csv file.
+     * Import PhoneNotices file.
      *
      * Note: Using individual inserts instead of bulk for reliable parameter binding
      * across all database drivers (SQLite, MySQL, etc.)
+     *
+     * @param string $filePath Local path to the downloaded file
+     * @param string $filename Original filename
+     * @param callable|null $progressCallback Progress callback
+     * @param Carbon|null $startDate Start of date range filter
+     * @param Carbon|null $endDate End of date range filter
+     * @param Carbon|null $fileDate Date extracted from filename (for dated files) or default date
      */
-    protected function importPhoneNoticesFile(string $filePath, string $filename, ?callable $progressCallback = null, ?Carbon $startDate = null, ?Carbon $endDate = null): int
+    protected function importPhoneNoticesFile(string $filePath, string $filename, ?callable $progressCallback = null, ?Carbon $startDate = null, ?Carbon $endDate = null, ?Carbon $fileDate = null): int
     {
         $notices = $this->parser->parsePhoneNoticesCSV($filePath);
         $imported = 0;

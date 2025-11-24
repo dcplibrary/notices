@@ -24,7 +24,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run all sync operations: Polaris import → Shoutbomb import → Aggregation
+     * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation
      */
     public function syncAll(): JsonResponse
     {
@@ -53,22 +53,7 @@ class SyncController extends Controller
             $hasErrors = true;
         }
 
-        // Step 2: Import from Shoutbomb (continue even if Polaris failed)
-        try {
-            $shoutbombResult = $this->runImportShoutbomb();
-            $results['shoutbomb'] = $shoutbombResult;
-            if ($shoutbombResult['status'] === 'error') {
-                $hasErrors = true;
-            }
-        } catch (\Exception $e) {
-            $results['shoutbomb'] = [
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ];
-            $hasErrors = true;
-        }
-
-        // Step 3: Sync Shoutbomb phone notices to notification_logs
+        // Step 2: Sync Shoutbomb phone notices to notification_logs
         try {
             $syncResult = $this->runSyncShoutbombToLogs();
             $results['shoutbomb_sync'] = $syncResult;
@@ -83,7 +68,7 @@ class SyncController extends Controller
             $hasErrors = true;
         }
 
-        // Step 4: Run aggregation (continue even if imports had errors)
+        // Step 3: Run aggregation (continue even if imports had errors)
         try {
             $aggregateResult = $this->runAggregate();
             $results['aggregate'] = $aggregateResult;
@@ -100,7 +85,6 @@ class SyncController extends Controller
 
         // Calculate total records processed
         $totalRecords = ($results['polaris']['records'] ?? 0) +
-                       ($results['shoutbomb']['records'] ?? 0) +
                        ($results['shoutbomb_sync']['records'] ?? 0);
 
         if ($hasErrors) {
@@ -135,37 +119,6 @@ class SyncController extends Controller
                 $log->markCompleted(['polaris' => $result], $result['records'] ?? 0);
             } else {
                 $log->markCompletedWithErrors(['polaris' => $result], $result['message'] ?? '');
-            }
-
-            return response()->json($result);
-        } catch (\Exception $e) {
-            $log->markFailed($e->getMessage());
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Import from Shoutbomb only
-     */
-    public function importShoutbomb(): JsonResponse
-    {
-        $log = SyncLog::create([
-            'operation_type' => 'import_shoutbomb',
-            'status' => 'running',
-            'started_at' => now(),
-            'user_id' => Auth::id(),
-        ]);
-
-        try {
-            $result = $this->runImportShoutbomb();
-            
-            if ($result['status'] === 'success') {
-                $log->markCompleted(['shoutbomb' => $result], $result['records'] ?? 0);
-            } else {
-                $log->markCompletedWithErrors(['shoutbomb' => $result], $result['message'] ?? '');
             }
 
             return response()->json($result);
@@ -228,6 +181,40 @@ class SyncController extends Controller
                 $log->markCompleted(['shoutbomb_submissions' => $result], $result['records'] ?? 0);
             } else {
                 $log->markCompletedWithErrors(['shoutbomb_submissions' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Import FTP files (PhoneNotices + Shoutbomb submissions)
+     */
+    public function importFTPFiles(Request $request): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_ftp_files',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportFTPFiles(
+                $request->input('start_date'),
+                $request->input('end_date')
+            );
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['ftp_files' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['ftp_files' => $result], $result['message'] ?? '');
             }
 
             return response()->json($result);
@@ -398,25 +385,6 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Shoutbomb import command
-     */
-    private function runImportShoutbomb(): array
-    {
-        $exitCode = Artisan::call('notices:import-shoutbomb');
-        $output = Artisan::output();
-
-        // Parse output to get record count
-        preg_match('/Imported (\d+)/', $output, $matches);
-        $records = isset($matches[1]) ? (int) $matches[1] : 0;
-
-        return [
-            'status' => $exitCode === 0 ? 'success' : 'error',
-            'message' => trim($output),
-            'records' => $records,
-        ];
-    }
-
-    /**
      * Run Shoutbomb reports check via email (Graph API)
      */
     private function runImportShoutbombReports(): array
@@ -490,6 +458,51 @@ class SyncController extends Controller
 
         // Parse output to get record counts
         $records = 0;
+        if (preg_match('/Holds[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Overdues[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Renewals[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run FTP files import command (PhoneNotices + Shoutbomb submissions)
+     */
+    private function runImportFTPFiles(?string $startDate = null, ?string $endDate = null): array
+    {
+        $options = [];
+
+        if ($startDate) {
+            $options['--start-date'] = $startDate;
+        }
+        if ($endDate) {
+            $options['--end-date'] = $endDate;
+        }
+
+        // If no dates provided, default to today
+        if (empty($options)) {
+            $options['--start-date'] = now()->format('Y-m-d');
+            $options['--end-date'] = now()->format('Y-m-d');
+        }
+
+        $exitCode = Artisan::call('notices:import-ftp-files', $options);
+        $output = Artisan::output();
+
+        // Parse output to get record counts
+        $records = 0;
+        if (preg_match('/PhoneNotices[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
         if (preg_match('/Holds[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }

@@ -97,6 +97,12 @@ class ImportShoutbombSubmissions extends Command
         } else {
             $this->line('📥 Importing ALL available Shoutbomb submission files from FTP...');
         }
+
+        // Show FTP configuration for debugging
+        $ftpHost = config('notices.shoutbomb.ftp.host');
+        $ftpRoot = config('notices.shoutbomb_submissions.root', '/');
+        $this->line("   FTP Host: {$ftpHost}");
+        $this->line("   Root Dir: {$ftpRoot}");
         $this->newLine();
 
         $summary = $importer->importAllFromFTP($from, $to);
@@ -109,11 +115,32 @@ class ImportShoutbombSubmissions extends Command
             $root     = $config['root'] ?? '/';
             $patterns = $config['patterns'] ?? [];
 
-            $this->warn(sprintf(
-                'No submission files were found on the FTP server (root=%s, patterns=%s)',
-                $root,
-                implode(', ', array_values($patterns))
-            ));
+            $this->warn('⚠️  No submission files were found matching expected patterns.');
+            $this->newLine();
+            $this->line("   Root directory: {$root}");
+            $this->line("   Expected patterns: " . implode(', ', array_values($patterns)));
+
+            // Show debug info if available
+            $debug = $summary['debug'] ?? null;
+            if ($debug) {
+                $this->newLine();
+                $this->line("   📊 FTP Debug Info:");
+                $this->line("      - FTP connected: " . ($debug['ftp_connected'] ? 'Yes' : 'No'));
+                $this->line("      - Total files in directory: " . ($debug['files_found'] ?? 0));
+
+                if (!empty($debug['sample_files'])) {
+                    $this->newLine();
+                    $this->line("   📁 Sample files found on FTP:");
+                    foreach ($debug['sample_files'] as $file) {
+                        $this->line("      - {$file}");
+                    }
+                }
+            }
+
+            $this->newLine();
+            $this->line("   💡 Tip: Make sure the FTP server has *_submitted_*.txt files");
+            $this->line("      in the root directory, OR that you're connecting to the");
+            $this->line("      correct FTP server (local archive vs ShoutBomb external).");
 
             return Command::FAILURE;
         }

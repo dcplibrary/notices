@@ -119,6 +119,7 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\CheckShoutbombReportsCommand::class,
             Commands\ImportShoutbombSubmissions::class,
             Commands\ImportPolarisPhoneNotices::class,
+            Commands\ImportFTPFiles::class,
             Commands\ListShoutbombFiles::class,
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,

@@ -64,9 +64,9 @@ Route::prefix('settings')->name('settings.')->group(function () {
 Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/all', [SyncController::class, 'syncAll'])->name('all');
     Route::post('/polaris', [SyncController::class, 'importPolaris'])->name('polaris');
-    Route::post('/shoutbomb', [SyncController::class, 'importShoutbomb'])->name('shoutbomb');
     Route::post('/shoutbomb-reports', [SyncController::class, 'importShoutbombReports'])->name('shoutbomb-reports');
     Route::post('/shoutbomb-submissions', [SyncController::class, 'importShoutbombSubmissions'])->name('shoutbomb-submissions');
+    Route::post('/ftp-files', [SyncController::class, 'importFTPFiles'])->name('ftp-files');
     Route::post('/shoutbomb-to-logs', [SyncController::class, 'syncShoutbombToLogs'])->name('shoutbomb-to-logs');
     Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
