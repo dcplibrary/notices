@@ -257,14 +257,6 @@ class NoticeFailureReport extends Model
     }
 
     /**
-     * Scope to get unprocessed reports.
-     */
-    public function scopeUnprocessed($query)
-    {
-        return $query->whereNull('processed_at');
-    }
-
-    /**
      * Scope to get recent reports.
      */
     public function scopeRecent($query, int $days = 7)
