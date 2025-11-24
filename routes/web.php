@@ -71,6 +71,7 @@ Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
     Route::get('/logs', [SyncController::class, 'logs'])->name('logs');
+    Route::get('/log/{id}', [SyncController::class, 'getLog'])->name('log');
 });
 
 // Export/Backup routes - Admin only

@@ -376,6 +376,27 @@ class SyncController extends Controller
     }
 
     /**
+     * Get a specific sync log with full details
+     */
+    public function getLog(int $id): JsonResponse
+    {
+        $log = SyncLog::findOrFail($id);
+
+        return response()->json([
+            'id' => $log->id,
+            'operation_type' => $log->operation_type,
+            'status' => $log->status,
+            'started_at' => $log->started_at->format('M d, Y g:i A'),
+            'completed_at' => $log->completed_at?->format('M d, Y g:i A'),
+            'duration_seconds' => $log->duration_seconds,
+            'records_processed' => $log->records_processed,
+            'error_message' => $log->error_message,
+            'results' => $log->results,
+            'user_id' => $log->user_id,
+        ]);
+    }
+
+    /**
      * Run Polaris import command
      */
     private function runImportPolaris(): array
