@@ -1,200 +1,252 @@
 <?php
 
-namespace Dcplibrary\Notices\Console\Commands;
+namespace Dcplibrary\Notices\Commands;
 
-use Carbon\Carbon;
 use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
-use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
+/**
+ * Import all FTP files (PhoneNotices + Shoutbomb submissions)
+ *
+ * This streamlined command imports both:
+ * - PhoneNotices files (PhoneNotices.csv or PhoneNotices_YYYY-MM-DD_HH-MM-SS.txt)
+ * - Shoutbomb submission files (holds, overdue, renew, voice_patrons, text_patrons)
+ */
 class ImportFTPFiles extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'notices:import-ftp-files
-                            {--from= : Start date (YYYY-MM-DD)}
-                            {--to= : End date (YYYY-MM-DD)}
-                            {--all : Import all available files}
-                            {--import-patrons : Also import patron delivery preference files}';
+                            {--start-date= : Start date (Y-m-d), defaults to today}
+                            {--end-date= : End date (Y-m-d), defaults to today}
+                            {--days= : Number of days back to import (alternative to date range)}
+                            {--all : Import all available files regardless of date}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Import PhoneNotices and Shoutbomb submission files from FTP';
+    protected $description = 'Import all FTP files (PhoneNotices and Shoutbomb submissions)';
 
-    protected PolarisPhoneNoticeImporter $phoneNoticeImporter;
-    protected ShoutbombSubmissionImporter $submissionImporter;
-    protected ?PatronDeliveryPreferenceImporter $patronImporter;
-
-    public function __construct(
+    public function handle(
         PolarisPhoneNoticeImporter $phoneNoticeImporter,
-        ShoutbombSubmissionImporter $submissionImporter,
-        PatronDeliveryPreferenceImporter $patronImporter = null
-    ) {
-        parent::__construct();
-        $this->phoneNoticeImporter = $phoneNoticeImporter;
-        $this->submissionImporter = $submissionImporter;
-        $this->patronImporter = $patronImporter;
-    }
-
-    /**
-     * Execute the console command.
-     */
-    public function handle(): int
-    {
-        $this->info('=== FTP Files Import ===');
+        ShoutbombSubmissionImporter $submissionImporter
+    ): int {
+        $this->info('🚀 Starting FTP Files Import...');
         $this->newLine();
 
-        // Determine date range
-        [$fromDate, $toDate] = $this->determineDateRange();
+        // Resolve date range
+        [$startDate, $endDate] = $this->resolveDateRange();
 
-        $this->info("📅 Date Range: {$fromDate->format('Y-m-d')} to {$toDate->format('Y-m-d')}");
-        
-        // Show patron import status
-        $importPatrons = $this->option('import-patrons');
-        $this->info('👥 Patron import: ' . ($importPatrons ? '<fg=green>ENABLED</>' : '<fg=gray>DISABLED</>'));
-        $this->newLine();
-
-        $totalRecords = 0;
-        $totalFiles = 0;
-
-        // Import PhoneNotices
-        try {
-            $this->info('📱 Importing PhoneNotices...');
-            $phoneResult = $this->phoneNoticeImporter->importAllFromFTP(
-                $fromDate,
-                $toDate,
-                function ($current, $total, $filename, $isNewFile) {
-                    if ($isNewFile && $filename) {
-                        $this->info("  📄 Importing: <fg=cyan>{$filename}</>");
-                    } elseif ($current > 0 && $total > 0 && $current % 500 === 0) {
-                        $this->line("    Processing: {$current}/{$total}");
-                    }
-                }
-            );
-
-            $this->info("  ✅ PhoneNotices: {$phoneResult['total_records']} records from {$phoneResult['files_processed']} files");
-            $totalRecords += $phoneResult['total_records'];
-            $totalFiles += $phoneResult['files_processed'];
-        } catch (\Exception $e) {
-            $this->error("  ❌ PhoneNotices import failed: {$e->getMessage()}");
+        if ($startDate && $endDate) {
+            $this->line("📅 Date range: {$startDate->format('Y-m-d')} to {$endDate->format('Y-m-d')}");
+        } elseif ($this->option('all')) {
+            $this->line("📅 Importing ALL available files");
         }
-
         $this->newLine();
 
-        // Import Shoutbomb Submissions
+        $results = [
+            'phone_notices' => ['imported' => 0, 'errors' => 0],
+            'submissions' => [
+                'holds' => 0,
+                'overdues' => 0,
+                'renewals' => 0,
+                'voice_patrons' => 0,
+                'text_patrons' => 0,
+                'errors' => 0,
+            ],
+        ];
+
+        // Step 1: Import PhoneNotices
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->info('📞 Importing PhoneNotices...');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
         try {
-            $this->info('📨 Importing Shoutbomb Submissions...');
-            
-            $submissionResult = $this->submissionImporter->importAllFromFTP(
-                $fromDate,
-                $toDate,
-                function ($current, $total, $filename, $isNewFile) {
+            $phoneResults = $phoneNoticeImporter->importFromFTP(
+                function ($current, $total, $filename = null, $isNewFile = false) {
+                    // Display filename when starting a new file
                     if ($isNewFile && $filename) {
-                        $this->info("  📄 Importing: <fg=cyan>{$filename}</>");
-                    } elseif ($current > 0 && $total > 0 && $current % 500 === 0) {
-                        $this->line("    Processing: {$current}/{$total}");
+                        $this->newLine();
+                        $this->line("   📄 Importing: <comment>{$filename}</comment>");
                     }
-                }
-            );
-
-            $holdRecords = $submissionResult['holds']['records'] ?? 0;
-            $overdueRecords = $submissionResult['overdues']['records'] ?? 0;
-            $renewalRecords = $submissionResult['renewals']['records'] ?? 0;
-
-            $this->info("  ✅ Holds: {$holdRecords} records");
-            $this->info("  ✅ Overdues: {$overdueRecords} records");
-            $this->info("  ✅ Renewals: {$renewalRecords} records");
-
-            $submissionTotal = $holdRecords + $overdueRecords + $renewalRecords;
-            $totalRecords += $submissionTotal;
-            $totalFiles += ($submissionResult['holds']['files'] ?? 0)
-                + ($submissionResult['overdues']['files'] ?? 0)
-                + ($submissionResult['renewals']['files'] ?? 0);
-        } catch (\Exception $e) {
-            $this->error("  ❌ Shoutbomb submissions import failed: {$e->getMessage()}");
-        }
-
-        // Import Patron Delivery Preferences (if enabled and importer available)
-        if ($importPatrons) {
-            $this->newLine();
-            
-            if ($this->patronImporter) {
-                try {
-                    $this->info('👥 Importing Patron Delivery Preferences...');
                     
-                    $patronResult = $this->patronImporter->importAllFromFTP(
-                        $fromDate,
-                        $toDate,
-                        function ($current, $total, $filename, $isNewFile, $skipped = false) {
-                            if ($skipped && $filename) {
-                                $this->line("  ⏭️  <fg=yellow>Skipping (already processed):</> <fg=cyan>{$filename}</>");
-                            } elseif ($isNewFile && $filename) {
-                                $this->info("  📄 Importing: <fg=cyan>{$filename}</>");
-                            } elseif ($current > 0 && $total > 0 && $current % 500 === 0) {
-                                $this->line("    Processing: {$current}/{$total}");
+                    // Display progress for current file
+                    if (!$isNewFile && $current > 0 && $total > 0) {
+                        if ($current % 100 === 0 || $current === $total) {
+                            $this->output->write("\r   Processing: {$current}/{$total}");
+                        }
+                    }
+                },
+                $startDate,
+                $endDate
+            );
+
+            $this->newLine();
+
+            if (!empty($phoneResults['files_processed'])) {
+                $this->info("   ✅ Imported {$phoneResults['imported']} records");
+                $this->line("   Files: " . implode(', ', $phoneResults['files_processed']));
+            } else {
+                $this->warn("   ⚠️  No PhoneNotices files found");
+            }
+
+            $results['phone_notices'] = [
+                'imported' => $phoneResults['imported'],
+                'errors' => $phoneResults['errors'],
+            ];
+        } catch (\Exception $e) {
+            $this->error("   ❌ PhoneNotices import failed: {$e->getMessage()}");
+            $results['phone_notices']['errors']++;
+        }
+
+        $this->newLine();
+
+        // Step 2: Import Shoutbomb Submissions
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->info('📋 Importing Shoutbomb Submissions...');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        try {
+            if ($this->option('all') || ($startDate && $endDate && !$startDate->isSameDay($endDate))) {
+                // Import range or all - with callback
+                $submissionResults = $submissionImporter->importAllFromFTP(
+                    $startDate, 
+                    $endDate,
+                    function ($current, $total, $filename = null, $isNewFile = false) {
+                        if ($isNewFile && $filename) {
+                            $this->newLine();
+                            $this->line("   📄 Importing: <comment>{$filename}</comment>");
+                        }
+                        if (!$isNewFile && $current > 0 && $total > 0) {
+                            if ($current % 500 === 0 || $current === $total) {
+                                $this->output->write("\r   Processing: {$current}/{$total}");
                             }
                         }
-                    );
+                    }
+                );
 
-                    $voiceNew = $patronResult['voice']['new'] ?? 0;
-                    $voiceChanged = $patronResult['voice']['changed'] ?? 0;
-                    $textNew = $patronResult['text']['new'] ?? 0;
-                    $textChanged = $patronResult['text']['changed'] ?? 0;
+                $totals = $submissionResults['totals'] ?? [];
+                $dates = $submissionResults['dates'] ?? [];
 
-                    $this->info("  ✅ Voice: {$patronResult['voice']['total']} total ({$voiceNew} new, {$voiceChanged} changed)");
-                    $this->info("  ✅ Text: {$patronResult['text']['total']} total ({$textNew} new, {$textChanged} changed)");
+                $this->newLine();
 
-                    $totalRecords += ($patronResult['voice']['total'] ?? 0) + ($patronResult['text']['total'] ?? 0);
-                    $totalFiles += ($patronResult['voice']['files'] ?? 0) + ($patronResult['text']['files'] ?? 0);
-                } catch (\Exception $e) {
-                    $this->error("  ❌ Patron import failed: {$e->getMessage()}");
+                if (!empty($dates)) {
+                    $this->info("   ✅ Processed " . count($dates) . " date(s)");
+                    foreach ($dates as $d) {
+                        $this->line("      - {$d}");
+                    }
+                } else {
+                    $this->warn("   ⚠️  No submission files found");
                 }
+
+                $results['submissions'] = [
+                    'holds' => $totals['holds'] ?? 0,
+                    'overdues' => $totals['overdues'] ?? 0,
+                    'renewals' => $totals['renewals'] ?? 0,
+                    'voice_patrons' => $totals['voice_patrons'] ?? 0,
+                    'text_patrons' => $totals['text_patrons'] ?? 0,
+                    'errors' => $totals['errors'] ?? 0,
+                ];
             } else {
-                $this->warn('  ⚠️  PatronDeliveryPreferenceImporter not available. Skipping patron import.');
+                // Single date import - with callback
+                $importDate = $startDate ?? now();
+                $submissionResults = $submissionImporter->importFromFTP(
+                    $importDate,
+                    function ($current, $total, $filename = null, $isNewFile = false) {
+                        if ($isNewFile && $filename) {
+                            $this->newLine();
+                            $this->line("   📄 Importing: <comment>{$filename}</comment>");
+                        }
+                        if (!$isNewFile && $current > 0 && $total > 0) {
+                            if ($current % 500 === 0 || $current === $total) {
+                                $this->output->write("\r   Processing: {$current}/{$total}");
+                            }
+                        }
+                    }
+                );
+
+                $this->newLine();
+
+                $results['submissions'] = [
+                    'holds' => $submissionResults['holds'] ?? 0,
+                    'overdues' => $submissionResults['overdues'] ?? 0,
+                    'renewals' => $submissionResults['renewals'] ?? 0,
+                    'voice_patrons' => $submissionResults['voice_patrons'] ?? 0,
+                    'text_patrons' => $submissionResults['text_patrons'] ?? 0,
+                    'errors' => $submissionResults['errors'] ?? 0,
+                ];
             }
+        } catch (\Exception $e) {
+            $this->error("   ❌ Submissions import failed: {$e->getMessage()}");
+            $results['submissions']['errors']++;
         }
 
         $this->newLine();
-        $this->info("✨ Import Complete!");
-        $this->info("   📊 Total: {$totalRecords} records from {$totalFiles} files");
 
-        return self::SUCCESS;
+        // Summary
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        $this->info('📊 Import Summary');
+        $this->line('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        $this->table(
+            ['Category', 'Count'],
+            [
+                ['PhoneNotices', $results['phone_notices']['imported']],
+                ['Holds', $results['submissions']['holds']],
+                ['Overdues', $results['submissions']['overdues']],
+                ['Renewals', $results['submissions']['renewals']],
+                ['Voice Patrons', $results['submissions']['voice_patrons']],
+                ['Text Patrons', $results['submissions']['text_patrons']],
+                ['Errors', $results['phone_notices']['errors'] + $results['submissions']['errors']],
+            ]
+        );
+
+        $this->newLine();
+
+        $totalErrors = $results['phone_notices']['errors'] + $results['submissions']['errors'];
+
+        if ($totalErrors > 0) {
+            $this->warn("⚠️  Completed with {$totalErrors} error(s)");
+            return Command::FAILURE;
+        }
+
+        $this->info('✅ FTP Files Import completed successfully!');
+        return Command::SUCCESS;
     }
 
     /**
-     * Determine the date range for import
+     * Resolve the desired date range based on options.
      */
-    protected function determineDateRange(): array
+    protected function resolveDateRange(): array
     {
+        // --all flag: return nulls to import everything
         if ($this->option('all')) {
-            // Import all available files (last 365 days)
+            return [null, null];
+        }
+
+        // Explicit date range
+        if ($this->option('start-date') || $this->option('end-date')) {
+            $startDate = $this->option('start-date')
+                ? Carbon::parse($this->option('start-date'))->startOfDay()
+                : now()->startOfDay();
+
+            $endDate = $this->option('end-date')
+                ? Carbon::parse($this->option('end-date'))->endOfDay()
+                : now()->endOfDay();
+
+            return [$startDate, $endDate];
+        }
+
+        // Days back option
+        if ($this->option('days')) {
+            $days = (int) $this->option('days');
             return [
-                Carbon::now()->subYear(),
-                Carbon::now(),
+                now()->subDays($days)->startOfDay(),
+                now()->endOfDay(),
             ];
         }
 
-        $from = $this->option('from');
-        $to = $this->option('to');
-
-        if ($from && $to) {
-            return [
-                Carbon::parse($from)->startOfDay(),
-                Carbon::parse($to)->endOfDay(),
-            ];
-        }
-
-        // Default to today only
+        // Default: today only
         return [
-            Carbon::today()->startOfDay(),
-            Carbon::today()->endOfDay(),
+            now()->startOfDay(),
+            now()->endOfDay(),
         ];
     }
 }
