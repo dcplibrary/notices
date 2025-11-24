@@ -283,12 +283,31 @@ class ShoutbombSubmissionParser
 
     /**
      * Extract submission timestamp from filename.
-     * Format: holds_submitted_2025-05-15_14-30-45.txt
+     * Formats supported:
+     *   - holds_submitted_2025-05-15_14-30-45.txt (dashes in date and time)
+     *   - holds_submitted_2025-05-15_143045.txt (dashes in date, no dashes in time)
+     *   - holds_submitted_2025-05-15_143045_.txt (trailing underscore)
+     *   - holds_submitted_20250515_143045.txt (no dashes in date or time)
+     *   - holds_submitted_20250515_143045_.txt (trailing underscore)
      */
     public function extractTimestampFromFilename(string $filename): Carbon
     {
-        if (preg_match('/_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})\.txt$/', $filename, $matches)) {
-            return Carbon::createFromFormat('Y-m-d_H-i-s', $matches[1]);
+        // Format with dashes in date and time: _YYYY-MM-DD_HH-MM-SS.txt
+        if (preg_match('/_(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})-(\d{2})_?\.txt$/i', $filename, $matches)) {
+            return Carbon::createFromFormat('Y-m-d H:i:s', "{$matches[1]} {$matches[2]}:{$matches[3]}:{$matches[4]}");
+        }
+
+        // Format with dashes in date only: _YYYY-MM-DD_HHMMSS.txt or _YYYY-MM-DD_HHMMSS_.txt
+        if (preg_match('/_(\d{4}-\d{2}-\d{2})_(\d{6})_?\.txt$/i', $filename, $matches)) {
+            $time = substr($matches[2], 0, 2) . ':' . substr($matches[2], 2, 2) . ':' . substr($matches[2], 4, 2);
+            return Carbon::createFromFormat('Y-m-d H:i:s', "{$matches[1]} {$time}");
+        }
+
+        // Format with no dashes: _YYYYMMDD_HHMMSS.txt or _YYYYMMDD_HHMMSS_.txt
+        if (preg_match('/_(\d{4})(\d{2})(\d{2})_(\d{6})_?\.txt$/i', $filename, $matches)) {
+            $date = "{$matches[1]}-{$matches[2]}-{$matches[3]}";
+            $time = substr($matches[4], 0, 2) . ':' . substr($matches[4], 2, 2) . ':' . substr($matches[4], 4, 2);
+            return Carbon::createFromFormat('Y-m-d H:i:s', "{$date} {$time}");
         }
 
         // Fallback to file modification time

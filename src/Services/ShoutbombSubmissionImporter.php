@@ -127,10 +127,17 @@ class ShoutbombSubmissionImporter
         foreach ($files as $file) {
             $basename = basename($file);
 
+            // Match YYYY-MM-DD format (with dashes)
             if (preg_match('/(?:holds|overdue|renew)_submitted_(\d{4}-\d{2}-\d{2})_/', $basename, $m)) {
                 $dates[$m[1]] = true;
             } elseif (preg_match('/(?:voice|text)_patrons_submitted_(\d{4}-\d{2}-\d{2})_/', $basename, $m)) {
                 $dates[$m[1]] = true;
+            }
+            // Match YYYYMMDD format (no dashes)
+            elseif (preg_match('/(?:holds|overdue|renew)_submitted_(\d{4})(\d{2})(\d{2})_/', $basename, $m)) {
+                $dates["{$m[1]}-{$m[2]}-{$m[3]}"] = true;
+            } elseif (preg_match('/(?:voice|text)_patrons_submitted_(\d{4})(\d{2})(\d{2})_/', $basename, $m)) {
+                $dates["{$m[1]}-{$m[2]}-{$m[3]}"] = true;
             }
         }
 
@@ -227,12 +234,13 @@ class ShoutbombSubmissionImporter
             $root     = rtrim($config['root'] ?? '/', '/');
             $directory = $root === '' ? '/' : $root;
 
-            // Find patron list file for the date
-            $pattern = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
+            // Find patron list file for the date (support both YYYY-MM-DD and YYYYMMDD formats)
+            $patternDashed = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
+            $patternNoDash = "{$type}_patrons_submitted_{$date->format('Ymd')}";
             $files = $this->ftpService->listFiles($directory);
 
             Log::info("Looking for patron list", [
-                'pattern' => $pattern,
+                'patterns' => [$patternDashed, $patternNoDash],
                 'root' => $directory,
                 'files_found' => count($files),
             ]);
@@ -240,7 +248,7 @@ class ShoutbombSubmissionImporter
             foreach ($files as $file) {
                 $basename = basename($file);
 
-                if (str_contains($basename, $pattern)) {
+                if (str_contains($basename, $patternDashed) || str_contains($basename, $patternNoDash)) {
                     // Use the full remote path returned by listFiles so we
                     // honor the configured root directory.
                     $localPath = $this->ftpService->downloadFile($file);
@@ -293,13 +301,14 @@ class ShoutbombSubmissionImporter
             $root     = rtrim($config['root'] ?? '/', '/');
             $directory = $root === '' ? '/' : $root;
 
-            // Find submission files
-            $pattern = "{$type}_submitted_{$date->format('Y-m-d')}";
+            // Find submission files (support both YYYY-MM-DD and YYYYMMDD formats)
+            $patternDashed = "{$type}_submitted_{$date->format('Y-m-d')}";
+            $patternNoDash = "{$type}_submitted_{$date->format('Ymd')}";
             $files = $this->ftpService->listFiles($directory);
 
             Log::info("Looking for submission files", [
                 'type' => $type,
-                'pattern' => $pattern,
+                'patterns' => [$patternDashed, $patternNoDash],
                 'root' => $directory,
                 'files_found' => count($files),
             ]);
@@ -307,7 +316,7 @@ class ShoutbombSubmissionImporter
             foreach ($files as $file) {
                 $basename = basename($file);
 
-                if (str_contains($basename, $pattern)) {
+                if (str_contains($basename, $patternDashed) || str_contains($basename, $patternNoDash)) {
                     // Use the full remote path returned by listFiles so we
                     // honor the configured root directory.
                     $localPath = $this->ftpService->downloadFile($file);
@@ -327,7 +336,7 @@ class ShoutbombSubmissionImporter
 
             if ($imported === 0) {
                 Log::warning("No {$type} submission files found", [
-                    'pattern' => $pattern,
+                    'patterns' => [$patternDashed, $patternNoDash],
                     'root' => $directory,
                     'total_files' => count($files),
                 ]);
