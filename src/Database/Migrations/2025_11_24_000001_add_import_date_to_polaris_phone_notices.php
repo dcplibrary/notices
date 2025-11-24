@@ -16,7 +16,7 @@ return new class extends Migration
     {
         if (!Schema::hasColumn('polaris_phone_notices', 'import_date')) {
             Schema::table('polaris_phone_notices', function (Blueprint $table) {
-                $table->date('import_date')->nullable()->index()->after('account_balance')
+                $table->date('import_date')->nullable()->index()
                     ->comment('Date portion of import timestamp');
             });
 
