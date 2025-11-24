@@ -27,7 +27,7 @@
     </div>
 
     <!-- Summary Stats -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-5 mb-6">
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6 mb-6">
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Total Notices</dt>
@@ -39,9 +39,27 @@
 
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-                <dt class="text-sm font-medium text-gray-500 truncate">Failed</dt>
+                <dt class="text-sm font-medium text-gray-500 truncate">Actually Failed</dt>
                 <dd class="mt-1 text-3xl font-semibold text-red-600">
                     {{ number_format($summary['failed_count']) }}
+                </dd>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Pending (&lt;24h)</dt>
+                <dd class="mt-1 text-3xl font-semibold text-blue-600">
+                    {{ number_format($summary['pending_count'] ?? 0) }}
+                </dd>
+            </div>
+        </div>
+
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Assumed Successful</dt>
+                <dd class="mt-1 text-3xl font-semibold text-green-600">
+                    {{ number_format($summary['assumed_successful'] ?? 0) }}
                 </dd>
             </div>
         </div>
@@ -52,6 +70,7 @@
                 <dd class="mt-1 text-3xl font-semibold {{ $summary['success_rate'] >= 95 ? 'text-green-600' : ($summary['success_rate'] >= 85 ? 'text-yellow-600' : 'text-red-600') }}">
                     {{ number_format($summary['success_rate'], 1) }}%
                 </dd>
+                <p class="text-xs text-gray-500 mt-1">Verified only (&gt;24h)</p>
             </div>
         </div>
 
@@ -60,15 +79,6 @@
                 <dt class="text-sm font-medium text-gray-500 truncate">Submitted Not Verified</dt>
                 <dd class="mt-1 text-3xl font-semibold text-yellow-600">
                     {{ number_format($summary['submitted_not_verified']) }}
-                </dd>
-            </div>
-        </div>
-
-        <div class="bg-white overflow-hidden shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-                <dt class="text-sm font-medium text-gray-500 truncate">Verified Not Delivered</dt>
-                <dd class="mt-1 text-3xl font-semibold text-yellow-600">
-                    {{ number_format($summary['verified_not_delivered']) }}
                 </dd>
             </div>
         </div>
@@ -126,7 +136,7 @@
     </div>
 
     <!-- Verification Mismatches -->
-    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 mb-6">
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3 mb-6">
         <!-- Submitted but Not Verified -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-yellow-50">
@@ -134,7 +144,7 @@
                     ⚠️ Submitted but Not Verified
                 </h3>
                 <p class="text-sm text-gray-600">
-                    Notices submitted to Shoutbomb but missing from PhoneNotices.csv
+                    Submitted to Shoutbomb but missing from PhoneNotices.csv (>24h old, allows for timing offset)
                 </p>
             </div>
             <div class="px-6 py-4">
@@ -170,18 +180,18 @@
             </div>
         </div>
 
-        <!-- Verified but Not Delivered -->
+        <!-- Pending Verification -->
         <div class="bg-white shadow rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-yellow-50">
+            <div class="px-6 py-4 border-b border-gray-200 bg-blue-50">
                 <h3 class="text-lg font-medium text-gray-900">
-                    ⚠️ Verified but Not Delivered
+                    🕒 Pending Verification
                 </h3>
                 <p class="text-sm text-gray-600">
-                    Notices in PhoneNotices.csv but no delivery report from Shoutbomb
+                    Notices less than 24 hours old, no failure report yet (normal - waiting for verification window)
                 </p>
             </div>
             <div class="px-6 py-4">
-                @if(count($mismatches['verified_not_delivered']) > 0)
+                @if(count($mismatches['pending_verification'] ?? []) > 0)
                 <div class="overflow-x-auto">
                     <table class="min-w-full">
                         <thead>
@@ -189,26 +199,71 @@
                                 <th class="pb-2">Patron</th>
                                 <th class="pb-2">Item</th>
                                 <th class="pb-2">Notice Date</th>
+                                <th class="pb-2">Age (hrs)</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            @foreach(array_slice($mismatches['verified_not_delivered'], 0, 10) as $item)
+                            @foreach(array_slice($mismatches['pending_verification'] ?? [], 0, 10) as $item)
                             <tr class="text-sm">
                                 <td class="py-2 font-mono">{{ $item['patron_barcode'] }}</td>
-                                <td class="py-2 font-mono">{{ $item['item_barcode'] }}</td>
+                                <td class="py-2 font-mono">{{ $item['item_barcode'] ?? 'N/A' }}</td>
                                 <td class="py-2 text-gray-500">{{ \Carbon\Carbon::parse($item['notice_date'])->format('M d, H:i') }}</td>
+                                <td class="py-2 text-gray-500">{{ $item['hours_since_notice'] ?? 'N/A' }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
-                    @if(count($mismatches['verified_not_delivered']) > 10)
+                    @if(count($mismatches['pending_verification'] ?? []) > 10)
                     <p class="mt-2 text-xs text-gray-500 text-center">
-                        Showing 10 of {{ count($mismatches['verified_not_delivered']) }} mismatches
+                        Showing 10 of {{ count($mismatches['pending_verification']) }} pending
                     </p>
                     @endif
                 </div>
                 @else
-                <p class="text-gray-500 text-center py-4">No mismatches detected</p>
+                <p class="text-gray-500 text-center py-4">No pending verification</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Actually Failed -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-red-50">
+                <h3 class="text-lg font-medium text-gray-900">
+                    ❌ Actually Failed
+                </h3>
+                <p class="text-sm text-gray-600">
+                    Notices with failure reports from Shoutbomb (confirmed delivery failure)
+                </p>
+            </div>
+            <div class="px-6 py-4">
+                @if(count($mismatches['actually_failed'] ?? []) > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr class="text-left text-xs text-gray-500 uppercase">
+                                <th class="pb-2">Patron</th>
+                                <th class="pb-2">Item</th>
+                                <th class="pb-2">Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach(array_slice($mismatches['actually_failed'] ?? [], 0, 10) as $item)
+                            <tr class="text-sm">
+                                <td class="py-2 font-mono">{{ $item['patron_barcode'] }}</td>
+                                <td class="py-2 font-mono">{{ $item['item_barcode'] ?? 'N/A' }}</td>
+                                <td class="py-2 text-red-600 text-xs">{{ $item['failure_reason'] ?? 'Unknown' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    @if(count($mismatches['actually_failed'] ?? []) > 10)
+                    <p class="mt-2 text-xs text-gray-500 text-center">
+                        Showing 10 of {{ count($mismatches['actually_failed']) }} failures
+                    </p>
+                    @endif
+                </div>
+                @else
+                <p class="text-gray-500 text-center py-4">No failures detected</p>
                 @endif
             </div>
         </div>
