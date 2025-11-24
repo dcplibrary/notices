@@ -141,8 +141,8 @@
                 @if($integrationEnabled)
                 <div class="flex items-center justify-between pt-4 border-t">
                     <div>
-                        <h4 class="text-sm font-medium text-gray-900">Sync Shoutbomb Report Emails</h4>
-                        <p class="text-xs text-gray-500">Ingest failure reports via shoutbomb:check-reports (dcplibrary/shoutbomb-reports). If this fails, ensure the package is installed and the command is registered.</p>
+                        <h4 class="text-sm font-medium text-gray-900">Import Shoutbomb Email Reports</h4>
+                        <p class="text-xs text-gray-500">Ingest failure reports from Outlook via notices:import-shoutbomb-email</p>
                         @if($lastShoutbombReports)
                         <p class="text-xs text-gray-400 mt-1">
                             Last: {{ $lastShoutbombReports->started_at->diffForHumans() }}
@@ -156,18 +156,18 @@
                         <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
-                        Sync Report Emails
+                        Import Email Reports
                     </button>
                 </div>
                 @else
                 <div class="flex items-start justify-between pt-4 border-t opacity-60">
                     <div>
-                        <h4 class="text-sm font-medium text-gray-900">Sync Shoutbomb Report Emails</h4>
+                        <h4 class="text-sm font-medium text-gray-900">Import Shoutbomb Email Reports</h4>
                         <p class="text-xs text-gray-500">Enable Shoutbomb Reports Integration on the Settings page to use this tool.</p>
                     </div>
                     <button disabled
                             class="inline-flex items-center px-3 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
-                        Sync Report Emails
+                        Import Email Reports
                     </button>
                 </div>
                 @endif
