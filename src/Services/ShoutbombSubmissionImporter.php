@@ -24,7 +24,7 @@ class ShoutbombSubmissionImporter
      * This imports the OFFICIAL SQL-generated submission files that are
      * sent to Shoutbomb (holds, overdue, renew).
      */
-    public function importFromFTP(?Carbon $startDate = null): array
+    public function importFromFTP(?Carbon $startDate = null, ?callable $progressCallback = null): array
     {
         $startDate = $startDate ?? now()->subDays(1);
 
@@ -54,20 +54,20 @@ class ShoutbombSubmissionImporter
             }
 
             // Download and process patron lists
-            $voicePatrons = $this->downloadAndParsePatronList('voice', $startDate);
-            $textPatrons = $this->downloadAndParsePatronList('text', $startDate);
+            $voicePatrons = $this->downloadAndParsePatronList('voice', $startDate, $progressCallback);
+            $textPatrons = $this->downloadAndParsePatronList('text', $startDate, $progressCallback);
 
             $results['voice_patrons'] = count($voicePatrons);
             $results['text_patrons'] = count($textPatrons);
 
             // Import holds
-            $results['holds'] = $this->importSubmissionType('holds', $startDate, $voicePatrons, $textPatrons);
+            $results['holds'] = $this->importSubmissionType('holds', $startDate, $voicePatrons, $textPatrons, $progressCallback);
 
             // Import overdues
-            $results['overdues'] = $this->importSubmissionType('overdue', $startDate, $voicePatrons, $textPatrons);
+            $results['overdues'] = $this->importSubmissionType('overdue', $startDate, $voicePatrons, $textPatrons, $progressCallback);
 
             // Import renewals
-            $results['renewals'] = $this->importSubmissionType('renew', $startDate, $voicePatrons, $textPatrons);
+            $results['renewals'] = $this->importSubmissionType('renew', $startDate, $voicePatrons, $textPatrons, $progressCallback);
 
             $this->ftpService->disconnect();
 
@@ -91,7 +91,7 @@ class ShoutbombSubmissionImporter
      * If $from or $to is provided, only dates within that inclusive range
      * will be imported.
      */
-    public function importAllFromFTP(?Carbon $from = null, ?Carbon $to = null): array
+    public function importAllFromFTP(?Carbon $from = null, ?Carbon $to = null, ?callable $progressCallback = null): array
     {
         $config   = config('notices.shoutbomb_submissions');
         $root     = rtrim($config['root'] ?? '/', '/');
@@ -224,96 +224,87 @@ class ShoutbombSubmissionImporter
                 'date' => $dateString,
             ]);
 
-            $results = $this->importFromFTP($date);
+            $results = $this->importFromFTP($date, $progressCallback);
 
-            foreach ($aggregate as $key => $_) {
-                if (isset($results[$key])) {
-                    $aggregate[$key] += (int) $results[$key];
-                }
-            }
+            $aggregate['holds'] += $results['holds'];
+            $aggregate['overdues'] += $results['overdues'];
+            $aggregate['renewals'] += $results['renewals'];
+            $aggregate['voice_patrons'] += $results['voice_patrons'];
+            $aggregate['text_patrons'] += $results['text_patrons'];
+            $aggregate['errors'] += $results['errors'];
         }
 
         return [
-            'dates' => array_values($dates),
+            'dates' => $dates,
             'totals' => $aggregate,
         ];
     }
 
     /**
      * Download and parse patron list file.
-     *
-     * Also tracks delivery preference changes in the patron_delivery_preferences table.
      */
-    protected function downloadAndParsePatronList(string $type, Carbon $date): array
+    protected function downloadAndParsePatronList(string $type, Carbon $date, ?callable $progressCallback = null): array
     {
-        try {
-            $config   = config('notices.shoutbomb_submissions');
-            $root     = rtrim($config['root'] ?? '/', '/');
-            $directory = $root === '' ? '/' : $root;
+        $config   = config('notices.shoutbomb_submissions');
+        $root     = rtrim($config['root'] ?? '/', '/');
+        $directory = $root === '' ? '/' : $root;
 
-            // Find patron list file for the date (support both YYYY-MM-DD and YYYYMMDD formats)
-            $patternDashed = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
-            $patternNoDash = "{$type}_patrons_submitted_{$date->format('Ymd')}";
-            $files = $this->ftpService->listFiles($directory);
+        // Support both YYYY-MM-DD and YYYYMMDD formats
+        $patternDashed = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
+        $patternNoDash = "{$type}_patrons_submitted_{$date->format('Ymd')}";
 
-            Log::info("Looking for patron list", [
-                'patterns' => [$patternDashed, $patternNoDash],
-                'root' => $directory,
-                'files_found' => count($files),
-            ]);
+        $files = $this->ftpService->listFiles($directory);
 
-            foreach ($files as $file) {
-                $basename = basename($file);
+        foreach ($files as $file) {
+            $basename = basename($file);
 
-                if (str_contains($basename, $patternDashed) || str_contains($basename, $patternNoDash)) {
-                    // Use the full remote path returned by listFiles so we
-                    // honor the configured root directory.
-                    $localPath = $this->ftpService->downloadFile($file);
-                    if ($localPath) {
-                        $parsed = $this->parser->parsePatronList($localPath);
+            if (str_contains($basename, $patternDashed) || str_contains($basename, $patternNoDash)) {
+                // Notify callback that we're starting this file
+                if ($progressCallback) {
+                    $progressCallback(0, 0, $basename, true);
+                }
 
-                        // Track delivery preference changes
-                        $this->trackDeliveryPreferenceChanges($parsed, $type, $basename);
+                $localPath = $this->ftpService->downloadFile($file);
 
-                        Log::info("Found and downloaded patron list", [
-                            'type' => $type,
-                            'file' => $basename,
-                            'root' => $directory,
-                            'records' => count($parsed),
-                        ]);
+                if ($localPath) {
+                    $patrons = $this->parser->parsePatronList($localPath);
 
-                        return $parsed;
-                    }
+                    Log::info("Downloaded {$type} patron list", [
+                        'file' => $basename,
+                        'count' => count($patrons),
+                    ]);
+
+                    // Track delivery preferences
+                    $this->trackDeliveryPreferences($patrons, $type, $basename);
+
+                    return $patrons;
                 }
             }
-
-            Log::warning("Patron list file not found", [
-                'type' => $type,
-                'date' => $date->format('Y-m-d'),
-                'pattern' => $patternDashed,
-                'total_files' => count($files),
-            ]);
-
-            return [];
-
-        } catch (\Exception $e) {
-            Log::error("Failed to download patron list", [
-                'type' => $type,
-                'error' => $e->getMessage(),
-            ]);
-            return [];
         }
+
+        Log::warning("No {$type} patron list found", [
+            'patterns' => [$patternDashed, $patternNoDash],
+            'root' => $directory,
+        ]);
+
+        return [];
     }
 
     /**
-     * Track delivery preference changes for patrons in the list.
-     *
-     * @param array $patrons Array of patron_barcode => phone_number
-     * @param string $deliveryMethod 'voice' or 'text'
-     * @param string $sourceFile The source filename
+     * Track delivery preferences from patron lists.
      */
-    protected function trackDeliveryPreferenceChanges(array $patrons, string $deliveryMethod, string $sourceFile): void
+    protected function trackDeliveryPreferences(array $patrons, string $type, string $sourceFile): void
     {
+        $deliveryMethod = match($type) {
+            'voice' => 'voice',
+            'text' => 'text',
+            default => null,
+        };
+
+        if (!$deliveryMethod) {
+            return;
+        }
+
         $newPatrons = 0;
         $changedPatrons = 0;
         $unchangedPatrons = 0;
@@ -364,7 +355,8 @@ class ShoutbombSubmissionImporter
         string $type,
         Carbon $date,
         array $voicePatrons,
-        array $textPatrons
+        array $textPatrons,
+        ?callable $progressCallback = null
     ): int {
         $imported = 0;
 
@@ -389,12 +381,17 @@ class ShoutbombSubmissionImporter
                 $basename = basename($file);
 
                 if (str_contains($basename, $patternDashed) || str_contains($basename, $patternNoDash)) {
+                    // Notify callback that we're starting this file
+                    if ($progressCallback) {
+                        $progressCallback(0, 0, $basename, true);
+                    }
+
                     // Use the full remote path returned by listFiles so we
                     // honor the configured root directory.
                     $localPath = $this->ftpService->downloadFile($file);
 
                     if ($localPath) {
-                        $count = $this->processSubmissionFile($localPath, $basename, $type, $voicePatrons, $textPatrons);
+                        $count = $this->processSubmissionFile($localPath, $basename, $type, $voicePatrons, $textPatrons, $progressCallback);
                         $imported += $count;
 
                         Log::info("Imported {$type} submissions", [
@@ -431,7 +428,8 @@ class ShoutbombSubmissionImporter
         string $filename,
         string $type,
         array $voicePatrons,
-        array $textPatrons
+        array $textPatrons,
+        ?callable $progressCallback = null
     ): int {
         // Parse file based on type
         $submissions = match($type) {
@@ -442,11 +440,11 @@ class ShoutbombSubmissionImporter
         };
 
         $submittedAt = $this->parser->extractTimestampFromFilename($filename);
-
+        $total = count($submissions);
         $imported = 0;
         $batch = [];
 
-        foreach ($submissions as $submission) {
+        foreach ($submissions as $index => $submission) {
             // Determine delivery type (voice or text) based on patron lists
             $patronBarcode = $submission['patron_barcode'];
             $deliveryType = null;
@@ -472,6 +470,11 @@ class ShoutbombSubmissionImporter
                 ShoutbombSubmission::insert($batch);
                 $imported += count($batch);
                 $batch = [];
+
+                // Report progress
+                if ($progressCallback) {
+                    $progressCallback($imported, $total, $filename, false);
+                }
             }
         }
 
@@ -479,6 +482,11 @@ class ShoutbombSubmissionImporter
         if (!empty($batch)) {
             ShoutbombSubmission::insert($batch);
             $imported += count($batch);
+        }
+
+        // Final progress update
+        if ($progressCallback) {
+            $progressCallback($imported, $total, $filename, false);
         }
 
         return $imported;

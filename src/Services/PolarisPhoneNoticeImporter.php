@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * PolarisPhoneNoticeImporter
- *
+ * 
  * Imports PhoneNotices.csv - a Polaris-generated export file used for
  * VERIFICATION/CORROBORATION of notices sent to Shoutbomb.
  */

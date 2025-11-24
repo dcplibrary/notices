@@ -66,7 +66,7 @@ class ImportFTPFiles extends Command
                         $this->newLine();
                         $this->line("   📄 Importing: <comment>{$filename}</comment>");
                     }
-
+                    
                     // Display progress for current file
                     if (!$isNewFile && $current > 0 && $total > 0) {
                         if ($current % 100 === 0 || $current === $total) {
@@ -105,11 +105,27 @@ class ImportFTPFiles extends Command
 
         try {
             if ($this->option('all') || ($startDate && $endDate && !$startDate->isSameDay($endDate))) {
-                // Import range or all
-                $submissionResults = $submissionImporter->importAllFromFTP($startDate, $endDate);
+                // Import range or all - with callback
+                $submissionResults = $submissionImporter->importAllFromFTP(
+                    $startDate, 
+                    $endDate,
+                    function ($current, $total, $filename = null, $isNewFile = false) {
+                        if ($isNewFile && $filename) {
+                            $this->newLine();
+                            $this->line("   📄 Importing: <comment>{$filename}</comment>");
+                        }
+                        if (!$isNewFile && $current > 0 && $total > 0) {
+                            if ($current % 500 === 0 || $current === $total) {
+                                $this->output->write("\r   Processing: {$current}/{$total}");
+                            }
+                        }
+                    }
+                );
 
                 $totals = $submissionResults['totals'] ?? [];
                 $dates = $submissionResults['dates'] ?? [];
+
+                $this->newLine();
 
                 if (!empty($dates)) {
                     $this->info("   ✅ Processed " . count($dates) . " date(s)");
@@ -129,9 +145,24 @@ class ImportFTPFiles extends Command
                     'errors' => $totals['errors'] ?? 0,
                 ];
             } else {
-                // Single date import (use startDate or today)
+                // Single date import - with callback
                 $importDate = $startDate ?? now();
-                $submissionResults = $submissionImporter->importFromFTP($importDate);
+                $submissionResults = $submissionImporter->importFromFTP(
+                    $importDate,
+                    function ($current, $total, $filename = null, $isNewFile = false) {
+                        if ($isNewFile && $filename) {
+                            $this->newLine();
+                            $this->line("   📄 Importing: <comment>{$filename}</comment>");
+                        }
+                        if (!$isNewFile && $current > 0 && $total > 0) {
+                            if ($current % 500 === 0 || $current === $total) {
+                                $this->output->write("\r   Processing: {$current}/{$total}");
+                            }
+                        }
+                    }
+                );
+
+                $this->newLine();
 
                 $results['submissions'] = [
                     'holds' => $submissionResults['holds'] ?? 0,
