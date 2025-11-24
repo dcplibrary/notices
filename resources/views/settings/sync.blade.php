@@ -115,28 +115,6 @@
                     </button>
                 </div>
 
-                <!-- Import Shoutbomb (FTP) -->
-                <div class="flex items-center justify-between pt-4 border-t">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-900">Import from Shoutbomb (FTP)</h4>
-                        <p class="text-xs text-gray-500">Import delivery reports from Shoutbomb FTP</p>
-                        @if($lastShoutbomb)
-                        <p class="text-xs text-gray-400 mt-1">
-                            Last: {{ $lastShoutbomb->started_at->diffForHumans() }}
-                            ({{ $lastShoutbomb->records_processed ?? 0 }} records)
-                        </p>
-                        @endif
-                    </div>
-                    <button @click="importShoutbomb()"
-                            :disabled="loading"
-                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                        <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        Import
-                    </button>
-                </div>
-
                 <!-- Import Shoutbomb Submissions (SQL exports) -->
                 <div class="flex items-center justify-between pt-4 border-t">
                     <div>
@@ -396,10 +374,6 @@ function syncManager() {
 
         async importPolaris() {
             await this.runOperation('polaris', 'Import Polaris');
-        },
-
-        async importShoutbomb() {
-            await this.runOperation('shoutbomb', 'Import Shoutbomb (FTP)');
         },
 
         async importShoutbombReports() {
