@@ -241,6 +241,8 @@ class ShoutbombSubmissionImporter
 
     /**
      * Download and parse patron list file.
+     *
+     * Also tracks delivery preference changes in the patron_delivery_preferences table.
      */
     protected function downloadAndParsePatronList(string $type, Carbon $date): array
     {
@@ -270,6 +272,9 @@ class ShoutbombSubmissionImporter
                     if ($localPath) {
                         $parsed = $this->parser->parsePatronList($localPath);
 
+                        // Track delivery preference changes
+                        $this->trackDeliveryPreferenceChanges($parsed, $type, $basename);
+
                         Log::info("Found and downloaded patron list", [
                             'type' => $type,
                             'file' => $basename,
@@ -285,7 +290,7 @@ class ShoutbombSubmissionImporter
             Log::warning("Patron list file not found", [
                 'type' => $type,
                 'date' => $date->format('Y-m-d'),
-                'pattern' => $pattern,
+                'pattern' => $patternDashed,
                 'total_files' => count($files),
             ]);
 
@@ -298,6 +303,58 @@ class ShoutbombSubmissionImporter
             ]);
             return [];
         }
+    }
+
+    /**
+     * Track delivery preference changes for patrons in the list.
+     *
+     * @param array $patrons Array of patron_barcode => phone_number
+     * @param string $deliveryMethod 'voice' or 'text'
+     * @param string $sourceFile The source filename
+     */
+    protected function trackDeliveryPreferenceChanges(array $patrons, string $deliveryMethod, string $sourceFile): void
+    {
+        $newPatrons = 0;
+        $changedPatrons = 0;
+        $unchangedPatrons = 0;
+
+        foreach ($patrons as $barcode => $phone) {
+            try {
+                $result = \Dcplibrary\Notices\Models\PatronDeliveryPreference::updateOrCreateFromPatronList(
+                    $barcode,
+                    $phone,
+                    $deliveryMethod,
+                    $sourceFile
+                );
+
+                if ($result['is_new']) {
+                    $newPatrons++;
+                } elseif ($result['changed']) {
+                    $changedPatrons++;
+                    Log::info("Patron delivery preference changed", [
+                        'patron_barcode' => $barcode,
+                        'previous' => $result['preference']->previous_delivery_method,
+                        'current' => $result['preference']->current_delivery_method,
+                        'source_file' => $sourceFile,
+                    ]);
+                } else {
+                    $unchangedPatrons++;
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to track delivery preference for patron", [
+                    'patron_barcode' => $barcode,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        Log::info("Delivery preference tracking completed", [
+            'delivery_method' => $deliveryMethod,
+            'source_file' => $sourceFile,
+            'new_patrons' => $newPatrons,
+            'changed_patrons' => $changedPatrons,
+            'unchanged_patrons' => $unchangedPatrons,
+        ]);
     }
 
     /**
