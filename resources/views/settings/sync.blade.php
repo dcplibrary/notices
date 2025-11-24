@@ -343,9 +343,16 @@ function syncManager() {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Unexpected ${response.status} response from server`);
+                }
 
                 const data = await response.json();
 
@@ -391,9 +398,16 @@ await this.runOperation('shoutbomb-reports', 'Sync Shoutbomb Report Emails');
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Unexpected ${response.status} response from server`);
+                }
 
                 const data = await response.json();
 
@@ -419,7 +433,18 @@ await this.runOperation('shoutbomb-reports', 'Sync Shoutbomb Report Emails');
             this.messageType = 'info';
 
             try {
-                const response = await fetch('/notices/sync/test-connections');
+                const response = await fetch('/notices/sync/test-connections', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Unexpected ${response.status} response from server`);
+                }
+
                 const data = await response.json();
 
                 this.connectionResults = data;
