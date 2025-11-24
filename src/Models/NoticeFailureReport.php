@@ -5,88 +5,82 @@ namespace Dcplibrary\Notices\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Config;
 
 /**
- * NoticeFailureReport Model
+ * Model for Shoutbomb failure reports.
+ * Stores failure data from Shoutbomb report emails (opted-out, invalid, undelivered).
  *
- * Stores delivery failures from ShoutBomb with enrichment capabilities.
- * Parsed from email reports:
- *   - "Invalid patron phone number [Date]"
- *   - "Voice notices that were not delivered on [Date]"
+ * This was migrated from dcplibrary/shoutbomb-reports package to consolidate
+ * all notice-related data models in one place.
  */
 class NoticeFailureReport extends Model
 {
-    protected $table = 'notice_failure_reports';
+    use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     */
     protected $fillable = [
-        // Email source
         'outlook_message_id',
         'subject',
         'from_address',
-        // Patron/Contact info
         'patron_phone',
         'patron_id',
         'patron_barcode',
         'barcode_partial',
         'patron_name',
-        'contact_type',
-        'contact_value',
-        // Enrichment fields
-        'notification_type_id',
-        'delivery_option_id',
-        'item_record_id',
-        'sys_hold_request_id',
-        'bibliographic_record_id',
-        // Timestamps
-        'notification_queued_at',
-        'notification_sent_at',
-        'export_timestamp',
-        // Failure details
-        'delivery_method',
+        'notice_type',
         'failure_type',
         'failure_reason',
-        'failure_category',
         'account_status',
         'notice_description',
         'attempt_count',
-        // FK references
-        'phone_notices_import_id',
-        'notification_export_id',
-        // Processing
         'received_at',
         'processed_at',
         'raw_content',
     ];
 
+    /**
+     * The attributes that should be cast.
+     */
     protected $casts = [
-        'patron_id' => 'integer',
-        'barcode_partial' => 'boolean',
-        'notification_type_id' => 'integer',
-        'delivery_option_id' => 'integer',
-        'item_record_id' => 'integer',
-        'sys_hold_request_id' => 'integer',
-        'bibliographic_record_id' => 'integer',
-        'attempt_count' => 'integer',
-        'phone_notices_import_id' => 'integer',
-        'notification_export_id' => 'integer',
-        'notification_queued_at' => 'datetime',
-        'notification_sent_at' => 'datetime',
-        'export_timestamp' => 'datetime',
         'received_at' => 'datetime',
         'processed_at' => 'datetime',
+        'attempt_count' => 'integer',
+        'barcode_partial' => 'boolean',
     ];
 
     /**
-     * Relationship to PolarisPhoneNotice (for enrichment).
+     * Get the table name from config.
      */
-    public function phoneNotice(): BelongsTo
+    public function getTable()
     {
-        return $this->belongsTo(PolarisPhoneNotice::class, 'phone_notices_import_id');
+        return Config::get(
+            'notices.integrations.shoutbomb_reports.storage.table_name',
+            'notice_failure_reports'
+        );
     }
 
     /**
-     * Scope by notice type (e.g., 'sms' or 'voice').
+     * Scope to get unprocessed reports.
+     */
+    public function scopeUnprocessed(Builder $query): Builder
+    {
+        return $query->whereNull('processed_at');
+    }
+
+    /**
+     * Scope to get reports by notice type (e.g., 'SMS' or 'Voice').
+     */
+    public function scopeByNoticeType(Builder $query, string $type): Builder
+    {
+        return $query->where('notice_type', $type);
+    }
+
+    /**
+     * Scope by notice type (alias for consistency).
      */
     public function scopeOfType(Builder $query, string $type): Builder
     {
@@ -101,10 +95,6 @@ class NoticeFailureReport extends Model
         return $query->where('failure_type', 'invalid');
     }
 
-    public function scopeOptedOut($query)
-    {
-        return $query->where('failure_type', 'opted-out');
-    }
 
     public function scopeVoiceNotDelivered($query)
     {
@@ -125,7 +115,43 @@ class NoticeFailureReport extends Model
     }
 
     /**
-     * Scope by normalized phone (digits only, compare last 10).
+     * Scope to get reports by failure type.
+     */
+    public function scopeByFailureType(Builder $query, string $type): Builder
+    {
+        return $query->where('failure_type', $type);
+    }
+
+    /**
+     * Scope to get opted-out patrons.
+     */
+    public function scopeOptedOut(Builder $query): Builder
+    {
+        return $query->where('failure_type', 'opted-out');
+    }
+
+    /**
+     * Scope to get invalid phone numbers.
+     */
+    public function scopeInvalid(Builder $query): Builder
+    {
+        return $query->where('failure_type', 'invalid');
+    }
+
+    /**
+     * Scope to get reports for a specific patron.
+     */
+    public function scopeForPatron(Builder $query, string $patronIdOrPhone): Builder
+    {
+        return $query->where(function ($q) use ($patronIdOrPhone) {
+            $q->where('patron_id', $patronIdOrPhone)
+              ->orWhere('patron_phone', $patronIdOrPhone)
+              ->orWhere('patron_barcode', $patronIdOrPhone);
+        });
+    }
+
+    /**
+     * Scope by normalized phone (digits only compare on last 10).
      */
     public function scopeForPhone(Builder $query, string $phone): Builder
     {
@@ -147,6 +173,14 @@ class NoticeFailureReport extends Model
     }
 
     /**
+     * Scope to get recent reports.
+     */
+    public function scopeRecent(Builder $query, int $days = 7): Builder
+    {
+        return $query->where('received_at', '>=', now()->subDays($days));
+    }
+
+    /**
      * Scope by date window around a target.
      */
     public function scopeAround(Builder $query, Carbon $center, int $hours = 24): Builder
@@ -158,28 +192,68 @@ class NoticeFailureReport extends Model
     }
 
     /**
-     * Scope by patron.
+     * Scope to get reports with partial barcodes only.
      */
-    public function scopeForPatron($query, string $barcode)
+    public function scopePartialBarcodes(Builder $query): Builder
     {
-        return $query->where('patron_barcode', $barcode);
+        return $query->where('barcode_partial', true);
     }
 
     /**
-     * Scope for records needing enrichment.
+     * Scope to get invalid/removed barcodes.
      */
-    public function scopeNeedsEnrichment($query)
+    public function scopeInvalidBarcodes(Builder $query): Builder
     {
-        return $query->whereNull('notification_type_id')
-            ->orWhereNull('phone_notices_import_id');
+        return $query->where('failure_type', 'invalid-barcode-removed');
     }
 
     /**
-     * Check if this failure has been enriched.
+     * Scope to get deleted/unavailable accounts.
      */
-    public function isEnriched(): bool
+    public function scopeUnavailableAccounts(Builder $query): Builder
     {
-        return $this->phone_notices_import_id !== null;
+        return $query->whereIn('account_status', ['deleted', 'unavailable']);
+    }
+
+    /**
+     * Scope to get deleted accounts.
+     */
+    public function scopeDeletedAccounts(Builder $query): Builder
+    {
+        return $query->where('account_status', 'deleted');
+    }
+
+    /**
+     * Mark this report as processed.
+     */
+    public function markAsProcessed(): bool
+    {
+        $this->processed_at = now();
+        return $this->save();
+    }
+
+    /**
+     * Check if this is an opted-out failure.
+     */
+    public function isOptedOut(): bool
+    {
+        return $this->failure_type === 'opted-out';
+    }
+
+    /**
+     * Check if this is an invalid phone number.
+     */
+    public function isInvalid(): bool
+    {
+        return $this->failure_type === 'invalid';
+    }
+
+    /**
+     * Check if this has a partial (redacted) barcode.
+     */
+    public function hasPartialBarcode(): bool
+    {
+        return $this->barcode_partial === true;
     }
 
     /**
@@ -274,33 +348,16 @@ class NoticeFailureReport extends Model
     /**
      * Get human-readable notification type.
      */
-    public function getNotificationTypeNameAttribute(): string
+    public function isAccountDeleted(): bool
     {
-        return match ($this->notification_type_id) {
-            1 => '1st Overdue',
-            2 => 'Hold',
-            7 => 'Renewal Reminder',
-            8 => 'Fine',
-            11 => 'Bill',
-            12 => '2nd Overdue',
-            13 => '3rd Overdue',
-            default => 'Unknown',
-        };
+        return $this->account_status === 'deleted';
     }
 
     /**
-     * Get human-readable failure category.
+     * Check if account is unavailable.
      */
-    public function getFailureCategoryDisplayAttribute(): string
+    public function isAccountUnavailable(): bool
     {
-        return match ($this->failure_category) {
-            'invalid_number' => 'Invalid Phone Number',
-            'opted_out' => 'Patron Opted Out',
-            'no_answer' => 'No Answer',
-            'busy' => 'Line Busy',
-            'disconnected' => 'Number Disconnected',
-            'carrier_blocked' => 'Blocked by Carrier',
-            default => $this->failure_category ?? 'Unknown',
-        };
+        return in_array($this->account_status, ['deleted', 'unavailable']);
     }
 }

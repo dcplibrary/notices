@@ -688,8 +688,10 @@ class NotificationImportService
      */
     protected function enrichFailuresWithPhoneNotices(): int
     {
+        $failureTable = (new NoticeFailureReport())->getTable();
+
         return DB::update("
-            UPDATE notice_failure_reports nfr
+            UPDATE {$failureTable} nfr
             INNER JOIN polaris_phone_notices pn
                 ON nfr.patron_id = pn.patron_id
                AND DATE(nfr.received_at) = pn.import_date
