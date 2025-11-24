@@ -19,8 +19,8 @@ use Illuminate\Console\Command;
 class ImportFTPFiles extends Command
 {
     protected $signature = 'notices:import-ftp-files
-                            {--start-date= : Start date (Y-m-d), defaults to today}
-                            {--end-date= : End date (Y-m-d), defaults to today}
+                            {--from= : Start date (Y-m-d), defaults to today}
+                            {--to= : End date (Y-m-d), defaults to today}
                             {--days= : Number of days back to import (alternative to date range)}
                             {--all : Import all available files regardless of date}
                             {--import-patrons : Also import patron delivery preferences (voice/text)}';
