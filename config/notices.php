@@ -54,6 +54,12 @@ return [
         'skip_duplicates' => true,
     ],
 
+    'patron_import' => [
+        'enabled' => env('PATRON_IMPORT_ENABLED', false),
+        'skip_processed_files' => env('PATRON_SKIP_PROCESSED', true),
+        'batch_size' => env('PATRON_BATCH_SIZE', 1000),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Scheduler Settings

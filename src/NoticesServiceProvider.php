@@ -81,6 +81,17 @@ class NoticesServiceProvider extends ServiceProvider
             $parsingConfig = config('notices.integrations.shoutbomb_reports.parsing', []);
             return new ShoutbombFailureReportParser($parsingConfig);
         });
+
+        $this->app->singleton(PatronDeliveryPreferenceImporter::class, function ($app) {
+            return new PatronDeliveryPreferenceImporter(
+                config('notices.shoutbomb.ftp.host'),
+                config('notices.shoutbomb.ftp.port'),
+                config('notices.shoutbomb.ftp.username'),
+                config('notices.shoutbomb.ftp.password'),
+                config('notices.shoutbomb.ftp.patron_path', '/outgoing'),
+                config('notices.shoutbomb.ftp.passive', true)
+            );
+        });
     }
 
     /**

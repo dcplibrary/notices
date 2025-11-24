@@ -72,6 +72,7 @@ Route::prefix('sync')->name('sync.')->group(function () {
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');
     Route::get('/logs', [SyncController::class, 'logs'])->name('logs');
     Route::get('/log/{id}', [SyncController::class, 'getLog'])->name('log');
+    Route::post('/import-ftp-files', [SyncController::class, 'importFTPFiles']);
 });
 
 // Export/Backup routes - Admin only

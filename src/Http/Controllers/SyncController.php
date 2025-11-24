@@ -203,7 +203,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import FTP files (PhoneNotices + Shoutbomb submissions)
+     * Import FTP files (PhoneNotices + Shoutbomb submissions + Patrons)
      */
     public function importFTPFiles(Request $request): JsonResponse
     {
@@ -219,8 +219,9 @@ class SyncController extends Controller
 
         try {
             $result = $this->runImportFTPFiles(
-                $request->input('start_date'),
-                $request->input('end_date')
+                $request->input('from'),
+                $request->input('to'),
+                $request->boolean('import_patrons', false)
             );
 
             if ($result['status'] === 'success') {
@@ -255,9 +256,9 @@ class SyncController extends Controller
             $result = $this->runSyncShoutbombToLogs();
 
             if ($result['status'] === 'success') {
-                $log->markCompleted(['shoutbomb_sync' => $result], $result['records'] ?? 0);
+                $log->markCompleted(['sync' => $result], $result['records'] ?? 0);
             } else {
-                $log->markCompletedWithErrors(['shoutbomb_sync' => $result], $result['message'] ?? '');
+                $log->markCompletedWithErrors(['sync' => $result], $result['message'] ?? '');
             }
 
             return response()->json($result);
@@ -271,7 +272,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run aggregation only
+     * Run aggregation
      */
     public function aggregate(): JsonResponse
     {
@@ -284,7 +285,7 @@ class SyncController extends Controller
 
         try {
             $result = $this->runAggregate();
-            
+
             if ($result['status'] === 'success') {
                 $log->markCompleted(['aggregate' => $result]);
             } else {
@@ -302,7 +303,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Test database connections
+     * Test connections to Polaris and Shoutbomb
      */
     public function testConnections(): JsonResponse
     {
@@ -401,8 +402,6 @@ class SyncController extends Controller
      */
     private function runImportPolaris(): array
     {
-        \Log::info('All available commands: ' . json_encode(array_keys(Artisan::all())));
-        \Log::info('Notices commands: ' . json_encode(array_filter(array_keys(Artisan::all()), fn($k) => str_starts_with($k, 'notices:'))));
         $exitCode = Artisan::call('notices:import-polaris');
         $output = Artisan::output();
 
@@ -509,23 +508,26 @@ class SyncController extends Controller
     }
 
     /**
-     * Run FTP files import command (PhoneNotices + Shoutbomb submissions)
+     * Run FTP files import command (PhoneNotices + Shoutbomb submissions + Patrons)
      */
-    private function runImportFTPFiles(?string $startDate = null, ?string $endDate = null): array
+    private function runImportFTPFiles(?string $from = null, ?string $to = null, bool $importPatrons = false): array
     {
         $options = [];
 
-        if ($startDate) {
-            $options['--start-date'] = $startDate;
+        if ($from) {
+            $options['--from'] = $from;
         }
-        if ($endDate) {
-            $options['--end-date'] = $endDate;
+        if ($to) {
+            $options['--to'] = $to;
+        }
+        if ($importPatrons) {
+            $options['--import-patrons'] = true;
         }
 
         // If no dates provided, default to today
-        if (empty($options)) {
-            $options['--start-date'] = now()->format('Y-m-d');
-            $options['--end-date'] = now()->format('Y-m-d');
+        if (empty($from) && empty($to)) {
+            $options['--from'] = now()->format('Y-m-d');
+            $options['--to'] = now()->format('Y-m-d');
         }
 
         $exitCode = Artisan::call('notices:import-ftp-files', $options);
@@ -533,6 +535,8 @@ class SyncController extends Controller
 
         // Parse output to get record counts
         $records = 0;
+        $patronsImported = false;
+        
         if (preg_match('/PhoneNotices[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }
@@ -545,11 +549,20 @@ class SyncController extends Controller
         if (preg_match('/Renewals[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }
+        if (preg_match('/Voice.*?(\d+).*?new/i', $output, $m)) {
+            $patronsImported = true;
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Text.*?(\d+).*?new/i', $output, $m)) {
+            $patronsImported = true;
+            $records += (int) $m[1];
+        }
 
         return [
             'status' => $exitCode === 0 ? 'success' : 'error',
             'message' => trim($output),
             'records' => $records,
+            'patrons_imported' => $patronsImported,
         ];
     }
 }
