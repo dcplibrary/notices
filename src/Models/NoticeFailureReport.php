@@ -257,7 +257,96 @@ class NoticeFailureReport extends Model
     }
 
     /**
+     * Scope to get unprocessed reports.
+     */
+    public function scopeUnprocessed($query)
+    {
+        return $query->whereNull('processed_at');
+    }
+
+    /**
+     * Scope to get recent reports.
+     */
+    public function scopeRecent($query, int $days = 7)
+    {
+        return $query->where('received_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Scope to get reports with partial barcodes only.
+     */
+    public function scopePartialBarcodes($query)
+    {
+        return $query->where('barcode_partial', true);
+    }
+
+    /**
+     * Scope to get invalid/removed barcodes.
+     */
+    public function scopeInvalidBarcodes($query)
+    {
+        return $query->where('failure_type', 'invalid-barcode-removed');
+    }
+
+    /**
+     * Scope to get deleted/unavailable accounts.
+     */
+    public function scopeUnavailableAccounts($query)
+    {
+        return $query->whereIn('account_status', ['deleted', 'unavailable']);
+    }
+
+    /**
+     * Mark this report as processed.
+     */
+    public function markAsProcessed(): bool
+    {
+        $this->processed_at = now();
+        return $this->save();
+    }
+
+    /**
+     * Check if this is an opted-out failure.
+     */
+    public function isOptedOut(): bool
+    {
+        return $this->failure_type === 'opted-out';
+    }
+
+    /**
+     * Check if this is an invalid phone number.
+     */
+    public function isInvalid(): bool
+    {
+        return $this->failure_type === 'invalid';
+    }
+
+    /**
+     * Check if this has a partial (redacted) barcode.
+     */
+    public function hasPartialBarcode(): bool
+    {
+        return $this->barcode_partial === true;
+    }
+
+    /**
      * Check if account is deleted.
+     */
+    public function isAccountDeleted(): bool
+    {
+        return $this->account_status === 'deleted';
+    }
+
+    /**
+     * Check if account is unavailable.
+     */
+    public function isAccountUnavailable(): bool
+    {
+        return in_array($this->account_status, ['deleted', 'unavailable']);
+    }
+
+    /**
+     * Get human-readable notification type.
      */
     public function isAccountDeleted(): bool
     {

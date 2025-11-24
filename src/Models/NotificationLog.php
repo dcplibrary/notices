@@ -294,24 +294,13 @@ class NotificationLog extends Model
         // Use a 60-minute window to account for timing differences
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')->first();
-
-            if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
-                return "{$phoneNotice->last_name}, {$phoneNotice->first_name}";
-            }
-
-            // Second attempt: Exact date match if the first one failed
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
-            if ($phoneNotice && $phoneNotice->first_name && $phoneNotice->last_name) {
-                return "{$phoneNotice->last_name}, {$phoneNotice->first_name}";
+            if ($phoneNotice && $phoneNotice->name_first && $phoneNotice->name_last) {
+                return "{$phoneNotice->name_last}, {$phoneNotice->name_first}";
             }
+        }
 
         // Fall back to Polaris if connected
         $patron = $this->patron;
@@ -320,7 +309,6 @@ class NotificationLog extends Model
         }
 
         return $this->patron_barcode ?? 'Unknown Patron';
-     }
     }
 
     /**
@@ -332,16 +320,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
-            if ($phoneNotice && $phoneNotice->first_name) {
-                return $phoneNotice->first_name;
+            if ($phoneNotice && $phoneNotice->name_first) {
+                return $phoneNotice->name_first;
             }
         }
 
@@ -357,16 +340,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
-            if ($phoneNotice && $phoneNotice->last_name) {
-                return $phoneNotice->last_name;
+            if ($phoneNotice && $phoneNotice->name_last) {
+                return $phoneNotice->name_last;
             }
         }
 
@@ -382,16 +360,11 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
-            if ($phoneNotice && $phoneNotice->email) {
-                return $phoneNotice->email;
+            if ($phoneNotice && $phoneNotice->email_address) {
+                return $phoneNotice->email_address;
             }
         }
 
@@ -407,12 +380,7 @@ class NotificationLog extends Model
     {
         if ($this->patron_barcode) {
             $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereBetween('notice_date', [
-                    $this->notification_date->copy()->subMinutes(60),
-                    $this->notification_date->copy()->addMinutes(60)
-                ])
-                ->orderBy('notice_date', 'desc')
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
             if ($phoneNotice && $phoneNotice->phone_number) {
@@ -446,25 +414,25 @@ class NotificationLog extends Model
         // First try to get items from imported Shoutbomb data
         if ($this->patron_barcode) {
             $phoneNotices = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-                ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
-                ->orderBy('notice_date', 'desc')
+                ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
+                ->orderBy('import_date', 'desc')
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
                 // Convert phone notices to a collection with title and barcode
                 return $phoneNotices->map(function ($notice) {
                     return (object) [
-                        'title' => $notice->title,
+                        'title' => $notice->browse_title,
                         'item_barcode' => $notice->item_barcode,
                         'bibliographic' => (object) [
-                            'Title' => $notice->title,
+                            'Title' => $notice->browse_title,
                         ],
                         'staff_link' => $notice->item_record_id
                             ? "https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{$notice->item_record_id}"
                             : null,
                         'ItemRecordID' => $notice->item_record_id,
                         'Barcode' => $notice->item_barcode,
-                        'CallNumber' => null, // Not in phone notices
+                        'CallNumber' => null, // Not available in phone notices CSV
                     ];
                 });
             }
@@ -501,7 +469,7 @@ class NotificationLog extends Model
         }
 
         return \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
-            ->whereDate('notice_date', $this->notification_date->format('Y-m-d'))
+            ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
             ->get();
     }
 
