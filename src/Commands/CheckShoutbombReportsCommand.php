@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class CheckShoutbombReportsCommand extends Command
 {
-    protected $signature = 'notices:check-reports
+    protected $signature = 'notices:import-shoutbomb-email
                             {--dry-run : Display what would be processed without saving}
                             {--limit= : Maximum number of emails to process}
                             {--mark-read : Mark processed emails as read}';

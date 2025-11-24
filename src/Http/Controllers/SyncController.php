@@ -386,24 +386,24 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Shoutbomb reports check via external package
+     * Run Shoutbomb reports check via email (Graph API)
      */
     private function runImportShoutbombReports(): array
     {
         // Preflight: ensure the command is registered so web-triggered Artisan::call works
         $commands = Artisan::all();
-        if (!array_key_exists('shoutbomb:check-reports', $commands)) {
+        if (!array_key_exists('notices:import-shoutbomb-email', $commands)) {
             return [
                 'status' => 'error',
-                'message' => "Command 'shoutbomb:check-reports' is not registered. Ensure dcplibrary/shoutbomb-reports is installed and its ServiceProvider registers commands outside runningInConsole.",
+                'message' => "Command 'notices:import-shoutbomb-email' is not registered. Check that the CheckShoutbombReportsCommand is loaded.",
             ];
         }
 
-        $exitCode = Artisan::call('shoutbomb:check-reports');
+        $exitCode = Artisan::call('notices:import-shoutbomb-email', ['--mark-read' => true]);
         $output = Artisan::output();
 
         // Attempt to parse a generic processed count if present
-        preg_match('/Processed\s+(\d+)/i', $output, $matches);
+        preg_match('/Records Extracted[^\d]*(\d+)/i', $output, $matches);
         $records = isset($matches[1]) ? (int) $matches[1] : null;
 
         return [
