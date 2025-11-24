@@ -321,6 +321,7 @@ class SettingsController extends Controller
         // Get last sync for each operation type
         $lastSyncAll = SyncLog::latestFor('sync_all');
         $lastPolaris = SyncLog::latestFor('import_polaris');
+        $lastFTPFiles = SyncLog::latestFor('import_ftp_files');
         $lastShoutbombSubmissions = SyncLog::latestFor('import_shoutbomb_submissions');
         $lastShoutbombReports = SyncLog::latestFor('import_shoutbomb_reports');
         $lastAggregate = SyncLog::latestFor('aggregate');
@@ -335,6 +336,7 @@ class SettingsController extends Controller
         return view('notices::settings.sync', compact(
             'lastSyncAll',
             'lastPolaris',
+            'lastFTPFiles',
             'lastShoutbombSubmissions',
             'lastShoutbombReports',
             'lastAggregate',

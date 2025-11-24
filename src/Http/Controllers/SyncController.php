@@ -194,6 +194,40 @@ class SyncController extends Controller
     }
 
     /**
+     * Import FTP files (PhoneNotices + Shoutbomb submissions)
+     */
+    public function importFTPFiles(Request $request): JsonResponse
+    {
+        $log = SyncLog::create([
+            'operation_type' => 'import_ftp_files',
+            'status' => 'running',
+            'started_at' => now(),
+            'user_id' => Auth::id(),
+        ]);
+
+        try {
+            $result = $this->runImportFTPFiles(
+                $request->input('start_date'),
+                $request->input('end_date')
+            );
+
+            if ($result['status'] === 'success') {
+                $log->markCompleted(['ftp_files' => $result], $result['records'] ?? 0);
+            } else {
+                $log->markCompletedWithErrors(['ftp_files' => $result], $result['message'] ?? '');
+            }
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            $log->markFailed($e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Sync Shoutbomb phone notices to notification_logs
      */
     public function syncShoutbombToLogs(): JsonResponse
@@ -424,6 +458,51 @@ class SyncController extends Controller
 
         // Parse output to get record counts
         $records = 0;
+        if (preg_match('/Holds[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Overdues[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+        if (preg_match('/Renewals[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
+
+        return [
+            'status' => $exitCode === 0 ? 'success' : 'error',
+            'message' => trim($output),
+            'records' => $records,
+        ];
+    }
+
+    /**
+     * Run FTP files import command (PhoneNotices + Shoutbomb submissions)
+     */
+    private function runImportFTPFiles(?string $startDate = null, ?string $endDate = null): array
+    {
+        $options = [];
+
+        if ($startDate) {
+            $options['--start-date'] = $startDate;
+        }
+        if ($endDate) {
+            $options['--end-date'] = $endDate;
+        }
+
+        // If no dates provided, default to today
+        if (empty($options)) {
+            $options['--start-date'] = now()->format('Y-m-d');
+            $options['--end-date'] = now()->format('Y-m-d');
+        }
+
+        $exitCode = Artisan::call('notices:import-ftp-files', $options);
+        $output = Artisan::output();
+
+        // Parse output to get record counts
+        $records = 0;
+        if (preg_match('/PhoneNotices[^\d]*(\d+)/i', $output, $m)) {
+            $records += (int) $m[1];
+        }
         if (preg_match('/Holds[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }

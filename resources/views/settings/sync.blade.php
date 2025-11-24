@@ -115,26 +115,44 @@
                     </button>
                 </div>
 
-                <!-- Import Shoutbomb Submissions (SQL exports) -->
-                <div class="flex items-center justify-between pt-4 border-t">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-900">Import Shoutbomb Submissions</h4>
-                        <p class="text-xs text-gray-500">Import what was sent to Shoutbomb (holds, overdues, renewals)</p>
-                        @if($lastShoutbombSubmissions ?? false)
-                        <p class="text-xs text-gray-400 mt-1">
-                            Last: {{ $lastShoutbombSubmissions->started_at->diffForHumans() }}
-                            ({{ $lastShoutbombSubmissions->records_processed ?? 0 }} records)
-                        </p>
-                        @endif
+                <!-- Import FTP Files (PhoneNotices + Shoutbomb Submissions) -->
+                <div class="pt-4 border-t">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Import FTP Files</h4>
+                            <p class="text-xs text-gray-500">Import PhoneNotices and Shoutbomb submissions (holds, overdues, renewals)</p>
+                            @if($lastFTPFiles ?? false)
+                            <p class="text-xs text-gray-400 mt-1">
+                                Last: {{ $lastFTPFiles->started_at->diffForHumans() }}
+                                ({{ $lastFTPFiles->records_processed ?? 0 }} records)
+                            </p>
+                            @endif
+                        </div>
                     </div>
-                    <button @click="importShoutbombSubmissions()"
-                            :disabled="loading"
-                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
-                        <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        Import Submissions
-                    </button>
+                    <div class="mt-3 flex items-center gap-3">
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <!-- Calendar icon -->
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <input type="date"
+                                   x-model="ftpStartDate"
+                                   class="text-xs border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2">
+                            <span class="text-gray-400">to</span>
+                            <input type="date"
+                                   x-model="ftpEndDate"
+                                   class="text-xs border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2">
+                            <span class="text-gray-400 ml-1">Default: today</span>
+                        </div>
+                        <button @click="importFTPFiles()"
+                                :disabled="loading"
+                                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                            <svg x-show="!loading" class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Import
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Sync Shoutbomb Reports (Email/Graph) -->
@@ -332,6 +350,8 @@ function syncManager() {
         message: '',
         messageType: 'info',
         connectionResults: null,
+        ftpStartDate: new Date().toISOString().split('T')[0],
+        ftpEndDate: new Date().toISOString().split('T')[0],
 
         async syncAll() {
             this.loading = true;
@@ -382,6 +402,49 @@ function syncManager() {
 
         async importShoutbombSubmissions() {
             await this.runOperation('shoutbomb-submissions', 'Import Shoutbomb Submissions');
+        },
+
+        async importFTPFiles() {
+            this.loading = true;
+            this.message = 'Import FTP Files in progress...';
+            this.messageType = 'info';
+
+            try {
+                const response = await fetch('/notices/sync/ftp-files', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        start_date: this.ftpStartDate,
+                        end_date: this.ftpEndDate
+                    })
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Unexpected ${response.status} response from server`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    this.message = `Import FTP Files completed successfully! ${data.records ? 'Processed ' + data.records + ' records.' : ''}`;
+                    this.messageType = 'success';
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    this.message = `Import FTP Files failed: ${data.message}`;
+                    this.messageType = 'error';
+                }
+            } catch (error) {
+                this.message = 'Import FTP Files failed: ' + error.message;
+                this.messageType = 'error';
+            } finally {
+                this.loading = false;
+            }
         },
 
         async aggregate() {
