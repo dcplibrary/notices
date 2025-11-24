@@ -105,7 +105,16 @@ class ImportShoutbombSubmissions extends Command
         $totals = $summary['totals'] ?? [];
 
         if (empty($dates)) {
-            $this->warn('No submission files were found on the FTP server.');
+            $config   = config('notices.shoutbomb_submissions');
+            $root     = $config['root'] ?? '/';
+            $patterns = $config['patterns'] ?? [];
+
+            $this->warn(sprintf(
+                'No submission files were found on the FTP server (root=%s, patterns=%s)',
+                $root,
+                implode(', ', array_values($patterns))
+            ));
+
             return Command::FAILURE;
         }
 

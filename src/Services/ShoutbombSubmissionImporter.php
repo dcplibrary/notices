@@ -28,8 +28,14 @@ class ShoutbombSubmissionImporter
     {
         $startDate = $startDate ?? now()->subDays(1);
 
+        $config   = config('notices.shoutbomb_submissions');
+        $root     = rtrim($config['root'] ?? '/', '/');
+        $patterns = $config['patterns'] ?? [];
+
         Log::info("Starting Shoutbomb submission import (official system)", [
             'start_date' => $startDate->format('Y-m-d'),
+            'root'       => $root === '' ? '/' : $root,
+            'patterns'   => $patterns,
         ]);
 
         $results = [
@@ -87,8 +93,35 @@ class ShoutbombSubmissionImporter
      */
     public function importAllFromFTP(?Carbon $from = null, ?Carbon $to = null): array
     {
+        $config   = config('notices.shoutbomb_submissions');
+        $root     = rtrim($config['root'] ?? '/', '/');
+        $patterns = $config['patterns'] ?? [];
+        $directory = $root === '' ? '/' : $root;
+
+        // We need a connection only long enough to list files here; each
+        // per-date import will manage its own FTP lifecycle.
+        if (! $this->ftpService->connect()) {
+            Log::error('Shoutbomb submission import-all: failed to connect to FTP', [
+                'root' => $directory,
+            ]);
+
+            return [
+                'dates' => [],
+                'totals' => [
+                    'holds' => 0,
+                    'overdues' => 0,
+                    'renewals' => 0,
+                    'voice_patrons' => 0,
+                    'text_patrons' => 0,
+                    'errors' => 1,
+                ],
+            ];
+        }
+
         // Discover all dates present in submission/patron filenames
-        $files = $this->ftpService->listFiles('/');
+        $files = $this->ftpService->listFiles($directory);
+        $this->ftpService->disconnect();
+
         $dates = [];
 
         foreach ($files as $file) {
@@ -190,12 +223,17 @@ class ShoutbombSubmissionImporter
     protected function downloadAndParsePatronList(string $type, Carbon $date): array
     {
         try {
+            $config   = config('notices.shoutbomb_submissions');
+            $root     = rtrim($config['root'] ?? '/', '/');
+            $directory = $root === '' ? '/' : $root;
+
             // Find patron list file for the date
             $pattern = "{$type}_patrons_submitted_{$date->format('Y-m-d')}";
-            $files = $this->ftpService->listFiles('/');
+            $files = $this->ftpService->listFiles($directory);
 
             Log::info("Looking for patron list", [
                 'pattern' => $pattern,
+                'root' => $directory,
                 'files_found' => count($files),
             ]);
 
@@ -203,15 +241,20 @@ class ShoutbombSubmissionImporter
                 $basename = basename($file);
 
                 if (str_contains($basename, $pattern)) {
-                    // Use basename to avoid path issues
-                    $localPath = $this->ftpService->downloadFile('/' . $basename);
+                    // Use the full remote path returned by listFiles so we
+                    // honor the configured root directory.
+                    $localPath = $this->ftpService->downloadFile($file);
                     if ($localPath) {
+                        $parsed = $this->parser->parsePatronList($localPath);
+
                         Log::info("Found and downloaded patron list", [
                             'type' => $type,
                             'file' => $basename,
-                            'records' => count($this->parser->parsePatronList($localPath)),
+                            'root' => $directory,
+                            'records' => count($parsed),
                         ]);
-                        return $this->parser->parsePatronList($localPath);
+
+                        return $parsed;
                     }
                 }
             }
@@ -246,13 +289,18 @@ class ShoutbombSubmissionImporter
         $imported = 0;
 
         try {
+            $config   = config('notices.shoutbomb_submissions');
+            $root     = rtrim($config['root'] ?? '/', '/');
+            $directory = $root === '' ? '/' : $root;
+
             // Find submission files
             $pattern = "{$type}_submitted_{$date->format('Y-m-d')}";
-            $files = $this->ftpService->listFiles('/');
+            $files = $this->ftpService->listFiles($directory);
 
             Log::info("Looking for submission files", [
                 'type' => $type,
                 'pattern' => $pattern,
+                'root' => $directory,
                 'files_found' => count($files),
             ]);
 
@@ -260,8 +308,9 @@ class ShoutbombSubmissionImporter
                 $basename = basename($file);
 
                 if (str_contains($basename, $pattern)) {
-                    // Use basename to avoid path issues
-                    $localPath = $this->ftpService->downloadFile('/' . $basename);
+                    // Use the full remote path returned by listFiles so we
+                    // honor the configured root directory.
+                    $localPath = $this->ftpService->downloadFile($file);
 
                     if ($localPath) {
                         $count = $this->processSubmissionFile($localPath, $basename, $type, $voicePatrons, $textPatrons);
@@ -269,6 +318,7 @@ class ShoutbombSubmissionImporter
 
                         Log::info("Imported {$type} submissions", [
                             'file' => $basename,
+                            'root' => $directory,
                             'count' => $count,
                         ]);
                     }
@@ -278,6 +328,7 @@ class ShoutbombSubmissionImporter
             if ($imported === 0) {
                 Log::warning("No {$type} submission files found", [
                     'pattern' => $pattern,
+                    'root' => $directory,
                     'total_files' => count($files),
                 ]);
             }

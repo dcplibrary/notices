@@ -121,6 +121,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shoutbomb Submission (SQL export) Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure where the official SQL-generated submission/export files live on
+    | the Shoutbomb FTP server, and which filename patterns to use when
+    | discovering them. These values are used by the
+    | `notices:import-shoutbomb-submissions` command.
+    |
+    */
+
+'shoutbomb_submissions' => [
+        // Root directory on the FTP server where submission/export files live.
+        // In the current environment, `notices:list-shoutbomb-files` lists
+        // everything from `/`, so we default to '/'.
+        'root' => '/',
+
+        // File name patterns for the various submission/export types. These
+        // defaults match the real filenames on the FTP server.
+        'patterns' => [
+            'voice_patrons' => 'voice_patrons_submitted_*.txt',
+            'text_patrons'  => 'text_patrons_submitted_*.txt',
+            'holds'         => 'holds_submitted_*.txt',
+            'overdue'       => 'overdue_submitted_*.txt',
+            'renew'         => 'renew_submitted_*.txt',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Email Report Settings
     |--------------------------------------------------------------------------
     |
