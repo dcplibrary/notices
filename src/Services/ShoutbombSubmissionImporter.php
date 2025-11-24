@@ -100,8 +100,10 @@ class ShoutbombSubmissionImporter
 
         // We need a connection only long enough to list files here; each
         // per-date import will manage its own FTP lifecycle.
+        $ftpConfig = config('notices.shoutbomb.ftp');
         if (! $this->ftpService->connect()) {
             Log::error('Shoutbomb submission import-all: failed to connect to FTP', [
+                'host' => $ftpConfig['host'] ?? 'not set',
                 'root' => $directory,
             ]);
 
@@ -114,6 +116,11 @@ class ShoutbombSubmissionImporter
                     'voice_patrons' => 0,
                     'text_patrons' => 0,
                     'errors' => 1,
+                ],
+                'debug' => [
+                    'ftp_connected' => false,
+                    'ftp_host' => $ftpConfig['host'] ?? 'not set',
+                    'error' => 'Failed to connect to FTP server',
                 ],
             ];
         }
@@ -142,7 +149,10 @@ class ShoutbombSubmissionImporter
         }
 
         if (empty($dates)) {
-            Log::warning('Shoutbomb submission import-all: no matching files found on FTP');
+            Log::warning('Shoutbomb submission import-all: no matching files found on FTP', [
+                'total_files_on_ftp' => count($files),
+                'sample_files' => array_slice(array_map('basename', $files), 0, 10),
+            ]);
             return [
                 'dates' => [],
                 'totals' => [
@@ -152,6 +162,11 @@ class ShoutbombSubmissionImporter
                     'voice_patrons' => 0,
                     'text_patrons' => 0,
                     'errors' => 0,
+                ],
+                'debug' => [
+                    'ftp_connected' => true,
+                    'files_found' => count($files),
+                    'sample_files' => array_slice(array_map('basename', $files), 0, 20),
                 ],
             ];
         }
