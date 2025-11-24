@@ -1,6 +1,6 @@
 <?php
 
-namespace Dcplibrary\Notices\Commands;
+namespace Dcplibrary\Notices\Console\Commands;
 
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
@@ -9,7 +9,7 @@ use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
-class DiagnoseDashboardData extends Command
+class DiagnoseDashboardDataCommand extends Command
 {
     protected $signature = 'notices:diagnose-dashboard {--days=30 : Number of days to analyze}';
 
