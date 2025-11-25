@@ -604,38 +604,72 @@ class DashboardController extends Controller
      */
     public function troubleshooting(Request $request): View
     {
-        $service = app(NoticeVerificationService::class);
+        try {
+            $service = app(NoticeVerificationService::class);
 
-        // Get date range
-        $days = $request->input('days', 7);
-        $startDate = now()->subDays($days);
-        $endDate = now();
+            // Get date range
+            $days = $request->input('days', 7);
+            $startDate = now()->subDays($days);
+            $endDate = now();
 
-        // Get troubleshooting summary
-        $summary = $service->getTroubleshootingSummary($startDate, $endDate);
+            // Get troubleshooting summary
+            try {
+                $summary = $service->getTroubleshootingSummary($startDate, $endDate);
+            } catch (\Exception $e) {
+                \Log::error('Error in getTroubleshootingSummary: ' . $e->getMessage());
+                throw new \Exception('Failed to get troubleshooting summary: ' . $e->getMessage());
+            }
 
-        // Get failures grouped by reason
-        $failuresByReason = $service->getFailuresByReason($startDate, $endDate);
+            // Get failures grouped by reason
+            try {
+                $failuresByReason = $service->getFailuresByReason($startDate, $endDate);
+            } catch (\Exception $e) {
+                \Log::error('Error in getFailuresByReason: ' . $e->getMessage());
+                $failuresByReason = [];
+            }
 
-        // Get failures grouped by type
-        $failuresByType = $service->getFailuresByType($startDate, $endDate);
+            // Get failures grouped by type
+            try {
+                $failuresByType = $service->getFailuresByType($startDate, $endDate);
+            } catch (\Exception $e) {
+                \Log::error('Error in getFailuresByType: ' . $e->getMessage());
+                $failuresByType = [];
+            }
 
-        // Get mismatches
-        $mismatches = $service->getMismatches($startDate, $endDate);
+            // Get mismatches
+            try {
+                $mismatches = $service->getMismatches($startDate, $endDate);
+            } catch (\Exception $e) {
+                \Log::error('Error in getMismatches: ' . $e->getMessage());
+                $mismatches = [
+                    'submitted_not_verified' => [],
+                    'pending_verification' => [],
+                    'actually_failed' => [],
+                ];
+            }
 
-        // Get recent failures (limit to 20 for display)
-        $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
+            // Get recent failures (limit to 20 for display)
+            try {
+                $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
+            } catch (\Exception $e) {
+                \Log::error('Error in getFailedNotices: ' . $e->getMessage());
+                $recentFailures = collect([]);
+            }
 
-        return view('notices::dashboard.troubleshooting', compact(
-            'days',
-            'startDate',
-            'endDate',
-            'summary',
-            'failuresByReason',
-            'failuresByType',
-            'mismatches',
-            'recentFailures'
-        ));
+            return view('notices::dashboard.troubleshooting', compact(
+                'days',
+                'startDate',
+                'endDate',
+                'summary',
+                'failuresByReason',
+                'failuresByType',
+                'mismatches',
+                'recentFailures'
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Troubleshooting page error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            abort(500, 'Error loading troubleshooting dashboard: ' . $e->getMessage());
+        }
     }
 
     /**
