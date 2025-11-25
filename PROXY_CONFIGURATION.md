@@ -91,3 +91,119 @@ location ~ ^/notices/sync/ftp-files/stream {
     gzip off;
 }
 ```
+
+## Troubleshooting OAuth/SSO Redirect Issues
+
+### Problem: Login redirects to `https://domain:80`
+
+If the dashboard loads correctly but clicking "Login" redirects to `https://notices.dcplibrary.org:80/entra/dashboard`, follow these steps:
+
+#### 1. Clear Laravel Configuration Cache
+
+The cached configuration may still have the old APP_URL value:
+
+```bash
+# Navigate to your main Laravel application directory
+cd /path/to/main/laravel/app
+
+# Clear all caches
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
+# Restart PHP-FPM/web server
+sudo systemctl restart php8.3-fpm  # Adjust PHP version as needed
+```
+
+#### 2. Verify APP_URL Configuration
+
+Check your `.env` file:
+
+```bash
+# Should NOT have :80 in the URL
+APP_URL=https://notices.dcplibrary.org
+ASSET_URL=https://notices.dcplibrary.org
+```
+
+After confirming, regenerate config cache:
+
+```bash
+php artisan config:cache
+```
+
+#### 3. Check Microsoft Entra App Registration
+
+The redirect URI in Microsoft Entra may have `:80` hardcoded:
+
+1. Log in to [Azure Portal](https://portal.azure.com)
+2. Navigate to **Microsoft Entra ID** → **App registrations**
+3. Find your application
+4. Go to **Authentication** → **Redirect URIs**
+5. Ensure all redirect URIs are:
+   - `https://notices.dcplibrary.org/entra/callback` (NO :80)
+   - Remove any URIs with `:80` in them
+6. Save changes
+
+#### 4. Check Entra SSO Package Configuration
+
+If using `dcplibrary/entra-sso`, check its config file:
+
+```bash
+# Check if config is published
+ls -la config/entra.php
+
+# If exists, check for hardcoded URLs
+grep -r "80" config/entra.php
+
+# Clear and recache if changes made
+php artisan config:clear
+php artisan config:cache
+```
+
+#### 5. Test in Incognito/Private Mode
+
+Browser cache can hold the old OAuth redirect:
+
+1. Open incognito/private browsing window
+2. Navigate to `https://notices.dcplibrary.org`
+3. Try logging in
+4. If it works, clear browser cache in normal mode
+
+#### 6. Check nginx-proxy Configuration
+
+Verify the nginx-proxy is correctly forwarding headers:
+
+```bash
+# Check nginx-proxy logs
+docker logs nginx-proxy
+
+# Look for X-Forwarded-Proto headers in requests
+```
+
+The nginx-proxy should be setting:
+- `X-Forwarded-Proto: https`
+- `X-Forwarded-Port: 443`
+- `X-Forwarded-Host: notices.dcplibrary.org`
+
+#### 7. Verify Trust Proxies Configuration
+
+Double-check `bootstrap/app.php` has the correct configuration (as shown above) and that PHP-FPM was restarted after adding it.
+
+#### 8. Check for Hardcoded URLs
+
+Search for any hardcoded URLs with `:80`:
+
+```bash
+# In main Laravel app directory
+grep -r "notices.dcplibrary.org:80" .
+grep -r ":80" config/
+```
+
+### Common Causes
+
+1. **Cached configuration**: Laravel cached old APP_URL before it was changed
+2. **Entra redirect URI mismatch**: Azure portal has wrong redirect URI
+3. **Browser cache**: Old OAuth redirect cached by browser
+4. **PHP-FPM not restarted**: Changes to bootstrap/app.php require restart
+5. **nginx-proxy headers**: Proxy not sending correct X-Forwarded-Proto header
