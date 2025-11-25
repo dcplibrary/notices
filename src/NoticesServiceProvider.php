@@ -133,7 +133,7 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\ListShoutbombFiles::class,
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,
-            Commands\\DiagnoseDashboardData::class,
+            Commands\DiagnoseDashboardData::class,
             SyncNotificationsFromLogs::class,
         ]);
 
