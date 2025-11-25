@@ -246,28 +246,138 @@ class NoticesServiceProvider extends ServiceProvider
 
     /**
      * Register scheduled tasks.
+     *
+     * Schedule is based on Polaris/Shoutbomb export times documented in:
+     * - docs/shoutbomb/shoutbomb_process_explanation.md
+     * - docs/shoutbomb/POLARIS_PHONE_NOTICES.md
      */
     protected function registerScheduledTasks(): void
     {
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             $settings = $this->app->make(SettingsManager::class);
 
-            // Import all notification data daily using the unified import command
-            // This includes: patron lists, phone notices, notification exports,
-            // enrichment, and aggregation - all in one step
-            if ($settings->get('scheduler.import_enabled', true)) {
+            // ═══════════════════════════════════════════════════════════════
+            // MORNING IMPORTS (Data exported overnight and early morning)
+            // ═══════════════════════════════════════════════════════════════
+
+            // 5:30 AM - Import patron lists (voice_patrons.txt, text_patrons.txt)
+            // → Exported at 4:00 AM (voice) and 5:00 AM (text)
+            // → 30 min buffer for FTP upload
+            if ($settings->get('scheduler.import_patron_lists_enabled', true)) {
+                $schedule->command('notices:import-ftp-files --from=today --to=today')
+                    ->dailyAt('05:30')
+                    ->withoutOverlapping()
+                    ->description('Import patron delivery preference lists (voice + text)');
+            }
+
+            // 6:30 AM - Import Shoutbomb invalid phone reports
+            // → Shoutbomb sends Daily Invalid Phone Report at ~6:01 AM
+            // → 30 min buffer for email delivery
+            if ($settings->get('scheduler.import_invalid_reports_enabled', true)) {
+                $schedule->command('notices:import-email-reports --type=invalid --mark-read')
+                    ->dailyAt('06:30')
+                    ->withoutOverlapping()
+                    ->description('Import opt-out and invalid phone number reports');
+            }
+
+            // 8:30 AM - Import morning notification exports + Polaris PhoneNotices
+            // → Polaris exports: 8:00 AM (holds #1), 8:03 AM (renewals), 8:04 AM (overdues)
+            // → Polaris PhoneNotices.csv: 8:04-8:05 AM
+            // → 25-30 min buffer for export completion and FTP upload
+            if ($settings->get('scheduler.import_morning_notifications_enabled', true)) {
+                $schedule->command('notices:import-polaris --days=1')
+                    ->dailyAt('08:30')
+                    ->withoutOverlapping()
+                    ->description('Import morning holds, renewals, overdues, and Polaris PhoneNotices');
+            }
+
+            // 9:30 AM - Import second hold export
+            // → Hold Notifications Export #2 at 9:00 AM
+            // → Captures holds processed overnight
+            // → 30 min buffer
+            if ($settings->get('scheduler.import_morning_holds_enabled', true)) {
+                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                    ->dailyAt('09:30')
+                    ->withoutOverlapping()
+                    ->description('Import second morning hold notifications');
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // AFTERNOON IMPORTS (Midday and evening hold updates)
+            // ═══════════════════════════════════════════════════════════════
+
+            // 1:30 PM - Import afternoon hold export #3
+            // → Hold Notifications Export #3 at 1:00 PM
+            // → 30 min buffer
+            if ($settings->get('scheduler.import_afternoon_holds_enabled', true)) {
+                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                    ->dailyAt('13:30')
+                    ->withoutOverlapping()
+                    ->description('Import afternoon hold notifications');
+            }
+
+            // 4:30 PM - Import Shoutbomb voice failure reports
+            // → Shoutbomb sends Daily Voice Failure Report at ~4:10 PM
+            // → 20 min buffer for email delivery
+            if ($settings->get('scheduler.import_voice_failures_enabled', true)) {
+                $schedule->command('notices:import-email-reports --type=voice-failures --mark-read')
+                    ->dailyAt('16:30')
+                    ->withoutOverlapping()
+                    ->description('Import voice call failure reports');
+            }
+
+            // 5:30 PM - Import evening hold export #4
+            // → Hold Notifications Export #4 at 5:00 PM
+            // → Final hold export of the day
+            // → 30 min buffer
+            if ($settings->get('scheduler.import_evening_holds_enabled', true)) {
+                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                    ->dailyAt('17:30')
+                    ->withoutOverlapping()
+                    ->description('Import evening hold notifications');
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // END OF DAY PROCESSING (Aggregation and reporting)
+            // ═══════════════════════════════════════════════════════════════
+
+            // 10:00 PM - Daily aggregation of all notification data
+            // → Runs after all imports are complete
+            // → Aggregates data for dashboard and reporting
+            if ($settings->get('scheduler.aggregation_enabled', true)) {
+                $schedule->command('notices:aggregate --yesterday')
+                    ->dailyAt('22:00')
+                    ->withoutOverlapping()
+                    ->description('Aggregate yesterday\'s notification data for reporting');
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // MONTHLY TASKS
+            // ═══════════════════════════════════════════════════════════════
+
+            // 2nd of each month at 2:00 PM - Import monthly statistics report
+            // → Shoutbomb sends Monthly Statistics Report on 1st of month at ~1:14 PM
+            // → Import next day to ensure email has arrived
+            if ($settings->get('scheduler.import_monthly_stats_enabled', true)) {
+                $schedule->command('notices:import-email-reports --type=monthly-stats --mark-read')
+                    ->monthlyOn(2, '14:00')
+                    ->withoutOverlapping()
+                    ->description('Import Shoutbomb monthly statistics report');
+            }
+
+            // ═══════════════════════════════════════════════════════════════
+            // LEGACY/FALLBACK TASKS (for backward compatibility)
+            // ═══════════════════════════════════════════════════════════════
+
+            // Unified import command (if granular scheduling is disabled)
+            // → Imports all data types in one command
+            // → Useful for simplified setups or testing
+            if ($settings->get('scheduler.import_enabled', false)) {
                 $time = $settings->get('scheduler.import_time', '09:00');
                 $schedule->command('notices:import --days=1')
                     ->dailyAt($time)
-                    ->withoutOverlapping();
-            }
-
-            // Import email reports daily at 9:30 AM
-            if ($settings->get('scheduler.import_email_enabled', true)) {
-                $time = $settings->get('scheduler.import_email_time', '09:30');
-                $schedule->command('notices:import-email-reports --mark-read')
-                    ->dailyAt($time)
-                    ->withoutOverlapping();
+                    ->withoutOverlapping()
+                    ->description('Unified import (legacy - use granular schedule instead)');
             }
         });
     }
