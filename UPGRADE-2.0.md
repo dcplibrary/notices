@@ -230,3 +230,4 @@ If you encounter issues during upgrade, check:
 - That your scheduler (cron/Docker) points to the new commands
 
 > Note: v2.0.0 is the first release to introduce the master `notifications` + `notification_events` tables.
+> This upgrade guide applies to all 2.x versions.
