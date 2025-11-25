@@ -225,143 +225,153 @@
         </div>
     </div>
 
-    <!-- Item Counts -->
-    <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Item Summary
-            </h2>
-        </div>
-        <div class="px-6 py-4">
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                @if($notification->holds_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600">{{ $notification->holds_count }}</div>
-                    <div class="text-xs text-gray-500">Holds</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-orange-600">{{ $notification->overdues_count }}</div>
-                    <div class="text-xs text-gray-500">1st Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_2nd_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-600">{{ $notification->overdues_2nd_count }}</div>
-                    <div class="text-xs text-gray-500">2nd Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_3rd_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-800">{{ $notification->overdues_3rd_count }}</div>
-                    <div class="text-xs text-gray-500">3rd Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->cancels_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-600">{{ $notification->cancels_count }}</div>
-                    <div class="text-xs text-gray-500">Cancels</div>
-                </div>
-                @endif
-
-                @if($notification->bills_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-purple-600">{{ $notification->bills_count }}</div>
-                    <div class="text-xs text-gray-500">Bills</div>
-                </div>
-                @endif
-            </div>
-
-            @if($notification->total_items == 0)
-                <p class="text-sm text-gray-500 text-center py-4">No items recorded for this notification</p>
-            @else
-                <div class="mt-4 text-center">
-                    <span class="text-sm font-medium text-gray-700">Total Items: {{ $notification->total_items }}</span>
-                </div>
-            @endif
-        </div>
-    </div>
-
     <!-- Items Associated with this Notification -->
     @php
+        $phoneNotices = $notification->polaris_phone_notices;
         $items = $notification->items;
     @endphp
-    @if($items->count() > 0)
+    @if($phoneNotices->count() > 0 || $items->count() > 0)
     <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
-                Items ({{ $items->count() }})
+                Items ({{ max($phoneNotices->count(), $items->count()) }})
             </h2>
         </div>
         <div class="px-6 py-4">
             <div class="space-y-4">
-                @foreach($items as $index => $item)
-                <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
-                    @if(isset($item->bibliographic) && isset($item->bibliographic->Title))
-                        <div class="font-medium text-gray-900">
-                            {{ $item->bibliographic->Title }}
-                        </div>
-                        @if(isset($item->bibliographic->Author) && $item->bibliographic->Author)
-                        <div class="text-sm text-gray-600 mt-1">by {{ $item->bibliographic->Author }}</div>
-                        @endif
-                    @elseif(isset($item->title))
-                        <div class="font-medium text-gray-900">
-                            {{ $item->title }}
-                        </div>
-                    @else
-                        <div class="font-medium text-gray-500 italic">
-                            Unknown Title
-                        </div>
-                    @endif
-
-                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        @if(isset($item->Barcode) || isset($item->item_barcode))
-                        <div>
-                            <span class="text-gray-500">Item Barcode:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->Barcode ?? $item->item_barcode }}</span>
-                        </div>
+                @if($phoneNotices->count() > 0)
+                    @foreach($phoneNotices as $index => $notice)
+                    <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
+                        @if($notice->title)
+                            <div class="font-medium text-lg">
+                                @if($notice->item_record_id)
+                                    <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $notice->item_record_id }}"
+                                       target="_blank"
+                                       class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ $notice->title }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-900">{{ $notice->title }}</span>
+                                @endif
+                            </div>
+                        @else
+                            <div class="font-medium text-lg text-gray-500 italic">
+                                Unknown Title
+                            </div>
                         @endif
 
-                        @if(isset($item->CallNumber) && $item->CallNumber)
-                        <div>
-                            <span class="text-gray-500">Call Number:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->CallNumber }}</span>
-                        </div>
-                        @endif
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            @if($notice->item_barcode)
+                            <div>
+                                <span class="text-gray-500">Item Barcode:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $notice->item_barcode }}</span>
+                            </div>
+                            @endif
 
-                        @if(isset($item->ItemRecordID) && $item->ItemRecordID)
-                        <div>
-                            <span class="text-gray-500">Item ID:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->ItemRecordID }}</span>
+                            @if($notice->library_name)
+                            <div>
+                                <span class="text-gray-500">Library:</span>
+                                <span class="text-gray-900 ml-1">{{ $notice->library_name }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->notice_date)
+                            <div>
+                                <span class="text-gray-500">Notice Date:</span>
+                                <span class="text-gray-900 ml-1">{{ $notice->notice_date->format('M d, Y') }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->item_record_id)
+                            <div>
+                                <span class="text-gray-500">Item ID:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $notice->item_record_id }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->delivery_type)
+                            <div>
+                                <span class="text-gray-500">Delivery Type:</span>
+                                <span class="text-gray-900 ml-1">{{ ucfirst($notice->delivery_type) }}</span>
+                            </div>
+                            @endif
+                        </div>
+
+                        @if($notice->item_record_id)
+                        <div class="mt-2">
+                            <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $notice->item_record_id }}"
+                               target="_blank"
+                               class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
+                                View in Polaris
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
                         </div>
                         @endif
                     </div>
+                    @endforeach
+                @elseif($items->count() > 0)
+                    @foreach($items as $index => $item)
+                    <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
+                        @if(isset($item->bibliographic) && isset($item->bibliographic->Title))
+                            <div class="font-medium text-lg text-gray-900">
+                                {{ $item->bibliographic->Title }}
+                            </div>
+                            @if(isset($item->bibliographic->Author) && $item->bibliographic->Author)
+                            <div class="text-sm text-gray-600 mt-1">by {{ $item->bibliographic->Author }}</div>
+                            @endif
+                        @elseif(isset($item->title))
+                            <div class="font-medium text-lg text-gray-900">
+                                {{ $item->title }}
+                            </div>
+                        @else
+                            <div class="font-medium text-lg text-gray-500 italic">
+                                Unknown Title
+                            </div>
+                        @endif
 
-                    @if(isset($item->staff_link) && $item->staff_link)
-                    <div class="mt-2">
-                        <a href="{{ $item->staff_link }}"
-                           target="_blank"
-                           class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
-                            View in Polaris
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                            </svg>
-                        </a>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            @if(isset($item->Barcode) || isset($item->item_barcode))
+                            <div>
+                                <span class="text-gray-500">Item Barcode:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->Barcode ?? $item->item_barcode }}</span>
+                            </div>
+                            @endif
+
+                            @if(isset($item->CallNumber) && $item->CallNumber)
+                            <div>
+                                <span class="text-gray-500">Call Number:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->CallNumber }}</span>
+                            </div>
+                            @endif
+
+                            @if(isset($item->ItemRecordID) && $item->ItemRecordID)
+                            <div>
+                                <span class="text-gray-500">Item ID:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->ItemRecordID }}</span>
+                            </div>
+                            @endif
+                        </div>
+
+                        @if(isset($item->staff_link) && $item->staff_link)
+                        <div class="mt-2">
+                            <a href="{{ $item->staff_link }}"
+                               target="_blank"
+                               class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
+                                View in Polaris
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
+                        </div>
+                        @endif
                     </div>
-                    @endif
-                </div>
-                @endforeach
+                    @endforeach
+                @endif
             </div>
         </div>
     </div>
