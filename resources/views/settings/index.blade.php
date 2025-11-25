@@ -80,7 +80,7 @@
                             ->first();
                     @endphp
 
-                    <div class="mt-3 flex items-center gap-3">
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                             {{ $enabled ? 'Enabled' : 'Disabled' }}
                         </span>
@@ -92,17 +92,21 @@
                                 <input type="checkbox" name="enabled" value="1" class="sr-only peer" {{ $enabled ? 'checked' : '' }} onchange="this.form.submit()">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:bg-indigo-600 transition"></div>
                                 <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5"></div>
-                                <span class="ml-3 text-sm text-gray-700">Toggle</span>
+                                <span class="ml-3 text-xs text-gray-700">Toggle</span>
                             </label>
                         </form>
 
-                        @if($sbSetting)
-                            <span class="text-xs text-gray-500">DB override active for this integration.</span>
-                        @else
-                            <span class="text-xs text-gray-500">No DB override set. Using .env/config.</span>
-                        @endif
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 w-full sm:w-auto">
+                            @if($sbSetting)
+                                <span class="text-xs text-gray-500">DB override active for this integration.</span>
+                            @else
+                                <span class="text-xs text-gray-500">No DB override set. Using .env/config.</span>
+                            @endif
 
-                        <button type="button" onclick="document.getElementById('sb-install-modal').classList.remove('hidden')" class="text-sm text-gray-700 hover:text-gray-900 underline">How to install</button>
+                            <button type="button" onclick="document.getElementById('sb-install-modal').classList.remove('hidden')" class="text-xs text-gray-700 hover:text-gray-900 underline text-left">
+                                How to install
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -165,7 +169,7 @@
             </div>
         </div>
 
-        <!-- Sync & Import (Data Management) Card with Normalize Phones actions -->
+        <!-- Sync & Import (Data Management) Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="p-6">
                 <div class="flex items-center">
@@ -187,28 +191,11 @@
                 </div>
                 <div class="mt-4">
                     <p class="text-sm text-gray-600">
-                        Import data from Polaris and Shoutbomb, test connections, and manage data tools.
+                        Import data from Polaris and Shoutbomb and monitor sync status.
                     </p>
                 </div>
                 <div class="mt-4 flex items-center gap-3">
                     <a href="{{ route('notices.settings.sync') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Open Sync & Import</a>
-                </div>
-                <div class="mt-6 border-t pt-4">
-                    <h4 class="text-sm font-medium text-gray-700">Data Tools: Normalize Phones</h4>
-                    <p class="mt-1 text-sm text-gray-600">Normalize phone numbers across logs and related tables (digits-only, last 10). Safe to run multiple times.</p>
-                    <div class="mt-3 flex items-center gap-3">
-                        <form method="POST" action="{{ route('notices.settings.tools.normalize-phones') }}" onsubmit="return confirm('Run phone normalization now?');">
-                            @csrf
-                            <input type="hidden" name="fast_sql" value="1">
-                            <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Run</button>
-                        </form>
-                        <form method="POST" action="{{ route('notices.settings.tools.normalize-phones') }}" onsubmit="return confirm('Perform a DRY RUN? No data will be changed.');">
-                            @csrf
-                            <input type="hidden" name="fast_sql" value="1">
-                            <input type="hidden" name="dry_run" value="1">
-                            <button type="submit" class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">Dry run</button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>

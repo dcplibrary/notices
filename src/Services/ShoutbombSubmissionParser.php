@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Dcplibrary\Notices\Services\NotificationImportService;
 
 class ShoutbombSubmissionParser
 {
@@ -176,6 +177,11 @@ class ShoutbombSubmissionParser
      * Parse patron list files (voice/text).
      * Based on voice_patrons.sql:
      * PhoneVoice1|Barcode (phone first, then barcode)
+     *
+     * Returns an array keyed by patron barcode where each value is a
+     * normalized 10-digit phone number. Any rows that cannot be
+     * normalized to 10 digits (even after stripping punctuation and a
+     * leading 1) are skipped.
      */
     public function parsePatronList(string $filePath): array
     {
@@ -186,7 +192,17 @@ class ShoutbombSubmissionParser
             $parts = explode('|', $line);
             if (count($parts) >= 2) {
                 $phone = $this->formatPhoneNumber($parts[0]);
+                if ($phone === null) {
+                    // Skip entries that cannot be normalized to a valid
+                    // 10-digit phone number.
+                    continue;
+                }
+
                 $barcode = trim($parts[1]);
+                if ($barcode === '') {
+                    continue;
+                }
+
                 $patrons[$barcode] = $phone;
             }
         }
@@ -358,15 +374,16 @@ class ShoutbombSubmissionParser
     }
 
     /**
-     * Format phone number consistently.
+     * Format phone number consistently using the shared normalizer.
+     *
+     * This ensures all ingested phone numbers converge on the same
+     * 10-digit canonical form used throughout the package.
+     *
+     * @return string|null Normalized 10-digit phone, or null if invalid.
      */
-    protected function formatPhoneNumber(string $phone): string
+    protected function formatPhoneNumber(string $phone): ?string
     {
-        // Remove all non-digits
-        $phone = preg_replace('/\D/', '', $phone);
-
-        // Return as-is (you can add more formatting if needed)
-        return $phone;
+        return NotificationImportService::normalizePhone($phone);
     }
 
     /**

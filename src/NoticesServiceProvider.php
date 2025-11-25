@@ -22,10 +22,13 @@ use Dcplibrary\Notices\Services\ShoutbombFTPService;
 use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
 use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
 use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
+use Dcplibrary\Notices\Services\ShoutbombSubmissionParser;
+use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class NoticesServiceProvider extends ServiceProvider
 {
@@ -82,14 +85,12 @@ class NoticesServiceProvider extends ServiceProvider
             return new ShoutbombFailureReportParser($parsingConfig);
         });
 
+        // PatronDeliveryPreferenceImporter needs the ShoutbombSubmissionParser and
+        // ShoutbombFTPService; let the container resolve those dependencies.
         $this->app->singleton(PatronDeliveryPreferenceImporter::class, function ($app) {
             return new PatronDeliveryPreferenceImporter(
-                config('notices.shoutbomb.ftp.host'),
-                config('notices.shoutbomb.ftp.port'),
-                config('notices.shoutbomb.ftp.username'),
-                config('notices.shoutbomb.ftp.password'),
-                config('notices.shoutbomb.ftp.patron_path', '/outgoing'),
-                config('notices.shoutbomb.ftp.passive', true)
+                $app->make(ShoutbombSubmissionParser::class),
+                $app->make(ShoutbombFTPService::class)
             );
         });
     }
@@ -177,6 +178,11 @@ class NoticesServiceProvider extends ServiceProvider
 
         // Register scheduled tasks
         $this->registerScheduledTasks();
+
+        // Register Livewire components used by the dashboard
+        if (class_exists(\Livewire\Livewire::class)) {
+            Livewire::component('sync-and-import', \Dcplibrary\Notices\Http\Livewire\SyncAndImport::class);
+        }
 
         // Auto-seed reference data when running plain `db:seed` (no --class) to include lookup tables
         if ($this->app->runningInConsole() && $this->shouldAutoSeedReference()) {

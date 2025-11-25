@@ -315,6 +315,9 @@ class SettingsController extends Controller
 
     /**
      * Display sync/import management page.
+     *
+     * Uses the Livewire-based Sync & Import UI while still providing
+     * recent sync history and last-run summaries.
      */
     public function sync()
     {
@@ -333,7 +336,7 @@ class SettingsController extends Controller
         $integrationEnabled = (bool) ($this->settingsManager->get('integrations.shoutbomb_reports.enabled')
             ?? config('notices.integrations.shoutbomb_reports.enabled', false));
 
-        return view('notices::settings.sync', compact(
+        return view('notices::settings.sync-livewire', compact(
             'lastSyncAll',
             'lastPolaris',
             'lastFTPFiles',

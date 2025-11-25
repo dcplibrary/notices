@@ -16,6 +16,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     @stack('styles')
+
+    {{-- Livewire styles (for components like Sync & Import) --}}
+    @livewireStyles
 </head>
 <body class="bg-gray-100">
     <!-- Navigation -->
@@ -113,6 +116,9 @@
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         @yield('content')
     </main>
+
+    {{-- Livewire scripts (for components like Sync & Import) --}}
+    @livewireScripts
 
     @stack('scripts')
 </body>

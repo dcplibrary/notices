@@ -17,25 +17,25 @@ return new class extends Migration
             Schema::table('patron_delivery_preferences', function (Blueprint $table) {
                 // Only add indexes if columns exist
                 if ($this->hasColumn('patron_delivery_preferences', 'patron_barcode')) {
-                    $this->addIndexIfNotExists('patron_delivery_preferences', 'patron_barcode', 'idx_pdp_patron_barcode');
+                    $this->addIndexIfNotExists($table, 'patron_barcode', 'idx_pdp_patron_barcode');
                 }
                 
                 // Check for different possible column names for delivery method
                 if ($this->hasColumn('patron_delivery_preferences', 'current_delivery_method')) {
-                    $this->addIndexIfNotExists('patron_delivery_preferences', 'current_delivery_method', 'idx_pdp_current_delivery');
+                    $this->addIndexIfNotExists($table, 'current_delivery_method', 'idx_pdp_current_delivery');
                 } elseif ($this->hasColumn('patron_delivery_preferences', 'delivery_method')) {
-                    $this->addIndexIfNotExists('patron_delivery_preferences', 'delivery_method', 'idx_pdp_delivery_method');
+                    $this->addIndexIfNotExists($table, 'delivery_method', 'idx_pdp_delivery_method');
                 }
                 
                 if ($this->hasColumn('patron_delivery_preferences', 'last_seen_at')) {
-                    $this->addIndexIfNotExists('patron_delivery_preferences', 'last_seen_at', 'idx_pdp_last_seen');
+                    $this->addIndexIfNotExists($table, 'last_seen_at', 'idx_pdp_last_seen');
                 }
                 
                 // Composite index (only if both columns exist)
                 if ($this->hasColumn('patron_delivery_preferences', 'patron_barcode') && 
                     $this->hasColumn('patron_delivery_preferences', 'delivery_method')) {
                     $this->addCompositeIndexIfNotExists(
-                        'patron_delivery_preferences', 
+                        $table,
                         ['patron_barcode', 'delivery_method'], 
                         'idx_pdp_patron_delivery'
                     );
@@ -47,26 +47,26 @@ return new class extends Migration
         if (Schema::hasTable('shoutbomb_submissions')) {
             Schema::table('shoutbomb_submissions', function (Blueprint $table) {
                 if ($this->hasColumn('shoutbomb_submissions', 'patron_barcode')) {
-                    $this->addIndexIfNotExists('shoutbomb_submissions', 'patron_barcode', 'idx_sub_patron_barcode');
+                    $this->addIndexIfNotExists($table, 'patron_barcode', 'idx_sub_patron_barcode');
                 }
                 
                 if ($this->hasColumn('shoutbomb_submissions', 'submitted_at')) {
-                    $this->addIndexIfNotExists('shoutbomb_submissions', 'submitted_at', 'idx_sub_submitted_at');
+                    $this->addIndexIfNotExists($table, 'submitted_at', 'idx_sub_submitted_at');
                 }
                 
                 if ($this->hasColumn('shoutbomb_submissions', 'notification_type')) {
-                    $this->addIndexIfNotExists('shoutbomb_submissions', 'notification_type', 'idx_sub_notification_type');
+                    $this->addIndexIfNotExists($table, 'notification_type', 'idx_sub_notification_type');
                 }
                 
                 if ($this->hasColumn('shoutbomb_submissions', 'delivery_type')) {
-                    $this->addIndexIfNotExists('shoutbomb_submissions', 'delivery_type', 'idx_sub_delivery_type');
+                    $this->addIndexIfNotExists($table, 'delivery_type', 'idx_sub_delivery_type');
                 }
                 
                 // Composite indexes
                 if ($this->hasColumn('shoutbomb_submissions', 'patron_barcode') && 
                     $this->hasColumn('shoutbomb_submissions', 'submitted_at')) {
                     $this->addCompositeIndexIfNotExists(
-                        'shoutbomb_submissions', 
+                        $table,
                         ['patron_barcode', 'submitted_at'], 
                         'idx_sub_patron_submitted'
                     );
@@ -75,7 +75,7 @@ return new class extends Migration
                 if ($this->hasColumn('shoutbomb_submissions', 'notification_type') && 
                     $this->hasColumn('shoutbomb_submissions', 'submitted_at')) {
                     $this->addCompositeIndexIfNotExists(
-                        'shoutbomb_submissions', 
+                        $table,
                         ['notification_type', 'submitted_at'], 
                         'idx_sub_type_submitted'
                     );
@@ -87,26 +87,26 @@ return new class extends Migration
         if (Schema::hasTable('polaris_phone_notices')) {
             Schema::table('polaris_phone_notices', function (Blueprint $table) {
                 if ($this->hasColumn('polaris_phone_notices', 'patron_barcode')) {
-                    $this->addIndexIfNotExists('polaris_phone_notices', 'patron_barcode', 'idx_ppn_patron_barcode');
+                    $this->addIndexIfNotExists($table, 'patron_barcode', 'idx_ppn_patron_barcode');
                 }
                 
                 if ($this->hasColumn('polaris_phone_notices', 'notice_date')) {
-                    $this->addIndexIfNotExists('polaris_phone_notices', 'notice_date', 'idx_ppn_notice_date');
+                    $this->addIndexIfNotExists($table, 'notice_date', 'idx_ppn_notice_date');
                 }
                 
                 if ($this->hasColumn('polaris_phone_notices', 'delivery_type')) {
-                    $this->addIndexIfNotExists('polaris_phone_notices', 'delivery_type', 'idx_ppn_delivery_type');
+                    $this->addIndexIfNotExists($table, 'delivery_type', 'idx_ppn_delivery_type');
                 }
                 
                 if ($this->hasColumn('polaris_phone_notices', 'library_code')) {
-                    $this->addIndexIfNotExists('polaris_phone_notices', 'library_code', 'idx_ppn_library_code');
+                    $this->addIndexIfNotExists($table, 'library_code', 'idx_ppn_library_code');
                 }
                 
                 // Composite indexes
                 if ($this->hasColumn('polaris_phone_notices', 'patron_barcode') && 
                     $this->hasColumn('polaris_phone_notices', 'notice_date')) {
                     $this->addCompositeIndexIfNotExists(
-                        'polaris_phone_notices', 
+                        $table,
                         ['patron_barcode', 'notice_date'], 
                         'idx_ppn_patron_date'
                     );
@@ -172,37 +172,70 @@ return new class extends Migration
     private function indexExists(string $table, string $indexName): bool
     {
         $connection = Schema::getConnection();
-        $database = $connection->getDatabaseName();
-        
-        $result = DB::select("
-            SELECT COUNT(*) as count
-            FROM information_schema.statistics 
-            WHERE table_schema = ? 
-            AND table_name = ? 
-            AND index_name = ?
-        ", [$database, $table, $indexName]);
-        
-        return $result[0]->count > 0;
+        $driver = $connection->getDriverName();
+
+        // SQLite: use PRAGMA index_list and avoid information_schema
+        if ($driver === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list('{$table}')");
+
+            foreach ($indexes as $index) {
+                if (isset($index->name) && $index->name === $indexName) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // MySQL / MariaDB: use information_schema.statistics
+        if (in_array($driver, ['mysql', 'mariadb'], true)) {
+            $database = $connection->getDatabaseName();
+
+            $result = DB::select(
+                "SELECT COUNT(*) as count
+                 FROM information_schema.statistics
+                 WHERE table_schema = ?
+                   AND table_name = ?
+                   AND index_name = ?",
+                [$database, $table, $indexName]
+            );
+
+            return isset($result[0]) && (int) $result[0]->count > 0;
+        }
+
+        // Fallback for other drivers: best-effort detection using Doctrine schema manager when available
+        try {
+            $schemaManager = $connection->getDoctrineSchemaManager();
+            $indexes = $schemaManager->listTableIndexes($table);
+
+            return array_key_exists($indexName, $indexes);
+        } catch (\Throwable $e) {
+            // If introspection isn't available, assume the index does not exist
+            return false;
+        }
     }
 
     /**
      * Add index if it doesn't exist
      */
-    private function addIndexIfNotExists(string $table, string $column, string $indexName): void
+    private function addIndexIfNotExists(Blueprint $table, string $column, string $indexName): void
     {
-        if (!$this->indexExists($table, $indexName)) {
-            DB::statement("ALTER TABLE `{$table}` ADD INDEX `{$indexName}` (`{$column}`)");
+        $tableName = $table->getTable();
+
+        if (!$this->indexExists($tableName, $indexName)) {
+            $table->index($column, $indexName);
         }
     }
 
     /**
      * Add composite index if it doesn't exist
      */
-    private function addCompositeIndexIfNotExists(string $table, array $columns, string $indexName): void
+    private function addCompositeIndexIfNotExists(Blueprint $table, array $columns, string $indexName): void
     {
-        if (!$this->indexExists($table, $indexName)) {
-            $columnList = implode('`, `', $columns);
-            DB::statement("ALTER TABLE `{$table}` ADD INDEX `{$indexName}` (`{$columnList}`)");
+        $tableName = $table->getTable();
+
+        if (!$this->indexExists($tableName, $indexName)) {
+            $table->index($columns, $indexName);
         }
     }
 };

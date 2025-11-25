@@ -72,13 +72,11 @@ class SyncAndImport extends Component
             $command[] = '--import-patrons';
         }
 
-        // Emit event to start streaming output
-        $this->emit('startImportStream', [
-            'command' => $command,
-        ]);
+        // Dispatch an event for the front-end listener to start streaming output
+        $this->dispatch('startImportStream', command: $command);
 
-        // Show toast notification
-        $this->dispatchBrowserEvent('show-toast', [
+        // Notify front-end to show a toast (Livewire v3 event)
+        $this->dispatch('show-toast', [
             'type' => 'info',
             'message' => 'Import started...',
         ]);
@@ -103,13 +101,16 @@ class SyncAndImport extends Component
 
         if (isset($data['completed'])) {
             $this->isImporting = false;
-            
-            $this->dispatchBrowserEvent('show-toast', [
+
+            $this->dispatch('show-toast', [
                 'type' => $data['success'] ? 'success' : 'error',
                 'message' => $data['message'],
                 'duration' => 5000,
             ]);
         }
+
+        // Notify front-end listeners (for auto-scroll, etc.) that progress changed
+        $this->dispatch('updateProgress');
     }
 
     /**
@@ -117,10 +118,10 @@ class SyncAndImport extends Component
      */
     public function cancelImport()
     {
-        $this->emit('cancelImport');
+        $this->dispatch('cancelImport');
         $this->isImporting = false;
-        
-        $this->dispatchBrowserEvent('show-toast', [
+
+        $this->dispatch('show-toast', [
             'type' => 'warning',
             'message' => 'Import cancelled',
         ]);
@@ -128,6 +129,7 @@ class SyncAndImport extends Component
 
     public function render()
     {
-        return view('livewire.sync-and-import');
+        // Use the package namespaced settings view for the Sync & Import UI
+        return view('notices::settings.sync-and-import');
     }
 }

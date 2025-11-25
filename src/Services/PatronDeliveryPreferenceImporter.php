@@ -281,6 +281,9 @@ class PatronDeliveryPreferenceImporter
         $timestamp = now();
         $total = count($patrons);
 
+        // Map delivery method to Polaris delivery_option_id (3=voice, 8=text)
+        $deliveryOptionId = PatronDeliveryPreference::getDeliveryOptionId($deliveryMethod);
+
         // Load all existing preferences in one query
         $existingPreferences = PatronDeliveryPreference::whereIn('patron_barcode', $barcodes)
             ->get()
@@ -303,12 +306,15 @@ class PatronDeliveryPreferenceImporter
                 // NEW patron
                 $toInsert[] = [
                     'patron_barcode' => $barcode,
-                    'phone_number' => $phone,
+                    'phone_voice1' => $phone,
                     'current_delivery_method' => $deliveryMethod,
+                    'current_delivery_option_id' => $deliveryOptionId,
                     'previous_delivery_method' => null,
+                    'previous_delivery_option_id' => null,
+                    'preference_changed_at' => null,
                     'first_seen_at' => $timestamp,
                     'last_seen_at' => $timestamp,
-                    'source_file' => $filename,
+                    'last_source_file' => $filename,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ];
@@ -318,15 +324,18 @@ class PatronDeliveryPreferenceImporter
                 $toUpdate[] = [
                     'id' => $existing->id,
                     'previous_delivery_method' => $existing->current_delivery_method,
+                    'previous_delivery_option_id' => $existing->current_delivery_option_id,
                     'current_delivery_method' => $deliveryMethod,
-                    'phone_number' => $phone,
+                    'current_delivery_option_id' => $deliveryOptionId,
+                    'phone_voice1' => $phone,
                     'last_seen_at' => $timestamp,
-                    'source_file' => $filename,
+                    'last_source_file' => $filename,
+                    'preference_changed_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ];
                 $changedCount++;
             } else {
-                // UNCHANGED
+                // UNCHANGED (only update timestamps and last_source_file below)
                 $unchangedIds[] = $existing->id;
                 $unchangedCount++;
             }
@@ -352,22 +361,25 @@ class PatronDeliveryPreferenceImporter
                 foreach ($toUpdate as $update) {
                     PatronDeliveryPreference::where('id', $update['id'])->update([
                         'previous_delivery_method' => $update['previous_delivery_method'],
+                        'previous_delivery_option_id' => $update['previous_delivery_option_id'],
                         'current_delivery_method' => $update['current_delivery_method'],
-                        'phone_number' => $update['phone_number'],
+                        'current_delivery_option_id' => $update['current_delivery_option_id'],
+                        'phone_voice1' => $update['phone_voice1'],
                         'last_seen_at' => $update['last_seen_at'],
-                        'source_file' => $update['source_file'],
+                        'last_source_file' => $update['last_source_file'],
+                        'preference_changed_at' => $update['preference_changed_at'],
                         'updated_at' => $update['updated_at'],
                     ]);
                 }
             });
         }
 
-        // Bulk update unchanged (just timestamps)
+        // Bulk update unchanged (just timestamps and last_source_file)
         if (!empty($unchangedIds)) {
             foreach (array_chunk($unchangedIds, 1000) as $chunk) {
                 PatronDeliveryPreference::whereIn('id', $chunk)->update([
                     'last_seen_at' => $timestamp,
-                    'source_file' => $filename,
+                    'last_source_file' => $filename,
                     'updated_at' => $timestamp,
                 ]);
             }

@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\Process\Process;
 
 class SyncController extends Controller
 {
@@ -204,6 +205,7 @@ class SyncController extends Controller
 
     /**
      * Import FTP files (PhoneNotices + Shoutbomb submissions + Patrons)
+     * via a single blocking HTTP call (used by the non-Livewire sync page).
      */
     public function importFTPFiles(Request $request): JsonResponse
     {
@@ -238,6 +240,97 @@ class SyncController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Stream FTP files import output for the Livewire Sync & Import UI.
+     *
+     * Returns newline-delimited JSON (NDJSON) where each line is either:
+     * - { "progress": "raw line" }
+     * - { "completed": true, "success": bool, "message": string, "stats": {...} }
+     */
+    public function streamImportFTPFiles(Request $request)
+    {
+        // We intentionally do NOT wrap this in SyncLog; this endpoint is for live streaming only.
+        set_time_limit(300);
+
+        $command = $request->input('command');
+
+        if (!is_array($command) || empty($command)) {
+            // Fallback: default command mirrors the Livewire component default
+            $command = ['php', base_path('artisan'), 'notices:import-ftp-files'];
+        }
+
+        return response()->stream(function () use ($command) {
+            $process = new Process($command, base_path());
+            $process->setTimeout(3600);
+            $process->start();
+
+            $buffer = '';
+            $stats = [];
+
+            foreach ($process as $type => $data) {
+                $buffer .= $data;
+
+                while (($pos = strpos($buffer, "\n")) !== false) {
+                    $line = rtrim(substr($buffer, 0, $pos), "\r\n");
+                    $buffer = substr($buffer, $pos + 1);
+
+                    if ($line === '') {
+                        continue;
+                    }
+
+                    // Capture summary stats from the ASCII table at the end of the command
+                    // Lines look like: "| PhoneNotices | 32 |"
+                    if (preg_match('/^\|\s*([^|]+?)\s*\|\s*(\d+)\s*\|$/', $line, $m)) {
+                        $label = trim($m[1]);
+                        $value = (int) $m[2];
+                        $stats[$label] = $value;
+                    }
+
+                    $payload = ['progress' => $line];
+
+                    echo json_encode($payload) . "\n";
+                    @ob_flush();
+                    @flush();
+                }
+            }
+
+            // Final payload with completion + stats
+            $exitCode = $process->getExitCode();
+            $success = $exitCode === 0;
+
+            $finalPayload = [
+                'completed' => true,
+                'success' => $success,
+                'message' => $success
+                    ? 'FTP Files Import completed successfully!'
+                    : 'FTP Files Import failed',
+            ];
+
+            if (!empty($stats)) {
+                $finalPayload['stats'] = $stats;
+            }
+
+            echo json_encode($finalPayload) . "\n";
+            @ob_flush();
+            @flush();
+        }, 200, [
+            'Content-Type' => 'application/x-ndjson',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
+    /**
+     * Stub endpoint for cancelling an in-progress FTP import stream.
+     */
+    public function cancelImportFTPFiles(Request $request): JsonResponse
+    {
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'Cancellation request received.',
+        ]);
     }
 
     /**

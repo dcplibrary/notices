@@ -67,6 +67,8 @@ Route::prefix('sync')->name('sync.')->group(function () {
     Route::post('/shoutbomb-reports', [SyncController::class, 'importShoutbombReports'])->name('shoutbomb-reports');
     Route::post('/shoutbomb-submissions', [SyncController::class, 'importShoutbombSubmissions'])->name('shoutbomb-submissions');
     Route::post('/ftp-files', [SyncController::class, 'importFTPFiles'])->name('ftp-files');
+    Route::post('/ftp-files/stream', [SyncController::class, 'streamImportFTPFiles'])->name('ftp-files.stream');
+    Route::post('/ftp-files/cancel', [SyncController::class, 'cancelImportFTPFiles'])->name('ftp-files.cancel');
     Route::post('/shoutbomb-to-logs', [SyncController::class, 'syncShoutbombToLogs'])->name('shoutbomb-to-logs');
     Route::post('/aggregate', [SyncController::class, 'aggregate'])->name('aggregate');
     Route::get('/test-connections', [SyncController::class, 'testConnections'])->name('test-connections');

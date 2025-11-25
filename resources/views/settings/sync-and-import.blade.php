@@ -144,10 +144,9 @@
         });
     });
 
-    // Toast notification system
-    window.addEventListener('show-toast', event => {
-        const { type, message, duration = 3000 } = event.detail;
-        
+    // Toast notification system (Livewire v3 events)
+    document.addEventListener('livewire:load', () => {
+        Livewire.on('show-toast', ({ type, message, duration = 3000 }) => {
         const toast = document.createElement('div');
         toast.className = `mb-4 p-4 rounded-lg shadow-lg transform transition-all duration-300 ${
             type === 'success' ? 'bg-green-500' :
@@ -158,9 +157,10 @@
         toast.textContent = message;
         
         document.getElementById('toast-container').appendChild(toast);
-        
+
         setTimeout(() => toast.classList.add('opacity-0'), duration);
         setTimeout(() => toast.remove(), duration + 300);
+        });
     });
 
     // Command output streaming
@@ -170,7 +170,7 @@
         const command = data.command;
         
         // Call backend to start streaming process
-        fetch('/api/notices/import/stream', {
+        fetch('{{ route('notices.sync.ftp-files.stream') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -223,8 +223,8 @@
     });
 
     Livewire.on('cancelImport', () => {
-        // Call backend to cancel process
-        fetch('/api/notices/import/cancel', {
+        // Call backend to cancel process (best-effort)
+        fetch('{{ route('notices.sync.ftp-files.cancel') }}', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
