@@ -429,7 +429,7 @@ class NoticeVerificationService
 
             // Check for failure report (Shoutbomb only reports failures)
             $failureReport = ShoutbombDelivery::where('phone_number', $phoneNotice->phone_number)
-                ->where('status', 'failed')
+                ->failed()
                 ->where(function($query) use ($noticeDate) {
                     // Match same day or within 24 hours
                     $query->whereDate('sent_date', $noticeDate->format('Y-m-d'))
