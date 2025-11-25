@@ -228,3 +228,5 @@ If you encounter issues during upgrade, check:
 - `storage/logs/laravel.log`
 - That migrations ran successfully (`php artisan migrate`)
 - That your scheduler (cron/Docker) points to the new commands
+
+> Note: v2.0.0 is the first release to introduce the master `notifications` + `notification_events` tables.
