@@ -115,8 +115,20 @@ When creating or modifying documentation for this package:
 - Use relative paths in all documentation links
 - Keep the "Quick Links" section in README.md concise (max 4-5 links)
 
+### Writing Style
+
+- **Write for novices without dumbing down** - Assume readers are intelligent but may be unfamiliar with the specific technology
+- **Keep it semi-casual and easy to read** - Use conversational tone, avoid unnecessary jargon, but maintain technical precision
+- **Use progressive disclosure** - Start with simple explanations, then add technical details
+- **Provide context** - Explain WHY something is needed, not just HOW to do it
+- **Use real-world examples** - Show before/after scenarios and practical use cases
+- **Add visual hierarchy** - Use emojis (sparingly), headings, code blocks, and formatting to make docs scannable
+- **Include "Why would I use this?"** sections to help readers understand applicability
+- **Avoid academic tone** - Write like you're explaining to a colleague, not writing a research paper
+
 ### Why This Matters
 
 - Prevents merge conflicts from root-level documentation files
 - Maintains organized, discoverable documentation structure
 - Makes it easy for developers and AI agents to find and update docs
+- Makes documentation accessible to users of all skill levels
