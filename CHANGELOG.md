@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/dcplibrary/notices/compare/v2.0.0...v2.0.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* remove extra slash from noticesserviceprovider ([c89f3ce](https://github.com/dcplibrary/notices/commit/c89f3ceddae423802aa035ef3e65071fad60c5c9))
+
 # [2.0.0](https://github.com/dcplibrary/notices/compare/v1.26.2...v2.0.0) (2025-11-25)
 
 
