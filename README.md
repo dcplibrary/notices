@@ -2,7 +2,137 @@
 
 # Polaris Notices Package
 
-A Laravel package for tracking and analyzing Polaris ILS notification delivery across multiple channels (Email, SMS, Voice, Mail) with Shoutbomb integration.
+**Track, analyze, and troubleshoot every library notification sent to your patrons - from creation to delivery.**
+
+A Laravel package that connects to your Polaris ILS database and Shoutbomb delivery service to give you complete visibility into notification delivery across all channels (Email, SMS, Voice, Mail).
+
+---
+
+## 📖 Table of Contents
+
+- [What This Package Does](#what-this-package-does)
+- [Why Use This Package?](#why-use-this-package)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [First-Time Setup](#first-time-setup)
+- [Usage](#usage)
+- [Dashboard](#dashboard)
+- [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## What This Package Does
+
+This package solves a common problem in libraries: **"Did my patron actually receive their notification?"**
+
+When your library sends notifications (hold ready, overdue, renewal reminders), they pass through multiple systems:
+1. **Polaris ILS** creates the notification
+2. **Delivery services** (Shoutbomb, email servers) send the message
+3. **Patrons** receive (or don't receive) the notification
+
+This package **bridges these systems** by:
+- 📊 Importing notification data from Polaris MSSQL database
+- 📥 Importing delivery reports from Shoutbomb FTP
+- 🔍 Matching them together to verify delivery
+- 📈 Providing a dashboard to visualize success/failure rates
+- 🚨 Identifying and troubleshooting delivery failures
+
+### Real-World Example
+
+**Without this package:**
+> "Patron says they never got their hold notification. Let me check... Polaris shows it was sent... Shoutbomb shows... wait, I need to log into the FTP... download the CSV... search for their phone number... hmm, shows 'invalid number' but Polaris doesn't know that..."
+
+**With this package:**
+> Visit `yourapp.com/notices/verification`, search patron barcode → See complete timeline: Created ✓, Submitted ✓, Verified ✗ (Invalid phone number). Export list of all invalid numbers for cleanup.
+
+---
+
+## Why Use This Package?
+
+✅ **Single Dashboard** - All notification data in one place instead of scattered across systems
+✅ **Automatic Verification** - Matches Polaris notifications with delivery confirmations
+✅ **Proactive Problem Detection** - Identifies opt-outs, invalid phone numbers, and system failures
+✅ **Historical Analysis** - Track trends, success rates, and delivery performance over time
+✅ **Patron-Specific View** - See complete notification history for individual patrons
+✅ **No Manual FTP Downloads** - Automated imports from Shoutbomb
+✅ **Works with Existing Systems** - Read-only connection to Polaris, doesn't modify your ILS
+
+---
+
+## Quick Start
+
+**New to Laravel?** Don't worry! This guide assumes you have a Laravel application running and walks you through everything else.
+
+### 1️⃣ Install the Package
+
+```bash
+composer require dcplibrary/notices
+```
+
+### 2️⃣ Publish Configuration
+
+```bash
+php artisan vendor:publish --tag=notices-config
+```
+
+This creates `config/notices.php` where you'll configure your connections.
+
+### 3️⃣ Configure Your Connections
+
+Add these to your `.env` file (the values from your Polaris and Shoutbomb accounts):
+
+```env
+# Your Polaris database connection
+POLARIS_DB_HOST=polaris-server.yourlibrary.org
+POLARIS_DB_USERNAME=readonly_user
+POLARIS_DB_PASSWORD=your_password
+POLARIS_REPORTING_ORG_ID=3
+
+# Your Shoutbomb FTP credentials (optional, but recommended)
+SHOUTBOMB_FTP_HOST=ftp.shoutbomb.com
+SHOUTBOMB_FTP_USERNAME=your_username
+SHOUTBOMB_FTP_PASSWORD=your_password
+```
+
+### 4️⃣ Run Migrations
+
+```bash
+php artisan migrate
+```
+
+This creates the tables where notification data will be stored.
+
+### 5️⃣ Test Your Connections
+
+```bash
+php artisan notices:test-connections
+```
+
+You should see ✅ green checkmarks for Polaris and Shoutbomb connections.
+
+### 6️⃣ Import Your First Data
+
+```bash
+# Import last 7 days of notifications from Polaris
+php artisan notices:import --days=7
+
+# Import Shoutbomb delivery reports
+php artisan notices:import-shoutbomb
+
+# Create summary data for the dashboard
+php artisan notices:aggregate --all
+```
+
+### 7️⃣ View the Dashboard
+
+Visit `https://yourapp.com/notices` to see your notification data!
+
+**🎉 That's it!** You now have a working notification tracking system.
+
+---
 
 ## Features
 
@@ -23,187 +153,272 @@ A Laravel package for tracking and analyzing Polaris ILS notification delivery a
 - ✅ **Fully Customizable**: Publish views, disable components, use API only
 - ✅ **Docker Ready**: Complete Docker setup with SQL Server driver pre-installed
 
+---
+
+## Prerequisites
+
+**What You Need Before Installing:**
+
+### Required
+- ✅ **Laravel Application** (v10.x or v11.x) - This is a Laravel package, not a standalone application
+- ✅ **PHP 8.1+** - Check with `php -v`
+- ✅ **Composer** - PHP package manager
+- ✅ **MySQL/MariaDB** - For storing cached notification data
+- ✅ **Polaris ILS Access** - Read-only MSSQL credentials to your Polaris database
+- ✅ **SQL Server PDO Driver** - See [installation guide](docs/SQL_SERVER_DRIVER_INSTALLATION.md) if you get "could not find driver" error
+
+### Optional (but recommended)
+- ⭕ **Shoutbomb FTP Access** - To import SMS/Voice delivery reports
+- ⭕ **Email Account** - To import Shoutbomb reports via IMAP
+
+### Not Sure If You Have What You Need?
+
+After installing the package, run `php artisan notices:test-connections` to verify all connections.
+
+---
+
 ## Installation
 
-> **🐳 Using Docker?** See **[Docker Setup Guide](docs/DOCKER_SETUP.md)** for a complete Docker-based installation with the SQL Server driver pre-configured.
+> **🚀 First-time with Laravel packages?** No problem! Follow these steps carefully and you'll be up and running in 10 minutes.
 
-### Standard Installation
+> **🐳 Prefer Docker?** See [Docker Setup Guide](docs/DOCKER_SETUP.md) for a pre-configured Docker environment with all drivers installed.
 
-#### 1. Install the package via Composer
+### Step 1: Install via Composer
+
+In your Laravel application directory, run:
 
 ```bash
 composer require dcplibrary/notices
 ```
 
-### 2. Publish configuration file
+**What this does:** Downloads the package and its dependencies into your Laravel project.
+
+---
+
+### Step 2: Publish Configuration File
 
 ```bash
 php artisan vendor:publish --tag=notices-config
 ```
 
-This creates `config/notices.php` where you can configure database connections, FTP settings, and other options.
+**What this does:** Creates `config/notices.php` in your Laravel application where you can customize:
+- Database connection settings
+- FTP paths and credentials
+- Import batch sizes
+- Dashboard display preferences
+- API settings
 
-### 3. Configure environment variables
+**💡 Tip:** You can edit this file later to fine-tune settings, but most configuration happens in your `.env` file (next step).
 
-Add the following to your `.env` file:
+---
+
+### Step 3: Configure Environment Variables
+
+Open your `.env` file and add these settings:
 
 ```env
-# Polaris MSSQL Database
-POLARIS_DB_DRIVER=dblib  # Use 'dblib' for Linux/FreeTDS or 'sqlsrv' for Windows
-POLARIS_DB_HOST=your-polaris-server.local
-POLARIS_DB_PORT=1433
-POLARIS_DB_DATABASE=Polaris
-POLARIS_DB_USERNAME=your-username
-POLARIS_DB_PASSWORD=your-password
-POLARIS_REPORTING_ORG_ID=3
+# ===================================
+# REQUIRED: Polaris Database Connection
+# ===================================
+# This connects to your Polaris ILS database (read-only)
+POLARIS_DB_DRIVER=dblib              # 'dblib' for Linux/Mac, 'sqlsrv' for Windows
+POLARIS_DB_HOST=polaris.yourlibrary.org  # Your Polaris server hostname or IP
+POLARIS_DB_PORT=1433                 # Standard MSSQL port
+POLARIS_DB_DATABASE=Polaris          # Usually "Polaris"
+POLARIS_DB_USERNAME=readonly_user    # Use a read-only account for security
+POLARIS_DB_PASSWORD=your_password    # Database password
+POLARIS_REPORTING_ORG_ID=3           # Your library's organization ID from Polaris
 
-# Shoutbomb FTP (optional)
-SHOUTBOMB_ENABLED=true
+# ===================================
+# OPTIONAL: Shoutbomb Integration
+# ===================================
+# Import SMS/Voice delivery reports from Shoutbomb FTP
+SHOUTBOMB_ENABLED=true               # Set to false to skip Shoutbomb imports
 SHOUTBOMB_FTP_HOST=ftp.shoutbomb.com
 SHOUTBOMB_FTP_PORT=21
-SHOUTBOMB_FTP_USERNAME=your-username
-SHOUTBOMB_FTP_PASSWORD=your-password
-SHOUTBOMB_FTP_PASSIVE=true
-SHOUTBOMB_FTP_SSL=false
+SHOUTBOMB_FTP_USERNAME=your_username # Provided by Shoutbomb
+SHOUTBOMB_FTP_PASSWORD=your_password
+SHOUTBOMB_FTP_PASSIVE=true           # Usually true
+SHOUTBOMB_FTP_SSL=false              # Usually false for Shoutbomb
 
-# Email Reports (optional)
-EMAIL_REPORTS_ENABLED=true
-EMAIL_HOST=imap.example.com
+# ===================================
+# OPTIONAL: Email Report Imports
+# ===================================
+# Import Shoutbomb failure reports from email (alternative to FTP)
+EMAIL_REPORTS_ENABLED=false          # Enable if you want to import from email
+EMAIL_HOST=imap.gmail.com            # Your email provider's IMAP server
 EMAIL_PORT=993
-EMAIL_USERNAME=your-email@example.com
-EMAIL_PASSWORD=your-password
+EMAIL_USERNAME=notifications@yourlibrary.org
+EMAIL_PASSWORD=your_app_password
 EMAIL_ENCRYPTION=ssl
-EMAIL_MAILBOX=INBOX
-EMAIL_FROM_ADDRESS=shoutbomb
+EMAIL_MAILBOX=INBOX                  # Mailbox to check for reports
+EMAIL_FROM_ADDRESS=shoutbomb         # Filter emails from this sender
 ```
 
-### 4. Run migrations
+**💡 Configuration Tips:**
+
+- **Polaris credentials:** Ask your ILS administrator for read-only access to the Polaris database
+- **Organization ID:** Found in Polaris under System Administration → Organizations → Your Library
+- **Shoutbomb FTP:** Credentials are provided when you sign up for Shoutbomb service
+- **Security:** Use read-only database accounts and never commit `.env` to version control
+
+**❓ Don't have Shoutbomb?** That's okay! The package still works without it - you just won't get SMS/Voice delivery verification.
+
+---
+
+### Step 4: Run Migrations
 
 ```bash
 php artisan migrate
 ```
 
-This creates the following tables:
-- `notification_logs` - Main notification tracking table
-- `shoutbomb_deliveries` - SMS/Voice delivery tracking
-- `shoutbomb_keyword_usage` - Patron keyword interactions
-- `shoutbomb_registrations` - Subscriber statistics
-- `daily_notification_summary` - Aggregated daily summaries
+**What this does:** Creates database tables to store notification data. You'll see output like:
 
-## Usage
+```
+Migration table created successfully.
+Migrating: 2025_01_01_000001_create_notification_logs_table
+Migrated:  2025_01_01_000001_create_notification_logs_table (45.67ms)
+...
+```
 
-### Test Connections
+**Tables created:**
+- `notification_logs` - Stores notifications from Polaris (what was sent)
+- `shoutbomb_deliveries` - Stores SMS/Voice delivery confirmations
+- `shoutbomb_keyword_usage` - Tracks patron interactions (RHL, RA, OI keywords)
+- `shoutbomb_registrations` - Subscriber counts and statistics
+- `daily_notification_summary` - Pre-aggregated data for fast dashboard queries
 
-Before importing data, test your connections:
+---
+
+### Step 5: Test Your Connections (Important!)
+
+Before importing data, make sure everything is configured correctly:
 
 ```bash
 php artisan notices:test-connections
 ```
 
-Test specific connections:
-```bash
-php artisan notices:test-connections --polaris
-php artisan notices:test-connections --shoutbomb
-php artisan notices:test-connections --email
+**What you should see:**
+
+```
+✅ Polaris connection successful
+✅ Shoutbomb FTP connection successful
+✅ Email connection successful
 ```
 
-### Import Polaris Notifications
+**If you see errors:**
+- ❌ **"could not find driver"** → You need to install the SQL Server PDO driver (see [Troubleshooting](#troubleshooting))
+- ❌ **Connection refused** → Check your hostname and firewall settings
+- ❌ **Login failed** → Double-check your username and password in `.env`
 
-Import notifications from the last 24 hours (default):
+**💡 Tip:** You can test individual connections:
 ```bash
-php artisan notices:import
+php artisan notices:test-connections --polaris   # Test only Polaris
+php artisan notices:test-connections --shoutbomb # Test only Shoutbomb FTP
+php artisan notices:test-connections --email     # Test only email
 ```
 
-Import from the last 7 days:
+---
+
+## First-Time Setup
+
+**✅ Installation complete!** Now let's import some data and set up automated imports.
+
+### Import Your First Data
+
+Start with a small date range to make sure everything works:
+
 ```bash
+# Import last 7 days of notifications from Polaris (takes 30 seconds - 2 minutes)
 php artisan notices:import --days=7
 ```
 
-Import a specific date range:
-```bash
-php artisan notices:import --start-date=2025-01-01 --end-date=2025-01-31
+**What this does:** Connects to your Polaris database and imports notification records. You'll see progress output like:
+
+```
+Importing notifications from 2025-01-18 to 2025-01-25...
+Processing batch 1 of 15 (500 records)...
+Processing batch 2 of 15 (500 records)...
+...
+✓ Imported 7,234 notifications
 ```
 
-Import all historical data:
-```bash
-php artisan notices:import --full
-```
+If you have Shoutbomb FTP configured, import delivery reports:
 
-### Import Shoutbomb Reports
-
-Import all Shoutbomb reports from FTP:
 ```bash
+# Import SMS/Voice delivery confirmations (takes 1-5 minutes)
 php artisan notices:import-shoutbomb
 ```
 
-Import specific report types:
+Finally, create aggregated summary data for the dashboard:
+
 ```bash
-php artisan notices:import-shoutbomb --type=monthly
-php artisan notices:import-shoutbomb --type=weekly
-php artisan notices:import-shoutbomb --type=daily-invalid
-php artisan notices:import-shoutbomb --type=daily-undelivered
-```
-
-### Import Email Reports
-
-Import Shoutbomb reports from email inbox (opt-outs, invalid phones, undelivered voice):
-```bash
-php artisan notices:import-email-reports
-```
-
-Options:
-```bash
-php artisan notices:import-email-reports --mark-read  # Mark emails as read after import
-php artisan notices:import-email-reports --move-to=Processed  # Move to folder after import
-php artisan notices:import-email-reports --limit=100  # Process max 100 emails
-```
-
-### Aggregate Notification Data
-
-Aggregate yesterday's notifications (typical nightly job):
-```bash
-php artisan notices:aggregate
-```
-
-Aggregate a specific date:
-```bash
-php artisan notices:aggregate --date=2025-01-15
-```
-
-Aggregate a date range:
-```bash
-php artisan notices:aggregate --start-date=2025-01-01 --end-date=2025-01-31
-```
-
-Re-aggregate all historical data:
-```bash
+# Generate daily summaries for fast dashboard queries (takes ~30 seconds)
 php artisan notices:aggregate --all
 ```
 
-## Shoutbomb Reports Integration (Optional)
+**🎉 Success!** You now have data in the system. Visit `https://yourapp.com/notices` to see your dashboard.
 
-See docs/integrations/shoutbomb-reports.md for how to enable reading failure reports from dcplibrary/shoutbomb-reports. This does not replace importing Shoutbomb submissions via FTP.
+---
 
-## Scheduled Tasks
+### Optional: Import Historical Data
 
-Add these to your `app/Console/Kernel.php` for automated imports:
+Want to analyze more history? Import more data:
+
+```bash
+# Import last 30 days
+php artisan notices:import --days=30
+
+# Import last 90 days
+php artisan notices:import --days=90
+
+# Import specific date range
+php artisan notices:import --start-date=2024-01-01 --end-date=2024-12-31
+
+# Import EVERYTHING (warning: may take hours for large systems)
+php artisan notices:import --full
+```
+
+**💡 Performance tip:** Large imports work best during off-hours. The command processes data in batches to avoid memory issues.
+
+---
+
+### Set Up Automated Daily Imports
+
+You probably don't want to run these commands manually every day. Let's automate them!
+
+**Option 1: Use the Package's Built-In Schedule**
+
+The package automatically registers scheduled tasks. Just make sure your Laravel scheduler is running:
+
+```bash
+# Add this to your crontab (one time setup)
+* * * * * cd /path/to/your/laravel && php artisan schedule:run >> /dev/null 2>&1
+```
+
+The package will automatically run these tasks daily:
+- **5:30 AM** - Import patron lists
+- **6:30 AM** - Import invalid phone reports
+- **8:30 AM** - Import morning notifications
+- **10:00 PM** - Aggregate the day's data
+
+See [Import Schedule Documentation](docs/IMPORT_SCHEDULE.md) for details on timing and customization.
+
+**Option 2: Manual Schedule Configuration**
+
+If you want more control, add this to your `app/Console/Kernel.php`:
 
 ```php
 protected function schedule(Schedule $schedule)
 {
-    // Import Polaris notifications hourly
+    // Import yesterday's notifications at 1 AM
     $schedule->command('notices:import --days=1')
-        ->hourly()
+        ->dailyAt('01:00')
         ->withoutOverlapping();
 
-    // Import Shoutbomb reports daily at 9 AM
+    // Import Shoutbomb reports at 9 AM
     $schedule->command('notices:import-shoutbomb')
         ->dailyAt('09:00')
-        ->withoutOverlapping();
-
-    // Import email reports daily at 9:30 AM
-    $schedule->command('notices:import-email-reports --mark-read')
-        ->dailyAt('09:30')
         ->withoutOverlapping();
 
     // Aggregate yesterday's data at midnight
@@ -213,190 +428,208 @@ protected function schedule(Schedule $schedule)
 }
 ```
 
+**🎉 You're all set!** The system will now automatically import and process notification data daily.
+
+---
+
+## Usage
+
+Here's a quick reference for common tasks after initial setup:
+
+### Daily Operations
+
+**Import Today's Notifications:**
+```bash
+php artisan notices:import --days=1
+```
+
+**Import Shoutbomb Reports:**
+```bash
+php artisan notices:import-shoutbomb
+```
+
+**Update Dashboard Statistics:**
+```bash
+php artisan notices:aggregate
+```
+
+### Advanced Import Options
+
+**Import specific date range:**
+```bash
+php artisan notices:import --start-date=2025-01-01 --end-date=2025-01-31
+```
+
+**Import specific Shoutbomb report types:**
+```bash
+php artisan notices:import-shoutbomb --type=monthly          # Monthly statistics
+php artisan notices:import-shoutbomb --type=daily-invalid    # Invalid phone numbers
+php artisan notices:import-shoutbomb --type=daily-undelivered # Voice failures
+```
+
+**Import Shoutbomb reports from email (alternative to FTP):**
+```bash
+php artisan notices:import-email-reports --mark-read --limit=100
+```
+
+**Re-aggregate historical data (if you import backfill data):**
+```bash
+php artisan notices:aggregate --start-date=2024-01-01 --end-date=2024-12-31
+```
+
+### Testing & Diagnostics
+
+**Test all connections:**
+```bash
+php artisan notices:test-connections
+```
+
+**Test specific connection:**
+```bash
+php artisan notices:test-connections --polaris
+```
+
+**Generate demo data for testing dashboard:**
+```bash
+php artisan notices:seed-demo --days=30
+```
+
+---
+
 ## Dashboard
 
-This package includes a **built-in dashboard** for visualizing notification data. The dashboard works out-of-the-box and can be customized.
+The package includes a **ready-to-use web dashboard** - no additional configuration needed! Just visit `https://yourapp.com/notices` after importing data.
 
-### Accessing the Dashboard
+### What You'll See
 
-After installation, visit:
+**📊 Overview Page**
+- Key metrics (total notifications, success rate, failure rate)
+- 7-day trend charts
+- Distribution by notification type (Hold, Overdue, Renewal, etc.)
+- Distribution by delivery method (Email, SMS, Voice, Mail)
+
+**📋 Notifications List**
+- Searchable, filterable table of all notifications
+- Filter by date, type, delivery method, patron, status
+- Export to CSV for reports
+
+**📈 Analytics**
+- Success/failure rates over time
+- Performance comparisons by type and method
+- Detailed breakdowns and trend analysis
+
+**📱 Shoutbomb Page** (if using Shoutbomb)
+- Current subscriber counts
+- Growth trends over time
+- Keyword usage statistics (RHL, RA, OI commands)
+
+**🔍 Verification System**
+- Search by patron barcode, phone, email, or item barcode
+- Complete timeline for each notification (Created → Submitted → Verified → Delivered)
+- Patron-specific delivery history
+- Export patron reports
+
+**🚨 Troubleshooting**
+- Analyze failures by reason (invalid phone, opt-out, system error)
+- Identify gaps (submitted but not delivered, verified but not confirmed)
+- Export failure reports for patron data cleanup
+
+### Authentication
+
+By default, the dashboard requires authentication using Laravel's `auth` middleware. Configure this in `config/notices.php`:
+
+```php
+'dashboard' => [
+    'enabled' => true,
+    'middleware' => ['web', 'auth'],  // Add your own middleware here
+],
 ```
-https://yourapp.com/notices
-```
-
-**Note:** Dashboard requires authentication by default (configure in `config/notices.php`).
-
-![Dashboard Overview](docs/images/dashboard-overview.png)
-
-> See [docs/DASHBOARD.md](docs/DASHBOARD.md) for detailed documentation and [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) for adding images.
-
-### Dashboard Features
-
-- **Overview**: Key metrics, trends, type/delivery distribution
-- **Notifications List**: Filterable table of individual notifications
-- **Analytics**: Success rates, detailed breakdowns, performance metrics
-- **Shoutbomb**: Subscriber statistics and growth trends
-- **Verification**: Search notices, view timelines, patron history
-- **Troubleshooting**: Analyze failures, detect verification gaps
 
 ### Customization
 
-Publish and modify the views:
+Want to modify the dashboard appearance?
+
 ```bash
 php artisan vendor:publish --tag=notices-views
 ```
 
-Views will be in `resources/views/vendor/notifications/`.
+This copies all views to `resources/views/vendor/notices/` where you can edit them.
 
-For detailed dashboard customization, see [docs/DASHBOARD.md](docs/DASHBOARD.md).
-
-### Disabling the Dashboard
-
-If building a custom UI using the API:
+**Or disable the dashboard entirely** and build your own using the [API](#api):
 
 ```php
 // config/notices.php
-'dashboard' => [
-    'enabled' => false,
-],
+'dashboard' => ['enabled' => false],
 ```
+
+---
 
 ## API
 
-The package provides a **RESTful API** for accessing notification data. Perfect for building custom dashboards or integrating with other systems.
+The package provides a **RESTful API** for programmatic access to notification data - perfect for custom integrations or building your own dashboard.
 
-### API Endpoints
-
-All endpoints are prefixed with `/api/notices`:
+### Quick Example
 
 ```bash
-# Get notices (with filters)
-GET /api/notices/logs?days=7&successful=1
+# Get notifications from the last 7 days
+GET /api/notices/logs?days=7
 
-# Get daily summaries
-GET /api/notices/summaries
-
-# Get analytics overview
+# Get aggregated statistics
 GET /api/notices/analytics/overview?days=30
 
-# Get Shoutbomb data
-GET /api/notices/shoutbomb/deliveries
-GET /api/notices/shoutbomb/keyword-usage
+# Get Shoutbomb subscriber data
 GET /api/notices/shoutbomb/registrations/latest
 ```
 
-### Authentication
+**Authentication:** Uses Laravel Sanctum by default (Bearer token).
 
-API routes use Laravel Sanctum by default:
+**📚 Full API documentation with all endpoints:** [docs/API.md](docs/API.md)
 
-```bash
-curl -X GET "https://yourapp.com/api/notices/logs" \
-  -H "Authorization: Bearer YOUR_TOKEN"
+---
+
+## How It Works
+
+Understanding the data flow helps you troubleshoot issues and customize the package:
+
+```
+┌─────────────────┐
+│  Polaris ILS    │  Creates notifications (holds, overdues, renewals)
+│  (MSSQL)        │
+└────────┬────────┘
+         │ Import via notices:import
+         ▼
+┌─────────────────┐
+│ notification_   │  Cached in local MySQL for fast queries
+│ logs            │
+└────────┬────────┘
+         │
+         ├──► Dashboard queries
+         │
+         └──► Matched with ▼
+                ┌─────────────────┐
+                │  Shoutbomb FTP  │  Delivery confirmations
+                │  Email Reports  │  (SMS/Voice results)
+                └────────┬────────┘
+                         │ Import via notices:import-shoutbomb
+                         ▼
+                ┌─────────────────┐
+                │ shoutbomb_      │  Delivery tracking
+                │ deliveries      │
+                └────────┬────────┘
+                         │
+                         ▼
+                ┌─────────────────┐
+                │  Verification   │  Matches notifications
+                │  System         │  with delivery data
+                └────────┬────────┘
+                         │
+                         ▼
+                    📊 Dashboard
 ```
 
-### Example: Fetch Notification Stats
+**Key Concept:** The package connects TWO separate systems (Polaris ILS and Shoutbomb delivery) to give you a complete picture of notification delivery.
 
-```php
-use Illuminate\Support\Facades\Http;
-
-$response = Http::withToken('YOUR_TOKEN')
-    ->get('/api/notices/logs/stats', [
-        'days' => 30
-    ]);
-
-$stats = $response->json();
-// ['total' => 1000, 'successful' => 950, 'failed' => 50, ...]
-```
-
-For complete API documentation, see [docs/API.md](docs/API.md).
-
-## Verification System
-
-The package includes a comprehensive **verification system** to track every notice through its complete lifecycle and troubleshoot delivery issues.
-
-### Verification Features
-
-**Search & Timeline**
-- Search by patron barcode, phone, email, or item barcode
-- Visual timeline showing all verification steps
-- Detailed failure information with troubleshooting tips
-- Patron-specific history with success rates
-
-**4-Step Verification Lifecycle**
-1. ✅ **Created** - Notice created in notification_logs
-2. ✅ **Submitted** - Submitted to delivery service (Shoutbomb, email, etc.)
-3. ✅ **Verified** - Confirmed in verification reports (PhoneNotices.csv, etc.)
-4. ✅ **Delivered** - Delivery confirmation received
-
-**Troubleshooting Dashboard**
-- Failure analysis by reason and type
-- Mismatch detection (submitted but not verified, verified but not delivered)
-- Recent failures with detailed information
-- Configurable date ranges (7/14/30 days)
-
-**CSV Export**
-- Export verification search results
-- Export patron history
-- Export troubleshooting data
-- UTF-8 BOM for Excel compatibility
-
-### Verification API
-
-Access verification data programmatically:
-
-```bash
-# Verify specific notice
-GET /api/notices/verification/verify?patron_barcode=123456
-
-# Get patron history
-GET /api/notices/verification/patron/123456
-
-# Get failures
-GET /api/notices/verification/failures?days=7
-
-# Get troubleshooting summary
-GET /api/notices/verification/troubleshooting/summary
-```
-
-### Plugin Architecture
-
-The verification system uses a modular plugin architecture for easy channel additions:
-
-```php
-// Each notification channel is a plugin
-interface NotificationPlugin {
-    public function getName(): string;
-    public function canVerify(NotificationLog $log): bool;
-    public function verify(NotificationLog $log, VerificationResult $result): VerificationResult;
-    public function getStatistics(Carbon $startDate, Carbon $endDate): array;
-}
-```
-
-**Current Plugins:**
-- **ShoutbombPlugin** - Voice and SMS via Shoutbomb
-
-**Future Plugins:**
-- **EmailPlugin** - Email delivery verification
-- **SmsDirectPlugin** - Direct SMS (non-Shoutbomb)
-
-> See [docs/VERIFICATION_SYSTEM_DESIGN.md](docs/VERIFICATION_SYSTEM_DESIGN.md) for complete architecture details and plugin development guide.
-
-## Demo Data
-
-Generate realistic demo data for testing the dashboard:
-
-```bash
-# Generate 30 days of demo data
-php artisan notices:seed-demo
-
-# Generate 60 days
-php artisan notices:seed-demo --days=60
-
-# Clear existing data and seed fresh
-php artisan notices:seed-demo --fresh
-```
-
-This creates sample notifications, summaries, Shoutbomb deliveries, keyword usage, and registration snapshots.
+**📚 Detailed architecture documentation:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Models
 
