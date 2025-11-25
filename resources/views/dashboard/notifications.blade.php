@@ -397,23 +397,32 @@
                         </td>
                         <td class="px-6 py-4">
                             @php
-                                $items = $notification->items;
-                                $itemCount = $items->count();
-                                $firstItem = $items->first();
+                                // Get items from phone notices for performance
+                                $phoneNotices = $notification->polaris_phone_notices;
+                                $itemCount = $phoneNotices->count();
+                                $firstNotice = $phoneNotices->first();
                             @endphp
-                            @if($firstItem)
-                                <div class="text-sm text-gray-900">
-                                    @if(isset($firstItem->bibliographic) && isset($firstItem->bibliographic->Title))
-                                        {{ Str::limit($firstItem->bibliographic->Title, 60) }}
-                                    @elseif(isset($firstItem->title))
-                                        {{ Str::limit($firstItem->title, 60) }}
+                            @if($firstNotice && $firstNotice->title)
+                                <div class="text-sm">
+                                    @if($firstNotice->item_record_id)
+                                        <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $firstNotice->item_record_id }}"
+                                           target="_blank"
+                                           class="text-blue-600 hover:text-blue-800 hover:underline"
+                                           onclick="event.stopPropagation();">
+                                            {{ Str::limit($firstNotice->title, 60) }}
+                                        </a>
                                     @else
-                                        Unknown Title
+                                        <span class="text-gray-900">{{ Str::limit($firstNotice->title, 60) }}</span>
                                     @endif
                                 </div>
+                                @if($firstNotice->item_barcode)
+                                    <div class="text-xs text-gray-500 font-mono mt-0.5">
+                                        {{ $firstNotice->item_barcode }}
+                                    </div>
+                                @endif
                                 @if($itemCount > 1)
                                     <div class="text-xs text-gray-500 mt-1">
-                                        {{ $itemCount - 1 }} more
+                                        +{{ $itemCount - 1 }} more
                                     </div>
                                 @endif
                             @else
