@@ -171,7 +171,7 @@
 
         // Call backend to start streaming process
         // Use relative URL to avoid SSL/port issues with proxies
-        fetch('{{ url('/') }}/notices/sync/ftp-files/stream', {
+        fetch('/notices/sync/ftp-files/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -226,7 +226,7 @@
     Livewire.on('cancelImport', () => {
         // Call backend to cancel process (best-effort)
         // Use relative URL to avoid SSL/port issues with proxies
-        fetch('{{ url('/') }}/notices/sync/ftp-files/cancel', {
+        fetch('/notices/sync/ftp-files/cancel', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
