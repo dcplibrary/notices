@@ -17,10 +17,10 @@ In your main application's `bootstrap/app.php`, add the following trust proxies 
 ```php
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,14 +29,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Trust all proxies - this tells Laravel to trust X-Forwarded-* headers
+        // Trust all proxies - EXCLUDING X-Forwarded-Port header
+        // This is necessary when behind Cloudflare + nginx-proxy where
+        // Cloudflare terminates SSL on 443, but nginx-proxy receives on port 80
         $middleware->trustProxies(
             at: '*',
             headers: Request::HEADER_X_FORWARDED_FOR |
                     Request::HEADER_X_FORWARDED_HOST |
-                    Request::HEADER_X_FORWARDED_PORT |
                     Request::HEADER_X_FORWARDED_PROTO |
                     Request::HEADER_X_FORWARDED_PREFIX
+            // NOTE: Intentionally EXCLUDING Request::HEADER_X_FORWARDED_PORT
+            // Let Laravel infer port from X-Forwarded-Proto (https = 443, http = 80)
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
