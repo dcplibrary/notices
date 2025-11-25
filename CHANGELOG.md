@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/dcplibrary/notices/compare/v2.0.1...v2.0.2) (2025-11-25)
+
+
+### Bug Fixes
+
+* notification table field ([a181488](https://github.com/dcplibrary/notices/commit/a181488a51152af5c4f373e3ca17017dd1510265))
+
 ## [2.0.1](https://github.com/dcplibrary/notices/compare/v2.0.0...v2.0.1) (2025-11-25)
 
 
