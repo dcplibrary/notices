@@ -13,7 +13,7 @@
                     Tracking notice #{{ $notice->id }} through the delivery lifecycle
                 </p>
             </div>
-            <a href="{{ route('notices.verification.index') }}"
+            <a href="/notices/verification"
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 ← Back to Search
             </a>
@@ -28,7 +28,7 @@
                 <dt class="text-sm font-medium text-gray-500">Patron Barcode</dt>
                 <dd class="mt-1 text-sm text-gray-900">
                     {{ $notice->patron_barcode }}
-                    <a href="{{ route('notices.verification.patron', $notice->patron_barcode) }}"
+                    <a href="/notices/verification/patron/{{ $notice->patron_barcode }}"
                        class="ml-2 text-indigo-600 hover:text-indigo-900 text-xs">
                         View History →
                     </a>
