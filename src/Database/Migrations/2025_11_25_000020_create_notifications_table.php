@@ -56,7 +56,8 @@ return new class extends Migration
             // Useful composite indexes for lookups
             $table->index(['patron_barcode', 'notice_date']);
             $table->index(['item_barcode', 'notice_date']);
-            $table->index(['notification_type_id', 'delivery_option_id', 'notice_date']);
+            // Short custom name to satisfy MySQL's 64-char index name limit
+            $table->index(['notification_type_id', 'delivery_option_id', 'notice_date'], 'notif_type_deliv_notice_idx');
         });
     }
 
