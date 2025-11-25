@@ -4,6 +4,16 @@
 
 A Laravel package for tracking and analyzing Polaris ILS notification delivery across multiple channels (Email, SMS, Voice, Mail) with Shoutbomb integration.
 
+## Documentation
+
+📚 **[Complete Documentation Index](docs/INDEX.md)** - Architecture, deployment guides, integration docs, and more
+
+### Quick Links
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Proxy Configuration Guide](docs/deployment/PROXY_CONFIGURATION.md) - Setup behind nginx-proxy/Cloudflare
+- [Import Schedule](docs/IMPORT_SCHEDULE.md) - Automated import timing
+- [Shoutbomb Integration Docs](docs/shoutbomb/SHOUTBOMB_DOCUMENTATION_INDEX.md)
+
 ## Features
 
 - ✅ **Built-in Dashboard**: Visualize notification data out-of-the-box with charts and metrics
