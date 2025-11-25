@@ -405,7 +405,8 @@ class NotificationLog extends Model
 
     /**
      * Get items associated with this notification from imported data.
-     * Uses Shoutbomb phone notices first, falls back to Polaris if available.
+     * Uses Shoutbomb phone notices first, enriched with Polaris data for complete details.
+     * Falls back to direct Polaris query if phone notices not available.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -419,20 +420,40 @@ class NotificationLog extends Model
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
-                // Convert phone notices to a collection with title and barcode
-                return $phoneNotices->map(function ($notice) {
+                $service = app(PolarisQueryService::class);
+
+                // Enrich phone notices with full Polaris item details
+                return $phoneNotices->map(function ($notice) use ($service) {
+                    // If we have item_record_id, fetch full item details from Polaris
+                    if ($notice->item_record_id) {
+                        try {
+                            $item = $service->getItem($notice->item_record_id);
+
+                            if ($item) {
+                                // Return full item record with bibliographic relationship
+                                return $item;
+                            }
+                        } catch (\Exception $e) {
+                            // If Polaris query fails, fall through to basic data
+                            \Log::warning("Failed to fetch item details for ItemRecordID {$notice->item_record_id}", [
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+
+                    // Fallback to basic phone notice data if Polaris unavailable
                     return (object) [
-                        'title' => $notice->browse_title,
+                        'title' => $notice->title,
                         'item_barcode' => $notice->item_barcode,
                         'bibliographic' => (object) [
-                            'Title' => $notice->browse_title,
+                            'Title' => $notice->title,
                         ],
                         'staff_link' => $notice->item_record_id
                             ? "https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{$notice->item_record_id}"
                             : null,
                         'ItemRecordID' => $notice->item_record_id,
                         'Barcode' => $notice->item_barcode,
-                        'CallNumber' => null, // Not available in phone notices CSV
+                        'CallNumber' => null,
                     ];
                 });
             }
