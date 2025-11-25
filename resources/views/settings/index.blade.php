@@ -85,7 +85,7 @@
                             {{ $enabled ? 'Enabled' : 'Disabled' }}
                         </span>
 
-                        <form method="POST" action="{{ route('notices.settings.integrations.shoutbomb-reports.toggle') }}" class="inline-flex items-center gap-2">
+                        <form method="POST" action="/notices/settings/integrations/shoutbomb-reports/toggle" class="inline-flex items-center gap-2">
                             @csrf
                             <input type="hidden" name="enabled" value="0">
                             <label class="relative inline-flex items-center cursor-pointer">
@@ -112,7 +112,7 @@
             </div>
         </div>
         <!-- Reference Data Card -->
-        <a href="{{ route('notices.settings.reference-data') }}" 
+        <a href="/notices/settings/reference-data"
            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="p-6">
                 <div class="flex items-center">
@@ -195,13 +195,13 @@
                     </p>
                 </div>
                 <div class="mt-4 flex items-center gap-3">
-                    <a href="{{ route('notices.settings.sync') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Open Sync & Import</a>
+                    <a href="/notices/settings/sync" class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Open Sync & Import</a>
                 </div>
             </div>
         </div>
 
         <!-- Export & Backup Card -->
-        <a href="{{ route('notices.settings.export') }}" 
+        <a href="/notices/settings/export"
            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="p-6">
                 <div class="flex items-center">
