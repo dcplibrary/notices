@@ -38,6 +38,9 @@ class NoticesServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Configure proxy detection EARLY, before any URL generation
+        $this->configureProxyDetection();
+
         // Merge package config with application config
         $this->mergeConfigFrom(
             __DIR__.'/../config/notices.php',
@@ -118,7 +121,8 @@ class NoticesServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Detect if we're behind a proxy and force HTTPS scheme if appropriate
+        // Configure proxy detection again in boot to ensure it's set
+        // (register() might run before request is available)
         $this->configureProxyDetection();
 
         // Register commands (must be outside runningInConsole so Artisan::call() from web works)
@@ -305,12 +309,29 @@ class NoticesServiceProvider extends ServiceProvider
      */
     protected function configureProxyDetection(): void
     {
-        // If the app is accessed via HTTPS (either directly or via proxy headers),
-        // force all URLs to use HTTPS scheme
-        if ($this->app['request']->isSecure() ||
-            $this->app['request']->server('HTTP_X_FORWARDED_PROTO') === 'https' ||
-            $this->app['request']->server('HTTP_X_FORWARDED_SSL') === 'on') {
-            URL::forceScheme('https');
+        // Only run if we're in a web request context (not CLI)
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
+        try {
+            // Check if request is available
+            if (!$this->app->bound('request')) {
+                return;
+            }
+
+            $request = $this->app['request'];
+
+            // If the app is accessed via HTTPS (either directly or via proxy headers),
+            // force all URLs to use HTTPS scheme
+            if ($request->isSecure() ||
+                $request->server('HTTP_X_FORWARDED_PROTO') === 'https' ||
+                $request->server('HTTP_X_FORWARDED_SSL') === 'on') {
+                URL::forceScheme('https');
+            }
+        } catch (\Throwable $e) {
+            // Silently fail if request isn't available yet
+            // Will retry in boot() method
         }
     }
 }
