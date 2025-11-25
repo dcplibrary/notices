@@ -4,11 +4,11 @@ This document explains how to configure the main Laravel application to work cor
 
 ## Problem
 
-When the application is behind an nginx-proxy that handles SSL termination, Laravel generates URLs with incorrect protocol/port combinations (e.g., `https://domain:80`), causing `ERR_SSL_PROTOCOL_ERROR`.
+When the application is behind an nginx-proxy that handles SSL termination, Laravel generates URLs with incorrect protocol/port combinations (e.g., `https://domain:80`), causing `ERR_SSL_PROTOCOL_ERROR` or incorrect OAuth redirects.
 
 ## Solution
 
-The main Laravel application (not this package) needs to be configured to trust proxy headers.
+The main Laravel application (not this package) **MUST** be configured to trust proxy headers. The notices package does NOT attempt to configure proxy detection - it must be done in your main app's `bootstrap/app.php`.
 
 ### Required Configuration
 
@@ -53,19 +53,20 @@ return Application::configure(basePath: dirname(__DIR__))
 
 ### What This Fixes
 
-- ✅ SSO redirects after login (e.g., `/entra/dashboard`)
+- ✅ SSO/OAuth redirects after login (e.g., `/entra/dashboard`, `/entra/callback`)
 - ✅ Navigation links throughout the application
 - ✅ Any Laravel-generated URLs via `route()` or `url()` helpers
 - ✅ Asset URLs and other framework-generated URLs
+- ✅ Prevents `https://domain:80` URLs that cause SSL protocol errors
 
-### Fixes Already Applied in This Package
+### Package-Level Fixes Already Applied
 
-The notices package has already been updated to:
-- Use relative URLs in navigation and fetch calls
-- Disable output buffering for streaming responses
-- Add proxy-friendly headers for streaming endpoints
-
-These package-level fixes ensure the notices dashboard works behind a proxy even if some URLs are still generated incorrectly by the framework.
+The notices package has been updated to work correctly behind proxies:
+- ✅ Uses relative URLs in all navigation and forms to avoid protocol/port issues
+- ✅ Uses relative URLs in JavaScript fetch calls
+- ✅ Disables output buffering for streaming responses
+- ✅ Adds proxy-friendly headers (`X-Accel-Buffering: no`) for streaming endpoints
+- ✅ **Does NOT** attempt to globally configure URL generation (which would interfere with the main app)
 
 ### Testing
 
