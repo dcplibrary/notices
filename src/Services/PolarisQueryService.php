@@ -154,13 +154,13 @@ class PolarisQueryService
                 }
             }
 
-            // For overdue notifications (type 1, 12, 13), query overdue items
-            // Note: CircItemRecords uses DueDateTime, not DueDate
+            // For overdue notifications (type 1, 12, 13), query overdue items from CircOutstandings
+            // CircOutstandings.DueDate contains the actual due date, NOT CircItemRecords
             if (in_array($notificationTypeId, [1, 12, 13])) {
                 $overdues = \DB::connection('polaris')
-                    ->table('Polaris.Polaris.CircItemRecords')
+                    ->table('Polaris.Polaris.CircOutstandings')
                     ->where('PatronID', $patronId)
-                    ->where('DueDateTime', '<', $notificationDate)
+                    ->where('DueDate', '<', $notificationDate)
                     ->whereNull('CheckInDate')
                     ->get();
 
