@@ -13,7 +13,7 @@
         <div class="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
             <!-- Active Filters -->
             @if(request('search'))
-                <a href="{{ route('notices.list', request()->except(['search', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['search', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Search:</span>
                     <span class="font-semibold">{{ Str::limit(request('search'), 20) }}</span>
@@ -24,7 +24,7 @@
             @endif
 
             @if(request('type_id'))
-                <a href="{{ route('notices.list', request()->except(['type_id', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['type_id', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Type:</span>
                     <span class="font-semibold">{{ $notificationTypes[request('type_id')] ?? 'Unknown' }}</span>
@@ -35,7 +35,7 @@
             @endif
 
             @if(request('delivery_id'))
-                <a href="{{ route('notices.list', request()->except(['delivery_id', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['delivery_id', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Delivery:</span>
                     <span class="font-semibold">{{ $deliveryOptions[request('delivery_id')] ?? 'Unknown' }}</span>
@@ -46,7 +46,7 @@
             @endif
 
             @if(request('status'))
-                <a href="{{ route('notices.list', request()->except(['status', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['status', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Status:</span>
                     <span class="font-semibold">{{ ucfirst(request('status')) }}</span>
@@ -57,7 +57,7 @@
             @endif
 
             @if(request('status_id'))
-                <a href="{{ route('notices.list', request()->except(['status_id', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['status_id', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Status:</span>
                     <span class="font-semibold">{{ $notificationStatuses[request('status_id')] ?? 'Unknown' }}</span>
@@ -75,7 +75,7 @@
             @endphp
 
             @if($isCustomDate)
-                <a href="{{ route('notices.list', request()->except(['start_date', 'end_date', 'page'])) }}"
+                <a href="{{ '/notices/list?' . http_build_query(request()->except(['start_date', 'end_date', 'page'])) }}"
                    class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <span class="text-gray-500 mr-1">Date:</span>
                     <span class="font-semibold">
@@ -102,7 +102,7 @@
 
     <!-- Filters -->
     <div x-show="showFilters" x-cloak class="bg-white shadow rounded-lg p-6 mb-6">
-        <form method="GET" action="{{ route('notices.list') }}" class="space-y-4">
+        <form method="GET" action="/notices/list" class="space-y-4">
             <!-- Search -->
             <div class="col-span-full">
                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
@@ -125,43 +125,43 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Quick Date Filters</label>
                 <div class="flex flex-wrap gap-2">
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfDay()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfDay()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Today
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDay()->startOfDay()->format('Y-m-d'), 'end_date' => now()->subDay()->endOfDay()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDay()->startOfDay()->format('Y-m-d'), 'end_date' => now()->subDay()->endOfDay()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Yesterday
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         This Week
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subWeek()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->subWeek()->endOfWeek()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subWeek()->startOfWeek()->format('Y-m-d'), 'end_date' => now()->subWeek()->endOfWeek()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Last Week
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         This Month
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subMonth()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->subMonth()->endOfMonth()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subMonth()->startOfMonth()->format('Y-m-d'), 'end_date' => now()->subMonth()->endOfMonth()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Last Month
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfYear()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->startOfYear()->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         This Year
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(7)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(7)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Last 7 Days
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(30)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(30)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Last 30 Days
                     </a>
-                    <a href="{{ route('notices.list', array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(90)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
+                    <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['start_date', 'end_date', 'page']), ['start_date' => now()->subDays(90)->format('Y-m-d'), 'end_date' => now()->format('Y-m-d')])) }}"
                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                         Last 90 Days
                     </a>
@@ -248,7 +248,7 @@
                 <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
                     Apply Filters
                 </button>
-                <a href="{{ route('notices.list') }}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <a href="/notices/list" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     Clear
                 </a>
             </div>
@@ -263,7 +263,7 @@
                     <tr>
                         <th scope="col" class="w-8 px-3 py-3"></th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_date', 'direction' => request('sort') == 'notification_date' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                            <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_date', 'direction' => request('sort') == 'notification_date' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
                                class="inline-flex items-center hover:text-gray-700 group">
                                 Date
                                 @if(request('sort') == 'notification_date')
@@ -282,7 +282,7 @@
                             </a>
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'patron_barcode', 'direction' => request('sort') == 'patron_barcode' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                            <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'patron_barcode', 'direction' => request('sort') == 'patron_barcode' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
                                class="inline-flex items-center hover:text-gray-700 group">
                                 Patron
                                 @if(request('sort') == 'patron_barcode')
@@ -302,7 +302,7 @@
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_type_id', 'direction' => request('sort') == 'notification_type_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                            <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'notification_type_id', 'direction' => request('sort') == 'notification_type_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
                                class="inline-flex items-center hover:text-gray-700 group">
                                 Type
                                 @if(request('sort') == 'notification_type_id')
@@ -321,7 +321,7 @@
                             </a>
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <a href="{{ route('notices.list', array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'delivery_option_id', 'direction' => request('sort') == 'delivery_option_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
+                            <a href="{{ '/notices/list?' . http_build_query(array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => 'delivery_option_id', 'direction' => request('sort') == 'delivery_option_id' && request('direction') == 'asc' ? 'desc' : 'asc'])) }}"
                                class="inline-flex items-center hover:text-gray-700 group">
                                 Delivery
                                 @if(request('sort') == 'delivery_option_id')
@@ -344,7 +344,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($notifications as $notification)
-                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('notices.notification.detail', $notification->id) }}'">
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ '/notices/list/' . $notification->id }}'">
                         <td class="px-3 py-4 whitespace-nowrap">
                             @php
                                 // Status dot colors
@@ -456,7 +456,7 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('notices.notification.detail', $notification->id) }}"
+                            <a href="{{ '/notices/list/' . $notification->id }}"
                                class="text-indigo-600 hover:text-indigo-900 text-xs">
                                 Details →
                             </a>
