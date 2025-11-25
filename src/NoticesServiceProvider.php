@@ -6,12 +6,12 @@ use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Commands\CheckShoutbombReportsCommand;
 use Dcplibrary\Notices\Commands\ImportCommand;
 use Dcplibrary\Notices\Commands\ImportEmailReports;
-use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
 use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Commands\SyncAllCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
+use Dcplibrary\Notices\Console\Commands\SyncNotificationsFromLogs;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
@@ -122,7 +122,6 @@ class NoticesServiceProvider extends ServiceProvider
             InstallCommand::class,
             SyncAllCommand::class,
             ImportCommand::class, // Simplified unified import command
-            ImportNotifications::class,
             ImportShoutbombReports::class,
             ImportEmailReports::class,
             TestConnections::class,
@@ -134,15 +133,8 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\ListShoutbombFiles::class,
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,
-            Commands\DiagnoseDashboardData::class,
-            Commands\SyncShoutbombToLogs::class,
-            Console\Commands\DiagnoseDashboardDataCommand::class,
-            Console\Commands\DiagnosePatronDataCommand::class,
-            Console\Commands\ImportFTPFiles::class,
-            Console\Commands\ImportPolarisCommand::class,
-            Console\Commands\ImportShoutbombCommand::class,
-            Console\Commands\AggregateNotificationsCommand::class,
-            CheckShoutbombReportsCommand::class,
+            Commands\\DiagnoseDashboardData::class,
+            SyncNotificationsFromLogs::class,
         ]);
 
         // Publish configuration file
@@ -333,9 +325,18 @@ class NoticesServiceProvider extends ServiceProvider
             // END OF DAY PROCESSING (Aggregation and reporting)
             // ═══════════════════════════════════════════════════════════════
 
+            // 9:45 PM - Sync master notifications from NotificationLog
+            // Runs after all imports so NotificationLog is complete for the day
+            if ($settings->get('scheduler.sync_from_logs_enabled', true)) {
+                $schedule->command('notices:sync-from-logs --days=1')
+                    ->dailyAt('21:45')
+                    ->withoutOverlapping()
+                    ->description('Project NotificationLog rows into master notifications and events');
+            }
+
             // 10:00 PM - Daily aggregation of all notification data
-            // → Runs after all imports are complete
-            // → Aggregates data for dashboard and reporting
+            // Runs after all imports are complete and notifications have been projected
+            // Aggregates data for dashboard and reporting
             if ($settings->get('scheduler.aggregation_enabled', true)) {
                 $schedule->command('notices:aggregate --yesterday')
                     ->dailyAt('22:00')

@@ -21,6 +21,7 @@ A Laravel package that connects to your Polaris ILS database and Shoutbomb deliv
 - [Dashboard](#dashboard)
 - [Documentation](#documentation)
 - [Troubleshooting](#troubleshooting)
+- [Master Notifications Data Model](#master-notifications-data-model)
 
 ---
 
@@ -122,6 +123,9 @@ php artisan notices:import --days=7
 # Import Shoutbomb delivery reports
 php artisan notices:import-shoutbomb
 
+# Project NotificationLog rows into master notifications/events
+php artisan notices:sync-from-logs --days=7
+
 # Create summary data for the dashboard
 php artisan notices:aggregate --all
 ```
@@ -142,6 +146,7 @@ Visit `https://yourapp.com/notices` to see your notification data!
 - ✅ **Plugin Architecture**: Modular design for easy channel additions
 - ✅ **CSV Export**: Export verification data, patron history, and failure reports
 - ✅ **RESTful API**: Access data programmatically for custom integrations
+- ✅ **Master notifications lifecycle**: `notifications` + `notification_events` provide a channel-agnostic view of every notice, anchored to Polaris `NotificationLog`
 - ✅ **Direct MSSQL Connection**: Connect to Polaris ILS database
 - ✅ **Shoutbomb Integration**: Import SMS/Voice delivery reports via FTP
 - ✅ **Shoutbomb Reports (Graph) Integration**: Optionally read failure reports from dcplibrary/shoutbomb-reports
@@ -400,6 +405,7 @@ The package will automatically run these tasks daily:
 - **5:30 AM** - Import patron lists
 - **6:30 AM** - Import invalid phone reports
 - **8:30 AM** - Import morning notifications
+- **9:45 PM** - Sync master `notifications` + `notification_events` from `notification_logs` (NotificationLog)
 - **10:00 PM** - Aggregate the day's data
 
 See [Import Schedule Documentation](docs/IMPORT_SCHEDULE.md) for details on timing and customization.
@@ -598,12 +604,18 @@ Understanding the data flow helps you troubleshoot issues and customize the pack
 └────────┬────────┘
          │ Import via notices:import
          ▼
-┌─────────────────┐
-│ notification_   │  Cached in local MySQL for fast queries
-│ logs            │
-└────────┬────────┘
+┌────────────────────────┐
+│ notification_logs      │  Cached Polaris NotificationLog
+└────────┬───────────────┘
          │
-         ├──► Dashboard queries
+         │  Project via notices:sync-from-logs
+         ▼
+┌────────────────────────┐
+│ notifications          │  Master, channel-agnostic notices
+│ notification_events    │  Lifecycle events (queued→delivered/failed)
+└────────┬───────────────┘
+         │
+         ├──► Dashboard & verification views
          │
          └──► Matched with ▼
                 ┌─────────────────┐
@@ -631,7 +643,54 @@ Understanding the data flow helps you troubleshoot issues and customize the pack
 
 **📚 Detailed architecture documentation:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-## Models
+### Models
+
+### Notification (master)
+
+The `Notification` model represents a **channel-agnostic, vendor-agnostic** notification record for a patron + item, anchored to Polaris `NotificationLog` but enriched from PhoneNotices and Shoutbomb exports.
+
+```php
+use Dcplibrary\Notices\Models\Notification;
+
+// All notifications for a patron
+$notifications = Notification::with(['events', 'notificationLog'])
+    ->where('patron_barcode', $barcode)
+    ->orderByDesc('notice_date')
+    ->get();
+
+// All notifications for an item
+$itemNotifications = Notification::with('events')
+    ->where('item_record_id', $itemRecordId)
+    ->orderByDesc('notice_date')
+    ->get();
+```
+
+Key points:
+
+- `notification_log_id` stores Polaris `NotificationLogID` and links back to the cached `notification_logs` table.
+- Snapshots of patron/item/title and delivery context live on this table for fast lookups.
+- `events()` gives you the full lifecycle (queued → exported → submitted → delivered/failed).
+
+### NotificationEvent
+
+Lifecycle events tied to a `Notification` (queued, exported, submitted, phonenotices_recorded, delivered, failed, verified).
+
+```php
+use Dcplibrary\Notices\Models\NotificationEvent;
+
+$failedSms = NotificationEvent::where('event_type', NotificationEvent::TYPE_FAILED)
+    ->where('delivery_option_id', 8) // SMS
+    ->whereBetween('event_at', [$start, $end])
+    ->get();
+```
+
+Each event records:
+
+- `event_type` (queued/exported/submitted/phonenotices_recorded/delivered/failed/verified)
+- `event_at` (timestamp)
+- `delivery_option_id` (channel at time of event)
+- `status_code`/`status_text` (channel-aware result, e.g. "SMS Delivered", "Email Failed – Invalid Address")
+- `source_table`/`source_id` to trace back to raw tables (`notification_logs`, `polaris_phone_notices`, `notice_failure_reports`, etc.)
 
 ### NotificationLog
 
@@ -766,6 +825,7 @@ Comprehensive documentation is available in the `docs/` directory:
 
 ### Architecture & Technical Details
 - **[Architecture Documentation](docs/ARCHITECTURE.md)** - Complete system architecture: controllers, services, commands, models, data flow, and view integration
+- **[Master Notifications Data Model](docs/MASTER_NOTIFICATIONS.md)** - How `notifications` + `notification_events` unify data from NotificationLog, PhoneNotices, and Shoutbomb
 - **[Doctrine Annotations](docs/DOCTRINE_ANNOTATIONS.md)** - Why this package doesn't use doctrine/annotations (uses Laravel Eloquent)
 - **[Package Merge Guide](docs/PACKAGE_MERGE.md)** - Migration guide for NoticeFailureReport merge from shoutbomb-reports package
 
