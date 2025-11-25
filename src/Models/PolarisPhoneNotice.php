@@ -48,11 +48,13 @@ class PolarisPhoneNotice extends Model
         'item_record_id',
         'bib_record_id',
         'source_file',
+        'import_date',
         'imported_at',
     ];
 
     protected $casts = [
         'notice_date' => 'date',
+        'import_date' => 'date',
         'patron_id' => 'integer',
         'item_record_id' => 'integer',
         'bib_record_id' => 'integer',

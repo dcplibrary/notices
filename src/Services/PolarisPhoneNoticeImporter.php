@@ -199,6 +199,17 @@ class PolarisPhoneNoticeImporter
                     $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
                 }
 
+                // Set import_date from notice_date or fall back to today
+                if (!empty($notice['notice_date'])) {
+                    try {
+                        $notice['import_date'] = Carbon::parse($notice['notice_date'])->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $notice['import_date'] = $timestamp->format('Y-m-d');
+                    }
+                } else {
+                    $notice['import_date'] = $timestamp->format('Y-m-d');
+                }
+
                 // Insert individual record - this ensures proper PDO parameter binding
                 PolarisPhoneNotice::create($notice);
                 $imported++;
