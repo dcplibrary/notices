@@ -30,28 +30,28 @@
                         <h1 class="text-xl font-bold text-gray-800">Notifications Dashboard</h1>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('notices.dashboard') }}"
+                        <a href="/notices"
                            class="@if(request()->routeIs('notices.dashboard')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Overview
                         </a>
-                        <a href="{{ route('notices.list') }}"
+                        <a href="/notices/list"
                            class="@if(request()->routeIs('notices.list')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Notifications
                         </a>
-                        <a href="{{ route('notices.shoutbomb') }}"
+                        <a href="/notices/shoutbomb"
                            class="@if(request()->routeIs('notices.shoutbomb')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Shoutbomb
                         </a>
-                        <a href="{{ route('notices.verification.index') }}"
+                        <a href="/notices/verification"
                            class="@if(request()->routeIs('notices.verification.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Verification
                         </a>
-                        <a href="{{ route('notices.troubleshooting') }}"
+                        <a href="/notices/troubleshooting"
                            class="@if(request()->routeIs('notices.troubleshooting')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Troubleshooting
                         </a>
                         @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
-                        <a href="{{ route('notices.settings.index') }}"
+                        <a href="/notices/settings"
                            class="@if(request()->routeIs('notices.settings.*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Settings
                         </a>
@@ -78,32 +78,32 @@
         </div>
 
         <!-- Mobile menu -->
-        <div x-show="mobileMenuOpen" 
+        <div x-show="mobileMenuOpen"
              x-cloak
              class="sm:hidden">
             <div class="pt-2 pb-3 space-y-1">
-                <a href="{{ route('notices.dashboard') }}"
+                <a href="/notices"
                    class="@if(request()->routeIs('notices.dashboard')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Overview
                 </a>
-                <a href="{{ route('notices.list') }}"
+                <a href="/notices/list"
                    class="@if(request()->routeIs('notices.list')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Notifications
                 </a>
-                <a href="{{ route('notices.shoutbomb') }}"
+                <a href="/notices/shoutbomb"
                    class="@if(request()->routeIs('notices.shoutbomb')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Shoutbomb
                 </a>
-                <a href="{{ route('notices.verification.index') }}"
+                <a href="/notices/verification"
                    class="@if(request()->routeIs('notices.verification.*')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Verification
                 </a>
-                <a href="{{ route('notices.troubleshooting') }}"
+                <a href="/notices/troubleshooting"
                    class="@if(request()->routeIs('notices.troubleshooting')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Troubleshooting
                 </a>
                 @if(Auth::check() && Auth::user()->inGroup('Computer Services'))
-                <a href="{{ route('notices.settings.index') }}"
+                <a href="/notices/settings"
                    class="@if(request()->routeIs('notices.settings.*')) bg-indigo-50 border-indigo-500 text-indigo-700 @else border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 @endif block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                     Settings
                 </a>
