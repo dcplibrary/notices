@@ -254,6 +254,11 @@ class SyncController extends Controller
         // We intentionally do NOT wrap this in SyncLog; this endpoint is for live streaming only.
         set_time_limit(300);
 
+        // Disable all output buffering for streaming to work properly behind proxies
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
         $command = $request->input('command');
 
         if (!is_array($command) || empty($command)) {
@@ -262,6 +267,13 @@ class SyncController extends Controller
         }
 
         return response()->stream(function () use ($command) {
+            // Disable output buffering at the stream level too
+            if (function_exists('apache_setenv')) {
+                @apache_setenv('no-gzip', '1');
+            }
+            @ini_set('zlib.output_compression', '0');
+            @ini_set('implicit_flush', '1');
+
             $process = new Process($command, base_path());
             $process->setTimeout(3600);
             $process->start();
@@ -291,8 +303,10 @@ class SyncController extends Controller
                     $payload = ['progress' => $line];
 
                     echo json_encode($payload) . "\n";
-                    @ob_flush();
-                    @flush();
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                    }
+                    flush();
                 }
             }
 
@@ -313,12 +327,16 @@ class SyncController extends Controller
             }
 
             echo json_encode($finalPayload) . "\n";
-            @ob_flush();
-            @flush();
+            if (ob_get_level() > 0) {
+                ob_flush();
+            }
+            flush();
         }, 200, [
             'Content-Type' => 'application/x-ndjson',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
-            'X-Accel-Buffering' => 'no',
+            'X-Accel-Buffering' => 'no', // Nginx: disable buffering
+            'Pragma' => 'no-cache', // HTTP/1.0 compatibility
+            'Expires' => '0', // Proxies: don't cache
         ]);
     }
 
