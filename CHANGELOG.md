@@ -1,3 +1,10 @@
+# [2.0.0](https://github.com/dcplibrary/notices/compare/v1.26.2...v2.0.0) (2025-11-25)
+
+
+### Features
+
+* force semantic-release ([d9caafc](https://github.com/dcplibrary/notices/commit/d9caafc9c4c821d6ba9fa782a24b061c3f767be5))
+
 # Changelog
 
 All notable changes to the Polaris Notices Package will be documented in this file.
