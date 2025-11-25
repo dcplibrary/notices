@@ -117,12 +117,20 @@
                     </div>
                     @endif
 
-                    @if($notification->delivery_string && in_array($notification->delivery_option_id, [2, 3, 8]))
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Delivery Address</dt>
-                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->delivery_string }}</dd>
+                        <dt class="text-sm font-medium text-gray-500">Delivery To</dt>
+                        <dd class="mt-1 text-sm text-gray-900 font-mono">
+                            @if($notification->delivery_string)
+                                {{ $notification->delivery_string }}
+                            @elseif($notification->patron_phone && in_array($notification->delivery_option_id, [3, 8]))
+                                {{ $notification->patron_phone }}
+                            @elseif($notification->patron_email && $notification->delivery_option_id == 2)
+                                {{ $notification->patron_email }}
+                            @else
+                                N/A
+                            @endif
+                        </dd>
                     </div>
-                    @endif
 
                     @if($notification->patron && $notification->patron->ExpirationDate)
                     <div>
@@ -227,7 +235,8 @@
 
     <!-- Items Associated with this Notification -->
     @php
-        $phoneNotices = $notification->polaris_phone_notices;
+        // Get unique phone notices by item_record_id to avoid duplicates
+        $phoneNotices = $notification->polaris_phone_notices->unique('item_record_id');
         $items = $notification->items;
     @endphp
     @if($phoneNotices->count() > 0 || $items->count() > 0)
