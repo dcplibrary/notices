@@ -7,7 +7,7 @@
     <div class="max-w-3xl mx-auto">
         <!-- Header -->
         <div class="mb-6">
-            <a href="{{ route('notices.settings.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
+            <a href="/notices/settings" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
                 <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -41,7 +41,7 @@
 
         <!-- Form -->
         <div class="bg-white shadow sm:rounded-lg">
-            <form action="{{ route('notices.settings.update', $setting->id) }}" method="POST">
+            <form action="/notices/settings/{{ $setting->id }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -137,7 +137,7 @@
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                         Save Changes
                     </button>
-                    <a href="{{ route('notices.settings.index') }}"
+                    <a href="/notices/settings"
                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                         Cancel
                     </a>
