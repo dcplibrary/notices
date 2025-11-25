@@ -27,6 +27,7 @@ use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 
@@ -117,6 +118,9 @@ class NoticesServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Detect if we're behind a proxy and force HTTPS scheme if appropriate
+        $this->configureProxyDetection();
+
         // Register commands (must be outside runningInConsole so Artisan::call() from web works)
         $this->commands([
             InstallCommand::class,
@@ -294,5 +298,19 @@ class NoticesServiceProvider extends ServiceProvider
         });
 
         return $isDbSeed && !$hasClass;
+    }
+
+    /**
+     * Configure proxy detection for HTTPS behind reverse proxies.
+     */
+    protected function configureProxyDetection(): void
+    {
+        // If the app is accessed via HTTPS (either directly or via proxy headers),
+        // force all URLs to use HTTPS scheme
+        if ($this->app['request']->isSecure() ||
+            $this->app['request']->server('HTTP_X_FORWARDED_PROTO') === 'https' ||
+            $this->app['request']->server('HTTP_X_FORWARDED_SSL') === 'on') {
+            URL::forceScheme('https');
+        }
     }
 }

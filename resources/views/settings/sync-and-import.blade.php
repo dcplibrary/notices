@@ -168,9 +168,10 @@
 
     Livewire.on('startImportStream', (data) => {
         const command = data.command;
-        
+
         // Call backend to start streaming process
-        fetch('{{ route('notices.sync.ftp-files.stream') }}', {
+        // Use relative URL to avoid SSL/port issues with proxies
+        fetch('{{ url('/') }}/notices/sync/ftp-files/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -224,7 +225,8 @@
 
     Livewire.on('cancelImport', () => {
         // Call backend to cancel process (best-effort)
-        fetch('{{ route('notices.sync.ftp-files.cancel') }}', {
+        // Use relative URL to avoid SSL/port issues with proxies
+        fetch('{{ url('/') }}/notices/sync/ftp-files/cancel', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
