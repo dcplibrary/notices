@@ -15,7 +15,7 @@
     <!-- Search Form -->
     <div class="bg-white shadow rounded-lg p-6 mb-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Search Notices</h3>
-        <form method="GET" action="{{ route('notices.verification.index') }}" class="space-y-4">
+        <form method="GET" action="/notices/verification" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <!-- Patron Barcode -->
                 <div>
@@ -95,7 +95,7 @@
             </div>
 
             <div class="flex justify-end space-x-3">
-                <a href="{{ route('notices.verification.index') }}"
+                <a href="/notices/verification"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Clear
                 </a>
@@ -149,7 +149,7 @@
 
         <!-- Export Button -->
         <div class="mb-4 flex justify-end">
-            <a href="{{ route('notices.verification.export', request()->all()) }}"
+            <a href="/notices/verification/export?{{ http_build_query(request()->all()) }}"
                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -238,13 +238,13 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <a href="{{ route('notices.verification.timeline', $result['notice']->id) }}"
+                            <a href="/notices/verification/{{ $result['notice']->id }}"
                                class="text-indigo-600 hover:text-indigo-900">
                                 View Timeline
                             </a>
                             @if($result['notice']->patron_barcode)
                             <span class="text-gray-300">|</span>
-                            <a href="{{ route('notices.verification.patron', $result['notice']->patron_barcode) }}"
+                            <a href="/notices/verification/patron/{{ $result['notice']->patron_barcode }}"
                                class="text-indigo-600 hover:text-indigo-900">
                                 Patron History
                             </a>

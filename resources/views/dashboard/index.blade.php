@@ -58,23 +58,23 @@
                  x-cloak
                  class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
                 <div class="py-1">
-                    <a href="{{ route('notices.dashboard', ['days' => 7]) }}" 
+                    <a href="/notices?days=7"
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 7 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 7 Days
                     </a>
-                    <a href="{{ route('notices.dashboard', ['days' => 30]) }}" 
+                    <a href="/notices?days=30"
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 30 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 30 Days
                     </a>
-                    <a href="{{ route('notices.dashboard', ['days' => 90]) }}" 
+                    <a href="/notices?days=90"
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 90 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 90 Days
                     </a>
-                    <a href="{{ route('notices.dashboard', ['days' => 180]) }}" 
+                    <a href="/notices?days=180"
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 180 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 180 Days
                     </a>
-                    <a href="{{ route('notices.dashboard', ['days' => 365]) }}" 
+                    <a href="/notices?days=365"
                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 {{ $days == 365 ? 'bg-gray-50 font-semibold' : '' }}">
                         Last 365 Days
                     </a>
@@ -111,7 +111,7 @@
                         </button>
                     </div>
                     
-                    <form method="GET" action="{{ route('notices.dashboard') }}">
+                    <form method="GET" action="/notices">
                         <div class="space-y-4">
                             <div>
                                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">
@@ -235,7 +235,7 @@
     <!-- Stats Grid -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <!-- Total Sent -->
-        <a href="{{ route('notices.list') }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="/notices/list" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Total Sent</dt>
                 <dd class="mt-1 text-3xl font-semibold text-gray-900">
@@ -245,7 +245,7 @@
         </a>
 
         <!-- Successful -->
-        <a href="{{ route('notices.list', ['status' => 'completed']) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="/notices/list?status=completed" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Successful</dt>
                 <dd class="mt-1 text-3xl font-semibold text-green-600">
@@ -258,7 +258,7 @@
         </a>
 
         <!-- Failed -->
-        <a href="{{ route('notices.list', ['status' => 'failed']) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="/notices/list?status=failed" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Failed</dt>
                 <dd class="mt-1 text-3xl font-semibold text-red-600">
@@ -268,7 +268,7 @@
         </a>
 
         <!-- Unique Patrons -->
-        <a href="{{ route('notices.list', ['type_id' => 2]) }}" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+        <a href="/notices/list?type_id=2" class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
             <div class="px-4 py-5 sm:p-6">
                 <dt class="text-sm font-medium text-gray-500 truncate">Total Holds</dt>
                 <dd class="mt-1 text-3xl font-semibold text-indigo-600">
@@ -307,7 +307,7 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($typeDistribution as $type)
-                <a href="{{ route('notices.list', ['type_id' => $type->notification_type_id]) }}"
+                <a href="/notices/list?type_id={{ $type->notification_type_id }}"
                    class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
                     <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
@@ -328,7 +328,7 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($deliveryDistribution as $delivery)
-                <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+                <a href="/notices/list?delivery_id={{ $delivery->delivery_option_id }}"
                    class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
                     <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
@@ -347,7 +347,7 @@
         <h3 class="text-lg font-medium text-gray-900 mb-4">Unique Patrons by Delivery Method</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             @foreach($patronsByDelivery as $delivery)
-            <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+            <a href="/notices/list?delivery_id={{ $delivery->delivery_option_id }}"
                class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
                 <dt class="text-sm font-medium text-gray-500">
                     {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
@@ -446,9 +446,9 @@ new Chart(trendCtx, {
                 const index = element.index;
                 const datasetIndex = element.datasetIndex;
                 const date = trendDates[index];
-                
-                let url = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
-                
+
+                let url = '/notices/list?start_date=' + date + '&end_date=' + date;
+
                 // Add status filter based on which line was clicked
                 // Dataset 0 = Sent (no filter)
                 // Dataset 1 = Success (filter to completed status)
@@ -458,7 +458,7 @@ new Chart(trendCtx, {
                 } else if (datasetIndex === 2) {
                     url += '&status=failed';
                 }
-                
+
                 window.location.href = url;
             }
         },
@@ -507,7 +507,7 @@ new Chart(successRateCtx, {
             if (elements.length > 0) {
                 const index = elements[0].index;
                 const date = successRateDates[index];
-                window.location.href = '{{ route('notices.list') }}?start_date=' + date + '&end_date=' + date;
+                window.location.href = '/notices/list?start_date=' + date + '&end_date=' + date;
             }
         },
         onHover: (event, elements) => {
@@ -552,7 +552,7 @@ new Chart(typeCtx, {
             if (elements.length > 0) {
                 const index = elements[0].index;
                 const typeId = typeIdsOverview[index];
-                window.location.href = '{{ route('notices.list') }}?type_id=' + typeId;
+                window.location.href = '/notices/list?type_id=' + typeId;
             }
         },
         onHover: (event, elements) => {
@@ -601,7 +601,7 @@ new Chart(deliveryCtx, {
             if (elements.length > 0) {
                 const index = elements[0].index;
                 const deliveryId = deliveryIdsOverview[index];
-                window.location.href = '{{ route('notices.list') }}?delivery_id=' + deliveryId;
+                window.location.href = '/notices/list?delivery_id=' + deliveryId;
             }
         },
         onHover: (event, elements) => {
