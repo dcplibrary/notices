@@ -5,7 +5,16 @@ This document provides a complete index of all documentation for the DC Public L
 ## Quick Links
 
 - [Main README](../README.md) - Package overview, installation, and basic usage
+- [User Guide](help/USER_GUIDE.md) - How to use the dashboard
 - [Changelog](../CHANGELOG.md) - Version history and release notes
+
+## User Documentation
+
+- [**User Guide**](help/USER_GUIDE.md) - Dashboard features and how to use them
+  - Searching for notifications
+  - Understanding dashboard pages
+  - Common tasks and scenarios
+  - Quick reference guide
 
 ## Architecture & Design
 
@@ -68,6 +77,8 @@ docs/
 ├── DOCTRINE_ANNOTATIONS.md
 ├── IMPORT_SCHEDULE.md
 ├── PACKAGE_MERGE.md
+├── help/
+│   └── USER_GUIDE.md
 ├── deployment/
 │   ├── PROXY_CONFIGURATION.md
 │   └── PROXY_DIAGNOSTICS.md
@@ -96,6 +107,7 @@ When creating or modifying documentation for this package:
 1. **ALL documentation MUST go in the `docs/` folder** - Never create documentation files in the root directory
 
 2. **Use appropriate subdirectories:**
+   - `docs/help/` - End-user documentation (dashboard usage, features, common tasks)
    - `docs/deployment/` - Deployment, configuration, infrastructure, proxy setup
    - `docs/shoutbomb/` - Shoutbomb integration specifics
    - `docs/` (root) - Architecture, design, general development documentation
@@ -103,6 +115,8 @@ When creating or modifying documentation for this package:
 3. **Always update `docs/INDEX.md`** when adding new documentation
 
 4. **Create subdirectory indexes** for integration-specific docs (like `SHOUTBOMB_DOCUMENTATION_INDEX.md`)
+
+5. **Keep help docs separate from developer docs** - Help documentation focuses on using the interface and features, not technical implementation or code
 
 ### Naming Conventions
 
