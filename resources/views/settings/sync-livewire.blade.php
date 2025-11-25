@@ -256,7 +256,8 @@
 @push('scripts')
 <script>
     function syncHistoryManager() {
-        const logUrlTemplate = @json(route('notices.sync.log', ['id' => '__ID__']));
+        // Use relative URL to avoid SSL/port issues with proxies
+        const logUrlTemplate = '/notices/sync/log/__ID__';
 
         const operationLabels = {
             'sync_all': 'Complete Sync',
