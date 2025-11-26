@@ -1,3 +1,10 @@
+## [4.0.3](https://github.com/dcplibrary/notices/compare/v4.0.2...v4.0.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* clean up Notification Details view ([c5a6477](https://github.com/dcplibrary/notices/commit/c5a6477625c5f9e94ccf1c047b24728822a1fda1))
+
 ## [4.0.2](https://github.com/dcplibrary/notices/compare/v4.0.1...v4.0.2) (2025-11-26)
 
 
