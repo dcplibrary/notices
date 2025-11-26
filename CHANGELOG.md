@@ -1,3 +1,10 @@
+# [3.0.0](https://github.com/dcplibrary/notices/compare/v2.0.2...v3.0.0) (2025-11-26)
+
+
+### Features
+
+* add enrichment data to notifications ([d71d50d](https://github.com/dcplibrary/notices/commit/d71d50d2e009e72ee92fefdd2952164fbd7634da))
+
 ## [2.0.2](https://github.com/dcplibrary/notices/compare/v2.0.1...v2.0.2) (2025-11-25)
 
 
