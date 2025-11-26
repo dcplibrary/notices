@@ -1,3 +1,11 @@
+## [4.0.1](https://github.com/dcplibrary/notices/compare/v4.0.0...v4.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* configure semantic-release to properly handle version bumps ([d8096bc](https://github.com/dcplibrary/notices/commit/d8096bc0e0bdf5243698fda5a8f0d01999c031d7))
+* configure semantic-release to properly handle version bumps ([ab3072f](https://github.com/dcplibrary/notices/commit/ab3072f94630eda0ab09668bb18fd281215c9daf))
+
 # [4.0.0](https://github.com/dcplibrary/notices/compare/v3.0.3...v4.0.0) (2025-11-26)
 
 
