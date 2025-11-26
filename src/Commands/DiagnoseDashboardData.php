@@ -46,7 +46,7 @@ class DiagnoseDashboardData extends Command
             $this->line('   This is why your dashboard shows no data.');
             $this->newLine();
             $this->line('   Solution: Import data with one of these commands:');
-            $this->line('   • php artisan notices:import --days=90  (from Polaris)');
+            $this->line('   • php artisan notices:import-polaris --days=90  (from Polaris)');
             $this->line('   • php artisan notices:sync-shoutbomb-to-logs --days=90  (from Shoutbomb)');
             $this->newLine();
         } else {
@@ -176,7 +176,7 @@ class DiagnoseDashboardData extends Command
 
         if ($totalLogs === 0) {
             $this->line('1️⃣  CRITICAL: Import notification data');
-            $this->line('   Run: php artisan notices:import --days=90');
+            $this->line('   Run: php artisan notices:import-polaris --days=90');
             $this->newLine();
         }
 
@@ -194,7 +194,7 @@ class DiagnoseDashboardData extends Command
 
         if ($totalLogs > 0 && $logsInRange === 0) {
             $this->line('4️⃣  Date range mismatch - import recent data');
-            $this->line('   Run: php artisan notices:import --days=7');
+            $this->line('   Run: php artisan notices:import-polaris --days=7');
             $this->newLine();
         }
 

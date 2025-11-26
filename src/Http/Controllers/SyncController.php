@@ -543,14 +543,14 @@ class SyncController extends Controller
     {
         // Preflight: ensure the command is registered so web-triggered Artisan::call works
         $commands = Artisan::all();
-        if (!array_key_exists('notices:import-shoutbomb-email', $commands)) {
+        if (!array_key_exists('notices:import-email-reports', $commands)) {
             return [
                 'status' => 'error',
-                'message' => "Command 'notices:import-shoutbomb-email' is not registered. Check that the CheckShoutbombReportsCommand is loaded.",
+                'message' => "Command 'notices:import-email-reports' is not registered. Check that the CheckShoutbombReportsCommand is loaded.",
             ];
         }
 
-        $exitCode = Artisan::call('notices:import-shoutbomb-email', ['--mark-read' => true]);
+        $exitCode = Artisan::call('notices:import-email-reports', ['--mark-read' => true]);
         $output = Artisan::output();
 
         // Attempt to parse a generic processed count if present

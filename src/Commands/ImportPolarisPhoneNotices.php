@@ -17,9 +17,13 @@ class ImportPolarisPhoneNotices extends Command
 {
     protected $signature = 'notices:import-polaris-phone-notices
                             {--file= : Import from local file instead of FTP}
+                            {--date= : Import records for a specific date (Y-m-d)}
+                            {--start= : Start date (Y-m-d)}
+                            {--end= : End date (Y-m-d)}
                             {--days= : Number of days back to import (defaults to notices.import.default_days)}
-                            {--start-date= : Start date (Y-m-d)}
-                            {--end-date= : End date (Y-m-d)}';
+                            {--all : Import all available PhoneNotices files from FTP}
+                            {--start-date= : [deprecated] Alias for --start (Y-m-d)}
+                            {--end-date= : [deprecated] Alias for --end (Y-m-d)}';
 
     protected $description = 'Import Polaris PhoneNotices.csv for verification of notices sent to Shoutbomb';
 
@@ -136,13 +140,36 @@ class ImportPolarisPhoneNotices extends Command
         $startDate = null;
         $endDate = null;
 
-        if ($this->option('start-date') && $this->option('end-date')) {
-            $startDate = Carbon::parse($this->option('start-date'))->startOfDay();
-            $endDate = Carbon::parse($this->option('end-date'))->endOfDay();
-        } elseif ($this->option('days')) {
+        if ($this->option('all')) {
+            // Null range signals the importer to use its own default windowing and
+            // not apply an explicit date filter to filenames.
+            return [$startDate, $endDate];
+        }
+
+        if ($date = $this->option('date')) {
+            $target = Carbon::parse($date);
+
+            return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+        }
+
+        $start = $this->option('start') ?: $this->option('start-date');
+        $end = $this->option('end') ?: $this->option('end-date');
+
+        if ($start || $end) {
+            $startDate = $start
+                ? Carbon::parse($start)->startOfDay()
+                : now()->startOfDay();
+            $endDate = $end
+                ? Carbon::parse($end)->endOfDay()
+                : now()->endOfDay();
+
+            return [$startDate, $endDate];
+        }
+
+        if ($this->option('days')) {
             $days = (int) $this->option('days');
             $endDate = now()->endOfDay();
-            $startDate = now()->subDays($days)->startOfDay();
+            $startDate = now()->subDays(max($days, 1) - 1)->startOfDay();
         }
 
         return [$startDate, $endDate];

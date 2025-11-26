@@ -1,21 +1,11 @@
-<?php
-
-namespace Dcplibrary\Notices\Commands;
-
-use Dcplibrary\Notices\Services\EmailReportService;
-use Dcplibrary\Notices\Services\ShoutbombEmailParser;
-use Exception;
-use Illuminate\Console\Command;
-
-class ImportEmailReports extends Command
-{
     /**
      * The name and signature of the console command.
      */
     protected $signature = 'notices:import-email-reports
                             {--mark-read : Mark imported emails as read}
                             {--move-to= : Move imported emails to specified folder}
-                            {--limit=50 : Maximum number of emails to process per run}';
+                            {--limit=50 : Maximum number of emails to process per run}
+                            {--all : Process all matching emails (legacy command; prefer Graph-based importer)}';
 
     /**
      * The console command description.

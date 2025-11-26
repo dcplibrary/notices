@@ -1,15 +1,3 @@
-<?php
-
-namespace Dcplibrary\Notices\Commands;
-
-use Carbon\Carbon;
-use Dcplibrary\Notices\Services\NotificationAggregatorService;
-use Dcplibrary\Notices\Services\PolarisImportService;
-use Exception;
-use Illuminate\Console\Command;
-
-class ImportNotifications extends Command
-{
     /**
      * The name and signature of the console command.
      */
@@ -17,7 +5,8 @@ class ImportNotifications extends Command
                             {--days=1 : Number of days to import}
                             {--start-date= : Start date for import (Y-m-d format)}
                             {--end-date= : End date for import (Y-m-d format)}
-                            {--full : Import all historical data}';
+                            {--full : Import all historical data (deprecated, use --all)}
+                            {--all : Import all historical data}';
 
     /**
      * The console command description.
@@ -35,7 +24,9 @@ class ImportNotifications extends Command
         try {
             $result = null;
 
-            if ($this->option('full')) {
+            $full = $this->option('full') || $this->option('all');
+
+            if ($full) {
                 // Full historical import
                 $this->warn('⚠️  Full historical import requested. This may take a while...');
 

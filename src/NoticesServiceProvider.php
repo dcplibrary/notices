@@ -5,7 +5,6 @@ namespace Dcplibrary\Notices;
 use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Commands\CheckShoutbombReportsCommand;
 use Dcplibrary\Notices\Commands\ImportCommand;
-use Dcplibrary\Notices\Commands\ImportEmailReports;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
 use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
@@ -128,7 +127,6 @@ class NoticesServiceProvider extends ServiceProvider
             SyncAllCommand::class,
             ImportCommand::class, // Simplified unified import command
             ImportShoutbombReports::class,
-            ImportEmailReports::class,
             TestConnections::class,
             SeedDemoDataCommand::class,
             BackfillNotificationStatus::class,
@@ -260,14 +258,14 @@ class NoticesServiceProvider extends ServiceProvider
                     ->description('Import patron delivery preference lists (voice + text)');
             }
 
-            // 6:30 AM - Import Shoutbomb invalid phone reports
-            // → Shoutbomb sends Daily Invalid Phone Report at ~6:01 AM
-            // → 30 min buffer for email delivery
+            // 6:30 AM - Import Shoutbomb invalid phone reports via Microsoft Graph
+            // 	Shoutbomb sends Daily Invalid Phone Report at ~6:01 AM
+            // 	30 min buffer for email delivery
             if ($settings->get('scheduler.import_invalid_reports_enabled', true)) {
-                $schedule->command('notices:import-email-reports --type=invalid --mark-read')
+                $schedule->command('notices:import-email-reports --mark-read')
                     ->dailyAt('06:30')
                     ->withoutOverlapping()
-                    ->description('Import opt-out and invalid phone number reports');
+                    ->description('Import opt-out and invalid phone number reports (Graph email)');
             }
 
             // 8:30 AM - Import morning notification exports + Polaris PhoneNotices
@@ -306,14 +304,14 @@ class NoticesServiceProvider extends ServiceProvider
                     ->description('Import afternoon hold notifications');
             }
 
-            // 4:30 PM - Import Shoutbomb voice failure reports
-            // → Shoutbomb sends Daily Voice Failure Report at ~4:10 PM
-            // → 20 min buffer for email delivery
+            // 4:30 PM - Import Shoutbomb voice failure reports via Microsoft Graph
+            // 	Shoutbomb sends Daily Voice Failure Report at ~4:10 PM
+            // 	20 min buffer for email delivery
             if ($settings->get('scheduler.import_voice_failures_enabled', true)) {
-                $schedule->command('notices:import-email-reports --type=voice-failures --mark-read')
+                $schedule->command('notices:import-email-reports --mark-read')
                     ->dailyAt('16:30')
                     ->withoutOverlapping()
-                    ->description('Import voice call failure reports');
+                    ->description('Import voice call failure reports (Graph email)');
             }
 
             // 5:30 PM - Import evening hold export #4
@@ -354,30 +352,17 @@ class NoticesServiceProvider extends ServiceProvider
             // MONTHLY TASKS
             // ═══════════════════════════════════════════════════════════════
 
-            // 2nd of each month at 2:00 PM - Import monthly statistics report
-            // → Shoutbomb sends Monthly Statistics Report on 1st of month at ~1:14 PM
-            // → Import next day to ensure email has arrived
+            // 2nd of each month at 2:00 PM - Import monthly statistics report via Microsoft Graph
+            // 	Shoutbomb sends Monthly Statistics Report on 1st of month at ~1:14 PM
+            // 	Import next day to ensure email has arrived
             if ($settings->get('scheduler.import_monthly_stats_enabled', true)) {
-                $schedule->command('notices:import-email-reports --type=monthly-stats --mark-read')
+                $schedule->command('notices:import-email-reports --mark-read')
                     ->monthlyOn(2, '14:00')
                     ->withoutOverlapping()
-                    ->description('Import Shoutbomb monthly statistics report');
+                    ->description('Import Shoutbomb monthly statistics report (Graph email)');
             }
 
-            // ═══════════════════════════════════════════════════════════════
-            // LEGACY/FALLBACK TASKS (for backward compatibility)
-            // ═══════════════════════════════════════════════════════════════
-
-            // Unified import command (if granular scheduling is disabled)
-            // → Imports all data types in one command
-            // → Useful for simplified setups or testing
-            if ($settings->get('scheduler.import_enabled', false)) {
-                $time = $settings->get('scheduler.import_time', '09:00');
-                $schedule->command('notices:import --days=1')
-                    ->dailyAt($time)
-                    ->withoutOverlapping()
-                    ->description('Unified import (legacy - use granular schedule instead)');
-            }
+            // (Former legacy unified import schedule removed; use granular commands instead.)
         });
     }
 

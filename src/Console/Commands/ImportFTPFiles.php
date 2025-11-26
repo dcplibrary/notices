@@ -20,11 +20,14 @@ use Illuminate\Console\Command;
 class ImportFTPFiles extends Command
 {
     protected $signature = 'notices:import-ftp-files
-                            {--from= : Start date (Y-m-d), defaults to today}
-                            {--to= : End date (Y-m-d), defaults to today}
+                            {--date= : Import files for a specific date (Y-m-d)}
+                            {--start= : Start date for range (Y-m-d), defaults to today}
+                            {--end= : End date for range (Y-m-d), defaults to today}
                             {--days= : Number of days back to import (alternative to date range)}
                             {--all : Import all available files regardless of date}
-                            {--import-patrons : Also import patron delivery preferences (voice/text)}';
+                            {--import-patrons : Also import patron delivery preferences (voice/text)}
+                            {--from= : [deprecated] Alias for --start (Y-m-d)}
+                            {--to= : [deprecated] Alias for --end (Y-m-d)}';
 
     protected $description = 'Import all FTP files (PhoneNotices, Submissions, and optionally Patrons)';
 
@@ -334,13 +337,23 @@ class ImportFTPFiles extends Command
             return [null, null];
         }
 
-        if ($this->option('from') || $this->option('to')) {
-            $startDate = $this->option('from')
-                ? Carbon::parse($this->option('from'))->startOfDay()
+        // Canonical flags: date / start / end / days
+        if ($date = $this->option('date')) {
+            $target = Carbon::parse($date);
+
+            return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+        }
+
+        $start = $this->option('start') ?: $this->option('from');
+        $end = $this->option('end') ?: $this->option('to');
+
+        if ($start || $end) {
+            $startDate = $start
+                ? Carbon::parse($start)->startOfDay()
                 : now()->startOfDay();
 
-            $endDate = $this->option('to')
-                ? Carbon::parse($this->option('to'))->endOfDay()
+            $endDate = $end
+                ? Carbon::parse($end)->endOfDay()
                 : now()->endOfDay();
 
             return [$startDate, $endDate];
@@ -350,7 +363,7 @@ class ImportFTPFiles extends Command
             $days = (int) $this->option('days');
 
             return [
-                now()->subDays($days)->startOfDay(),
+                now()->subDays(max($days, 1) - 1)->startOfDay(),
                 now()->endOfDay(),
             ];
         }

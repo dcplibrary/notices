@@ -15,10 +15,14 @@ class ImportShoutbombSubmissions extends Command
      * @var string
      */
     protected $signature = 'notices:import-shoutbomb-submissions
-                            {--from= : Start date (YYYY-MM-DD)}
-                            {--to= : End date (YYYY-MM-DD)}
+                            {--date= : Import submissions for a specific date (Y-m-d)}
+                            {--start= : Start date (Y-m-d)}
+                            {--end= : End date (Y-m-d)}
+                            {--days= : Number of days back to include}
                             {--all : Import all available submissions}
-                            {--type= : Import specific type only (holds, overdues, renewals)}';
+                            {--type= : Import specific type only (holds, overdues, renewals)}
+                            {--from= : [deprecated] Alias for --start (Y-m-d)}
+                            {--to= : [deprecated] Alias for --end (Y-m-d)}';
 
     /**
      * The console command description.
@@ -101,13 +105,28 @@ class ImportShoutbombSubmissions extends Command
             ];
         }
 
-        $from = $this->option('from');
-        $to = $this->option('to');
+        if ($date = $this->option('date')) {
+            $target = Carbon::parse($date);
 
-        if ($from && $to) {
+            return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+        }
+
+        $start = $this->option('start') ?: $this->option('from');
+        $end = $this->option('end') ?: $this->option('to');
+
+        if ($start || $end) {
             return [
-                Carbon::parse($from)->startOfDay(),
-                Carbon::parse($to)->endOfDay(),
+                $start ? Carbon::parse($start)->startOfDay() : Carbon::today()->startOfDay(),
+                $end ? Carbon::parse($end)->endOfDay() : Carbon::today()->endOfDay(),
+            ];
+        }
+
+        if ($this->option('days')) {
+            $days = (int) $this->option('days');
+
+            return [
+                Carbon::now()->subDays(max($days, 1) - 1)->startOfDay(),
+                Carbon::now()->endOfDay(),
             ];
         }
 
