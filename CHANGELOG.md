@@ -1,3 +1,10 @@
+## [3.0.3](https://github.com/dcplibrary/notices/compare/v3.0.2...v3.0.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* update settings/index ([7f1dedb](https://github.com/dcplibrary/notices/commit/7f1dedbba4ae548182d38fba0f97d2ff5bf83f38))
+
 ## [3.0.2](https://github.com/dcplibrary/notices/compare/v3.0.1...v3.0.2) (2025-11-26)
 
 
