@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Tests\Feature\Api;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Carbon\Carbon;
 
 class NotificationApiTest extends TestCase
 {
@@ -30,7 +30,7 @@ class NotificationApiTest extends TestCase
                         'delivery_method',
                         'status',
                         'items',
-                    ]
+                    ],
                 ],
                 'links',
                 'meta',
@@ -98,7 +98,7 @@ class NotificationApiTest extends TestCase
                 'data' => [
                     'id' => $notification->id,
                     'patron_id' => 12345,
-                ]
+                ],
             ]);
     }
 

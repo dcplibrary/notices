@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         if (Schema::hasTable('polaris_phone_notices') && !Schema::hasColumn('polaris_phone_notices', 'import_date')) {
@@ -14,7 +13,7 @@ return new class extends Migration
             });
 
             // Backfill from imported_at
-            \DB::statement('UPDATE polaris_phone_notices SET import_date = DATE(imported_at) WHERE import_date IS NULL AND imported_at IS NOT NULL');
+            DB::statement('UPDATE polaris_phone_notices SET import_date = DATE(imported_at) WHERE import_date IS NULL AND imported_at IS NOT NULL');
         }
     }
 

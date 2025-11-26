@@ -4,9 +4,10 @@ namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 /**
- * PatronNotificationPreference Model
+ * PatronNotificationPreference Model.
  *
  * Stores patron notification preferences from daily patron list exports.
  * The file name indicates the delivery method:
@@ -99,7 +100,7 @@ class PatronNotificationPreference extends Model
         return match ($deliveryMethod) {
             'voice' => 3,
             'text' => 8,
-            default => throw new \InvalidArgumentException("Unknown delivery method: {$deliveryMethod}"),
+            default => throw new InvalidArgumentException("Unknown delivery method: {$deliveryMethod}"),
         };
     }
 }

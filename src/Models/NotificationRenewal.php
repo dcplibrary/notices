@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * NotificationRenewal Model
+ * NotificationRenewal Model.
  *
  * Stores renewal reminder notifications sent to ShoutBomb from renew*.txt exports.
  * notification_type_id is ALWAYS 7 (Renewal Reminder) - inferred from filename.

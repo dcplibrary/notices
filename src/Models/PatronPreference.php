@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class PatronPreference extends Model
 {
@@ -111,7 +111,7 @@ class PatronPreference extends Model
     {
         // Use explicit preference array if set
         if (!empty($this->channel_preferences)) {
-            return array_filter($this->channel_preferences, function($channel) {
+            return array_filter($this->channel_preferences, function ($channel) {
                 return !$this->hasOptedOut($channel);
             });
         }

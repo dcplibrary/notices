@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\ShoutbombFTPService;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportShoutbombReports extends Command
@@ -25,6 +26,7 @@ class ImportShoutbombReports extends Command
     {
         if (!config('notices.shoutbomb.enabled')) {
             $this->warn('⚠️  Shoutbomb import is disabled in configuration.');
+
             return Command::SUCCESS;
         }
 
@@ -106,7 +108,7 @@ class ImportShoutbombReports extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ Import failed: ' . $e->getMessage());
 
             if ($this->option('verbose')) {

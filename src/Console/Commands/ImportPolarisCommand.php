@@ -2,15 +2,17 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\PolarisImportService;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportPolarisCommand extends Command
 {
     protected $signature = 'notices:import-polaris 
                             {--days= : Number of days to import (default: from config)}
-                            {--start-date= : Start date (Y-m-d format)}
-                            {--end-date= : End date (Y-m-d format)}';
+                            {--from= : Start date (Y-m-d format)}
+                            {--to= : End date (Y-m-d format)}';
 
     protected $description = 'Import notifications from Polaris database';
 
@@ -20,8 +22,8 @@ class ImportPolarisCommand extends Command
 
         try {
             $days = $this->option('days');
-            $startDate = $this->option('start-date') ? \Carbon\Carbon::parse($this->option('start-date')) : null;
-            $endDate = $this->option('end-date') ? \Carbon\Carbon::parse($this->option('end-date')) : null;
+            $startDate = $this->option('from') ? Carbon::parse($this->option('from')) : null;
+            $endDate = $this->option('to') ? Carbon::parse($this->option('to')) : null;
 
             $result = $importService->importNotifications($days, $startDate, $endDate);
 
@@ -32,8 +34,9 @@ class ImportPolarisCommand extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('✗ Polaris import failed: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
     }

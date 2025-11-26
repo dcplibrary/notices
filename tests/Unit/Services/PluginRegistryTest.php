@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Services;
 
-use Dcplibrary\Notices\Services\PluginRegistry;
-use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
+use Dcplibrary\Notices\Services\PluginRegistry;
 use Dcplibrary\Notices\Tests\TestCase;
 use InvalidArgumentException;
 

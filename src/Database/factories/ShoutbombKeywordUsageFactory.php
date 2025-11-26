@@ -52,7 +52,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is HOLDS.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function holds()
     {
@@ -67,7 +67,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is RENEW.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function renew()
     {
@@ -82,7 +82,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is CHECKOUTS.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function checkouts()
     {
@@ -97,7 +97,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is FINES.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function fines()
     {
@@ -112,7 +112,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is HELP.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function help()
     {
@@ -127,7 +127,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is STOP (unsubscribe).
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function stop()
     {
@@ -142,7 +142,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate that the keyword is START (resubscribe).
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function start()
     {
@@ -157,7 +157,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate high usage count.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function highUsage()
     {
@@ -171,7 +171,7 @@ class ShoutbombKeywordUsageFactory extends Factory
     /**
      * Indicate low usage count.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function lowUsage()
     {

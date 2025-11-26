@@ -2,6 +2,7 @@
 
 namespace Dcplibrary\Notices\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
@@ -46,7 +47,7 @@ class SyncAllCommand extends Command
                     $results['polaris'] = ['status' => 'error', 'message' => trim($output)];
                     $hasErrors = true;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ Polaris import error: {$e->getMessage()}");
                 $results['polaris'] = ['status' => 'error', 'message' => $e->getMessage()];
                 $hasErrors = true;
@@ -76,7 +77,7 @@ class SyncAllCommand extends Command
                     $results['shoutbomb'] = ['status' => 'error', 'message' => trim($output)];
                     $hasErrors = true;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ Shoutbomb import error: {$e->getMessage()}");
                 $results['shoutbomb'] = ['status' => 'error', 'message' => $e->getMessage()];
                 $hasErrors = true;
@@ -105,7 +106,7 @@ class SyncAllCommand extends Command
                     $results['shoutbomb_sync'] = ['status' => 'error', 'message' => trim($output)];
                     $hasErrors = true;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ Shoutbomb sync error: {$e->getMessage()}");
                 $results['shoutbomb_sync'] = ['status' => 'error', 'message' => $e->getMessage()];
                 $hasErrors = true;
@@ -132,7 +133,7 @@ class SyncAllCommand extends Command
                     $results['aggregate'] = ['status' => 'error', 'message' => trim($output)];
                     $hasErrors = true;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ Aggregation error: {$e->getMessage()}");
                 $results['aggregate'] = ['status' => 'error', 'message' => $e->getMessage()];
                 $hasErrors = true;
@@ -170,6 +171,7 @@ class SyncAllCommand extends Command
 
         if ($hasErrors) {
             $this->warn('  ⚠ Sync completed with some errors');
+
             return Command::FAILURE;
         }
 

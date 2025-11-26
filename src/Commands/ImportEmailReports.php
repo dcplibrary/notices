@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\EmailReportService;
 use Dcplibrary\Notices\Services\ShoutbombEmailParser;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportEmailReports extends Command
@@ -28,6 +29,7 @@ class ImportEmailReports extends Command
     {
         if (!config('notices.email_reports.enabled')) {
             $this->warn('⚠️  Email report import is disabled in configuration.');
+
             return Command::SUCCESS;
         }
 
@@ -39,6 +41,7 @@ class ImportEmailReports extends Command
             $this->line('→ Connecting to email server...');
             if (!$emailService->connect()) {
                 $this->error('❌ Failed to connect to email server');
+
                 return Command::FAILURE;
             }
 
@@ -61,6 +64,7 @@ class ImportEmailReports extends Command
             if (empty($reports)) {
                 $this->info('✓ No new Shoutbomb reports found');
                 $emailService->disconnect();
+
                 return Command::SUCCESS;
             }
 
@@ -127,17 +131,18 @@ class ImportEmailReports extends Command
             $this->info('✓ Email import completed successfully');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ Error during email import: ' . $e->getMessage());
             if (isset($emailService)) {
                 $emailService->disconnect();
             }
+
             return Command::FAILURE;
         }
     }
 
     /**
-     * Display import summary
+     * Display import summary.
      */
     protected function displaySummary(array $stats, int $processed): void
     {

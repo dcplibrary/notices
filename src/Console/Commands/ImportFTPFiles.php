@@ -2,14 +2,15 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
+use Carbon\Carbon;
+use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
 use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
-use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Console\Command;
 
 /**
- * Import all FTP files (PhoneNotices + Shoutbomb submissions + Patron preferences)
+ * Import all FTP files (PhoneNotices + Shoutbomb submissions + Patron preferences).
  *
  * This streamlined command imports:
  * - PhoneNotices files (PhoneNotices.csv or PhoneNotices_YYYY-MM-DD_HH-MM-SS.txt)
@@ -43,13 +44,13 @@ class ImportFTPFiles extends Command
         } elseif ($this->option('all')) {
             $this->line("📅 Importing ALL available files");
         }
-        
+
         if ($this->option('import-patrons')) {
             $this->line("👥 Patron import: <info>ENABLED</info>");
         } else {
             $this->line("👥 Patron import: <comment>DISABLED</comment> (use --import-patrons to enable)");
         }
-        
+
         $this->newLine();
 
         $results = [
@@ -110,7 +111,7 @@ class ImportFTPFiles extends Command
                 'imported' => $phoneResults['imported'],
                 'errors' => $phoneResults['errors'],
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ❌ PhoneNotices import failed: {$e->getMessage()}");
             $results['phone_notices']['errors']++;
         }
@@ -183,7 +184,7 @@ class ImportFTPFiles extends Command
                     );
 
                     $this->newLine();
-                    
+
                     if ($patronResults['voice_skipped']) {
                         $this->line("   ⏭️  Voice patrons: <comment>Skipped (already processed)</comment>");
                     } else {
@@ -198,7 +199,7 @@ class ImportFTPFiles extends Command
 
                     $results['patrons'] = $patronResults;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("   ❌ Patron import failed: {$e->getMessage()}");
                 $results['patrons']['errors']++;
             }
@@ -279,7 +280,7 @@ class ImportFTPFiles extends Command
                     'errors' => $submissionResults['errors'] ?? 0,
                 ];
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("   ❌ Submissions import failed: {$e->getMessage()}");
             $results['submissions']['errors']++;
         }
@@ -303,8 +304,8 @@ class ImportFTPFiles extends Command
             $summaryData[] = ['Text Patrons (New)', $results['patrons']['text_new']];
         }
 
-        $totalErrors = $results['phone_notices']['errors'] 
-            + $results['submissions']['errors'] 
+        $totalErrors = $results['phone_notices']['errors']
+            + $results['submissions']['errors']
             + ($this->option('import-patrons') ? $results['patrons']['errors'] : 0);
 
         $summaryData[] = ['Errors', $totalErrors];
@@ -315,10 +316,12 @@ class ImportFTPFiles extends Command
 
         if ($totalErrors > 0) {
             $this->warn("⚠️  Completed with {$totalErrors} error(s)");
+
             return Command::FAILURE;
         }
 
         $this->info('✅ FTP Files Import completed successfully!');
+
         return Command::SUCCESS;
     }
 
@@ -345,6 +348,7 @@ class ImportFTPFiles extends Command
 
         if ($this->option('days')) {
             $days = (int) $this->option('days');
+
             return [
                 now()->subDays($days)->startOfDay(),
                 now()->endOfDay(),

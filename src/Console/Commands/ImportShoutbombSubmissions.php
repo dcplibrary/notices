@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Console\Commands;
 
 use Carbon\Carbon;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportShoutbombSubmissions extends Command
@@ -57,7 +58,7 @@ class ImportShoutbombSubmissions extends Command
         foreach ($types as $submissionType) {
             try {
                 $this->info("📨 Importing {$submissionType}...");
-                
+
                 $result = $this->importer->importSubmissionType(
                     $submissionType,
                     $fromDate,
@@ -74,7 +75,7 @@ class ImportShoutbombSubmissions extends Command
                 $this->info("  ✅ {$submissionType}: {$result['records']} records from {$result['files']} files");
                 $totalRecords += $result['records'];
                 $totalFiles += $result['files'];
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ❌ {$submissionType} import failed: {$e->getMessage()}");
             }
 
@@ -88,7 +89,7 @@ class ImportShoutbombSubmissions extends Command
     }
 
     /**
-     * Determine the date range for import
+     * Determine the date range for import.
      */
     protected function determineDateRange(): array
     {

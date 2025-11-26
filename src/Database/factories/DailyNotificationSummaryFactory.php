@@ -72,7 +72,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate that this summary is for hold notifications.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function holds()
     {
@@ -93,7 +93,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate that this summary is for overdue notifications.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function overdues()
     {
@@ -116,7 +116,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate that this summary is for email delivery.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function email()
     {
@@ -141,7 +141,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate that this summary is for SMS delivery.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function sms()
     {
@@ -166,7 +166,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate that this summary is for voice delivery.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function voice()
     {
@@ -191,7 +191,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate high success rate.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function highSuccess()
     {
@@ -214,7 +214,7 @@ class DailyNotificationSummaryFactory extends Factory
     /**
      * Indicate low success rate.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function lowSuccess()
     {

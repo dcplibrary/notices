@@ -3,11 +3,14 @@
 namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
 use Dcplibrary\Notices\Commands\TestConnections;
-use Dcplibrary\Notices\Console\Commands\ImportShoutbombCommand;
-use Dcplibrary\Notices\Console\Commands\ImportPolarisCommand;
 use Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand;
+use Dcplibrary\Notices\Console\Commands\ImportPolarisCommand;
+use Dcplibrary\Notices\Console\Commands\ImportShoutbombCommand;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
+use Illuminate\Console\Scheduling\Event;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
@@ -18,10 +21,10 @@ class ConsoleCommandsTest extends TestCase
     /** @test */
     public function it_verifies_artisan_kernel_is_available()
     {
-        $kernel = app(\Illuminate\Contracts\Console\Kernel::class);
+        $kernel = app(Kernel::class);
 
         $this->assertInstanceOf(
-            \Illuminate\Contracts\Console\Kernel::class,
+            Kernel::class,
             $kernel
         );
     }
@@ -104,10 +107,10 @@ class ConsoleCommandsTest extends TestCase
     /** @test */
     public function it_verifies_console_kernel_schedule_is_available()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $this->assertInstanceOf(
-            \Illuminate\Console\Scheduling\Schedule::class,
+            Schedule::class,
             $schedule
         );
     }
@@ -115,13 +118,13 @@ class ConsoleCommandsTest extends TestCase
     /** @test */
     public function it_verifies_scheduled_tasks_can_be_defined()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         // Test that schedule can accept task definitions
         $event = $schedule->command('notices:import-polaris')->daily();
 
         $this->assertInstanceOf(
-            \Illuminate\Console\Scheduling\Event::class,
+            Event::class,
             $event
         );
     }
@@ -129,27 +132,27 @@ class ConsoleCommandsTest extends TestCase
     /** @test */
     public function it_verifies_scheduled_task_frequencies_work()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         // Test various scheduling frequencies
         $daily = $schedule->command('test')->daily();
         $hourly = $schedule->command('test')->hourly();
         $weekly = $schedule->command('test')->weekly();
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $daily);
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $hourly);
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $weekly);
+        $this->assertInstanceOf(Event::class, $daily);
+        $this->assertInstanceOf(Event::class, $hourly);
+        $this->assertInstanceOf(Event::class, $weekly);
     }
 
     /** @test */
     public function it_verifies_scheduled_task_cron_expressions_work()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         // Test custom cron expressions
         $event = $schedule->command('test')->cron('0 0 * * *');
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
@@ -178,7 +181,7 @@ class ConsoleCommandsTest extends TestCase
         Artisan::call('list');
 
         $output = Artisan::output();
-        
+
         $this->assertStringContainsString('Available commands', $output);
     }
 
@@ -209,7 +212,7 @@ class ConsoleCommandsTest extends TestCase
         $command = new TestConnections();
 
         $this->assertEquals('notices:test-connections', $command->getName());
-        
+
         $definition = $command->getDefinition();
         $this->assertNotNull($definition);
     }
@@ -217,44 +220,44 @@ class ConsoleCommandsTest extends TestCase
     /** @test */
     public function it_verifies_scheduled_tasks_can_run_in_background()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $event = $schedule->command('test')->daily()->runInBackground();
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
     public function it_verifies_scheduled_tasks_can_be_chained()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $event = $schedule->command('test')
             ->daily()
             ->at('02:00')
             ->timezone('America/New_York');
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
     public function it_verifies_scheduled_tasks_can_have_callbacks()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $callbackExecuted = false;
-        
+
         $event = $schedule->call(function () use (&$callbackExecuted) {
             $callbackExecuted = true;
         })->daily();
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
     public function it_verifies_scheduled_tasks_can_have_constraints()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $event = $schedule->command('test')
             ->daily()
@@ -262,25 +265,25 @@ class ConsoleCommandsTest extends TestCase
                 return true;
             });
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
     public function it_verifies_scheduled_tasks_support_output_redirection()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $event = $schedule->command('test')
             ->daily()
             ->appendOutputTo('/tmp/test.log');
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */
     public function it_verifies_scheduled_tasks_support_email_notifications()
     {
-        $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+        $schedule = app(Schedule::class);
 
         $event = $schedule->command('test')
             ->daily()
@@ -291,7 +294,7 @@ class ConsoleCommandsTest extends TestCase
                 // Failure callback
             });
 
-        $this->assertInstanceOf(\Illuminate\Console\Scheduling\Event::class, $event);
+        $this->assertInstanceOf(Event::class, $event);
     }
 
     /** @test */

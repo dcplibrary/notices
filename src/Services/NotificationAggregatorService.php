@@ -2,9 +2,10 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -43,7 +44,7 @@ class NotificationAggregatorService
                 'combinations_aggregated' => $aggregated,
             ];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Error aggregating date {$date->format('Y-m-d')}", [
                 'error' => $e->getMessage(),
             ]);
@@ -154,6 +155,7 @@ class NotificationAggregatorService
     public function aggregateYesterday(): array
     {
         $yesterday = now()->subDay()->startOfDay();
+
         return $this->aggregateDate($yesterday);
     }
 

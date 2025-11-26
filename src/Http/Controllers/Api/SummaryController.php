@@ -2,12 +2,12 @@
 
 namespace Dcplibrary\Notices\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Http\Resources\DailyNotificationSummaryResource;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
-use Carbon\Carbon;
 
 class SummaryController extends Controller
 {

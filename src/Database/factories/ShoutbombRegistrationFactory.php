@@ -64,7 +64,7 @@ class ShoutbombRegistrationFactory extends Factory
     /**
      * Indicate that this is a growing snapshot (positive changes).
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function growing()
     {
@@ -84,7 +84,7 @@ class ShoutbombRegistrationFactory extends Factory
     /**
      * Indicate that this is a declining snapshot (negative changes).
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function declining()
     {
@@ -104,7 +104,7 @@ class ShoutbombRegistrationFactory extends Factory
     /**
      * Indicate that this is a stable snapshot (minimal changes).
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function stable()
     {
@@ -121,7 +121,7 @@ class ShoutbombRegistrationFactory extends Factory
     /**
      * Indicate that text is the dominant subscription type.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function textDominant()
     {
@@ -142,7 +142,7 @@ class ShoutbombRegistrationFactory extends Factory
     /**
      * Indicate that voice is more prominent than usual.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function voiceProminent()
     {

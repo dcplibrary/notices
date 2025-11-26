@@ -1,3 +1,52 @@
+## [3.0.3](https://github.com/dcplibrary/notices/compare/v3.0.2...v3.0.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* update settings/index ([7f1dedb](https://github.com/dcplibrary/notices/commit/7f1dedbba4ae548182d38fba0f97d2ff5bf83f38))
+
+## [3.0.2](https://github.com/dcplibrary/notices/compare/v3.0.1...v3.0.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* run php-cs-fixer ([75f7fd8](https://github.com/dcplibrary/notices/commit/75f7fd861695de4f474d327b23f89d98b99a0b70))
+
+## [3.0.1](https://github.com/dcplibrary/notices/compare/v3.0.0...v3.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* fix extra backslash in notificationimportservice ([5ef9223](https://github.com/dcplibrary/notices/commit/5ef9223bb6e94bc9f9131d97377afc734dff36a8))
+
+# [3.0.0](https://github.com/dcplibrary/notices/compare/v2.0.2...v3.0.0) (2025-11-26)
+
+
+### Features
+
+* add enrichment data to notifications ([d71d50d](https://github.com/dcplibrary/notices/commit/d71d50d2e009e72ee92fefdd2952164fbd7634da))
+
+## [2.0.2](https://github.com/dcplibrary/notices/compare/v2.0.1...v2.0.2) (2025-11-25)
+
+
+### Bug Fixes
+
+* notification table field ([a181488](https://github.com/dcplibrary/notices/commit/a181488a51152af5c4f373e3ca17017dd1510265))
+
+## [2.0.1](https://github.com/dcplibrary/notices/compare/v2.0.0...v2.0.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* remove extra slash from noticesserviceprovider ([c89f3ce](https://github.com/dcplibrary/notices/commit/c89f3ceddae423802aa035ef3e65071fad60c5c9))
+
+# [2.0.0](https://github.com/dcplibrary/notices/compare/v1.26.2...v2.0.0) (2025-11-25)
+
+
+### Features
+
+* force semantic-release ([d9caafc](https://github.com/dcplibrary/notices/commit/d9caafc9c4c821d6ba9fa782a24b061c3f767be5))
+
 # Changelog
 
 All notable changes to the Polaris Notices Package will be documented in this file.

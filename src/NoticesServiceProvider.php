@@ -6,24 +6,26 @@ use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Commands\CheckShoutbombReportsCommand;
 use Dcplibrary\Notices\Commands\ImportCommand;
 use Dcplibrary\Notices\Commands\ImportEmailReports;
-use Dcplibrary\Notices\Commands\ImportNotifications;
 use Dcplibrary\Notices\Commands\ImportShoutbombReports;
 use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Commands\SyncAllCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
+use Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand;
+use Dcplibrary\Notices\Console\Commands\SyncNotificationsFromLogs;
+use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
+use Dcplibrary\Notices\Http\Livewire\SyncAndImport;
 use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\NotificationImportService;
+use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
 use Dcplibrary\Notices\Services\PluginRegistry;
 use Dcplibrary\Notices\Services\SettingsManager;
+use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
 use Dcplibrary\Notices\Services\ShoutbombFTPService;
 use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
-use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
-use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionParser;
-use Dcplibrary\Notices\Services\PatronDeliveryPreferenceImporter;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
@@ -39,7 +41,7 @@ class NoticesServiceProvider extends ServiceProvider
     {
         // Merge package config with application config
         $this->mergeConfigFrom(
-            __DIR__.'/../config/notices.php',
+            __DIR__ . '/../config/notices.php',
             'notices'
         );
 
@@ -60,6 +62,7 @@ class NoticesServiceProvider extends ServiceProvider
         $this->app->singleton(NoticeVerificationService::class, function ($app) {
             $service = new NoticeVerificationService();
             $service->setPluginRegistry($app->make(PluginRegistry::class));
+
             return $service;
         });
 
@@ -76,12 +79,14 @@ class NoticesServiceProvider extends ServiceProvider
         // Register Shoutbomb Graph API service (for Outlook/Graph ingestion)
         $this->app->singleton(ShoutbombGraphApiService::class, function ($app) {
             $graphConfig = config('notices.integrations.shoutbomb_reports.graph', []);
+
             return new ShoutbombGraphApiService($graphConfig);
         });
 
         // Register Shoutbomb failure report parser
         $this->app->singleton(ShoutbombFailureReportParser::class, function ($app) {
             $parsingConfig = config('notices.integrations.shoutbomb_reports.parsing', []);
+
             return new ShoutbombFailureReportParser($parsingConfig);
         });
 
@@ -122,44 +127,37 @@ class NoticesServiceProvider extends ServiceProvider
             InstallCommand::class,
             SyncAllCommand::class,
             ImportCommand::class, // Simplified unified import command
-            ImportNotifications::class,
             ImportShoutbombReports::class,
             ImportEmailReports::class,
             TestConnections::class,
             SeedDemoDataCommand::class,
             BackfillNotificationStatus::class,
-            Commands\CheckShoutbombReportsCommand::class,
+            CheckShoutbombReportsCommand::class,
             Commands\ImportShoutbombSubmissions::class,
             Commands\ImportPolarisPhoneNotices::class,
             Commands\ListShoutbombFiles::class,
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,
             Commands\DiagnoseDashboardData::class,
-            Commands\SyncShoutbombToLogs::class,
-            Console\Commands\DiagnoseDashboardDataCommand::class,
-            Console\Commands\DiagnosePatronDataCommand::class,
-            Console\Commands\ImportFTPFiles::class,
-            Console\Commands\ImportPolarisCommand::class,
-            Console\Commands\ImportShoutbombCommand::class,
-            Console\Commands\AggregateNotificationsCommand::class,
-            CheckShoutbombReportsCommand::class,
+            AggregateNotificationsCommand::class,
+            SyncNotificationsFromLogs::class,
         ]);
 
         // Publish configuration file
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/notices.php' => config_path('notices.php'),
+                __DIR__ . '/../config/notices.php' => config_path('notices.php'),
             ], 'notices-config');
 
             // Publish migrations (optional - package auto-loads them)
             $this->publishes([
                 // Package migrations live in src/Database/Migrations
-                __DIR__.'/Database/Migrations' => database_path('migrations'),
+                __DIR__ . '/Database/Migrations' => database_path('migrations'),
             ], 'notices-migrations');
 
             // Publish views (if you create them later)
             $this->publishes([
-                __DIR__.'/../resources/views' => resource_path('views/vendor/notices'),
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/notices'),
             ], 'notices-views');
         }
 
@@ -167,11 +165,11 @@ class NoticesServiceProvider extends ServiceProvider
         // Only if migrations haven't been published to avoid running twice
         $publishedMigrationPath = database_path('migrations/2025_01_01_000001_create_notification_logs_table.php');
         if (!file_exists($publishedMigrationPath)) {
-            $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+            $this->loadMigrationsFrom(__DIR__ . '/Database/Migrations');
         }
 
         // Load views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'notices');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'notices');
 
         // Register routes
         $this->registerRoutes();
@@ -180,8 +178,8 @@ class NoticesServiceProvider extends ServiceProvider
         $this->registerScheduledTasks();
 
         // Register Livewire components used by the dashboard
-        if (class_exists(\Livewire\Livewire::class)) {
-            Livewire::component('sync-and-import', \Dcplibrary\Notices\Http\Livewire\SyncAndImport::class);
+        if (class_exists(Livewire::class)) {
+            Livewire::component('sync-and-import', SyncAndImport::class);
         }
 
         // Auto-seed reference data when running plain `db:seed` (no --class) to include lookup tables
@@ -220,7 +218,7 @@ class NoticesServiceProvider extends ServiceProvider
                 'middleware' => config('notices.api.middleware', ['api', 'auth:sanctum']),
                 'as' => 'notices.api.',
             ], function () {
-                $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+                $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
             });
         }
 
@@ -231,7 +229,7 @@ class NoticesServiceProvider extends ServiceProvider
                 'middleware' => config('notices.dashboard.middleware', ['web', 'auth']),
                 'as' => 'notices.',
             ], function () {
-                $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+                $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
             });
         }
     }
@@ -333,9 +331,18 @@ class NoticesServiceProvider extends ServiceProvider
             // END OF DAY PROCESSING (Aggregation and reporting)
             // ═══════════════════════════════════════════════════════════════
 
+            // 9:45 PM - Sync master notifications from NotificationLog
+            // Runs after all imports so NotificationLog is complete for the day
+            if ($settings->get('scheduler.sync_from_logs_enabled', true)) {
+                $schedule->command('notices:sync-from-logs --days=1')
+                    ->dailyAt('21:45')
+                    ->withoutOverlapping()
+                    ->description('Project NotificationLog rows into master notifications and events');
+            }
+
             // 10:00 PM - Daily aggregation of all notification data
-            // → Runs after all imports are complete
-            // → Aggregates data for dashboard and reporting
+            // Runs after all imports are complete and notifications have been projected
+            // Aggregates data for dashboard and reporting
             if ($settings->get('scheduler.aggregation_enabled', true)) {
                 $schedule->command('notices:aggregate --yesterday')
                     ->dailyAt('22:00')
@@ -383,6 +390,7 @@ class NoticesServiceProvider extends ServiceProvider
             'notices',
         ];
     }
+
     /**
      * Determine if we should auto-seed reference data on `db:seed`.
      */

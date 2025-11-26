@@ -2,6 +2,7 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -9,7 +10,9 @@ use Illuminate\Support\Facades\Log;
 class ShoutbombGraphApiService
 {
     protected Client $client;
+
     protected array $config;
+
     protected string $baseUrl;
 
     public function __construct(array $graphConfig)
@@ -21,7 +24,7 @@ class ShoutbombGraphApiService
     }
 
     /**
-     * Get access token using client credentials flow
+     * Get access token using client credentials flow.
      */
     public function getAccessToken(): string
     {
@@ -41,12 +44,13 @@ class ShoutbombGraphApiService
             );
 
             $data = json_decode($response->getBody()->getContents(), true);
+
             return $data['access_token'];
         });
     }
 
     /**
-     * Get messages from user's mailbox with filters
+     * Get messages from user's mailbox with filters.
      */
     public function getMessages(?array $filters = []): array
     {
@@ -99,8 +103,9 @@ class ShoutbombGraphApiService
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
+
             return $data['value'] ?? [];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to fetch messages from Graph API', [
                 'error' => $e->getMessage(),
                 'endpoint' => $endpoint,
@@ -110,7 +115,7 @@ class ShoutbombGraphApiService
     }
 
     /**
-     * Get message by ID
+     * Get message by ID.
      */
     public function getMessage(string $messageId): ?array
     {
@@ -128,17 +133,18 @@ class ShoutbombGraphApiService
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to fetch message from Graph API', [
                 'error' => $e->getMessage(),
                 'message_id' => $messageId,
             ]);
+
             return null;
         }
     }
 
     /**
-     * Mark message as read
+     * Mark message as read.
      */
     public function markAsRead(string $messageId): bool
     {
@@ -159,17 +165,18 @@ class ShoutbombGraphApiService
             ]);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to mark message as read', [
                 'error' => $e->getMessage(),
                 'message_id' => $messageId,
             ]);
+
             return false;
         }
     }
 
     /**
-     * Move message to folder
+     * Move message to folder.
      */
     public function moveMessage(string $messageId, string $folderName): bool
     {
@@ -179,6 +186,7 @@ class ShoutbombGraphApiService
         $folderId = $this->getFolderId($userEmail, $folderName);
         if (!$folderId) {
             Log::warning("Folder '{$folderName}' not found");
+
             return false;
         }
 
@@ -196,18 +204,19 @@ class ShoutbombGraphApiService
             ]);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to move message', [
                 'error' => $e->getMessage(),
                 'message_id' => $messageId,
                 'folder' => $folderName,
             ]);
+
             return false;
         }
     }
 
     /**
-     * Get folder ID by name
+     * Get folder ID by name.
      */
     protected function getFolderId(string $userEmail, string $folderName): ?string
     {
@@ -232,7 +241,7 @@ class ShoutbombGraphApiService
                 Log::debug("Folder search results", [
                     'folder_name' => $folderName,
                     'found_count' => count($data['value'] ?? []),
-                    'folders' => array_map(fn($f) => $f['displayName'] ?? 'unknown', $data['value'] ?? []),
+                    'folders' => array_map(fn ($f) => $f['displayName'] ?? 'unknown', $data['value'] ?? []),
                 ]);
 
                 $folderId = $data['value'][0]['id'] ?? null;
@@ -244,18 +253,19 @@ class ShoutbombGraphApiService
                 }
 
                 return $folderId;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('Failed to get folder ID', [
                     'error' => $e->getMessage(),
                     'folder' => $folderName,
                 ]);
+
                 return null;
             }
         });
     }
 
     /**
-     * Get message body content (text or HTML)
+     * Get message body content (text or HTML).
      */
     public function getMessageBody(array $message, string $preferredType = 'text'): ?string
     {

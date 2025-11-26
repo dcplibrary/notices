@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * PatronDeliveryPreference Model
+ * PatronDeliveryPreference Model.
  *
  * Tracks the CURRENT delivery preference for each patron, along with
  * change history (when changed and previous preference).

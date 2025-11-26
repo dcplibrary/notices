@@ -2,9 +2,6 @@
 
 namespace Dcplibrary\Notices\Tests\Feature;
 
-use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Services\NoticeVerificationService;
-use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

@@ -24,6 +24,7 @@ This document provides a complete index of all documentation for the DC Public L
 ## Development Documentation
 
 ### Package Development
+- [**DEVELOPMENT ROADMAP**](DEVELOPMENT_ROADMAP.md) - High-level roadmap, recent changes, and recommended next steps
 - [**Package Merge Guide**](PACKAGE_MERGE.md) - Guide for merging this package into another Laravel application
 - [**Doctrine Annotations**](DOCTRINE_ANNOTATIONS.md) - Documentation on Doctrine annotations used in the codebase
 

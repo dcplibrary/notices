@@ -2,10 +2,11 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Services\PolarisImportService;
-use Dcplibrary\Notices\Services\NotificationAggregatorService;
-use Illuminate\Console\Command;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\NotificationAggregatorService;
+use Dcplibrary\Notices\Services\PolarisImportService;
+use Exception;
+use Illuminate\Console\Command;
 
 class ImportNotifications extends Command
 {
@@ -48,6 +49,7 @@ class ImportNotifications extends Command
                     );
                 } else {
                     $this->info('Import cancelled.');
+
                     return Command::SUCCESS;
                 }
 
@@ -89,12 +91,12 @@ class ImportNotifications extends Command
             // Automatically aggregate imported data
             if ($result['imported'] > 0) {
                 $this->info('📊 Aggregating imported data for analytics...');
-                
+
                 $startDate = Carbon::parse($result['start_date'])->startOfDay();
                 $endDate = Carbon::parse($result['end_date'])->startOfDay();
-                
+
                 $aggResult = $aggregator->aggregateDateRange($startDate, $endDate);
-                
+
                 $this->info("✅ Aggregated {$aggResult['combinations_aggregated']} combinations");
                 $this->newLine();
             }
@@ -117,7 +119,7 @@ class ImportNotifications extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ Import failed: ' . $e->getMessage());
 
             if ($this->option('verbose')) {

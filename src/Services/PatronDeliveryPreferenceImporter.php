@@ -2,21 +2,23 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\PatronDeliveryPreference;
 use Dcplibrary\Notices\Models\ProcessedFile;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
- * PatronDeliveryPreferenceImporter
- * 
+ * PatronDeliveryPreferenceImporter.
+ *
  * Optimized bulk import service for voice_patrons and text_patrons files.
  * Tracks processed files to skip duplicates and provides progress feedback.
  */
 class PatronDeliveryPreferenceImporter
 {
     protected ShoutbombSubmissionParser $parser;
+
     protected ShoutbombFTPService $ftpService;
 
     public function __construct(ShoutbombSubmissionParser $parser, ShoutbombFTPService $ftpService)
@@ -52,7 +54,7 @@ class PatronDeliveryPreferenceImporter
 
         try {
             if (!$this->ftpService->connect()) {
-                throw new \Exception('Failed to connect to FTP');
+                throw new Exception('Failed to connect to FTP');
             }
 
             // Import voice patrons
@@ -73,7 +75,7 @@ class PatronDeliveryPreferenceImporter
 
             $this->ftpService->disconnect();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Patron delivery preference import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -95,6 +97,7 @@ class PatronDeliveryPreferenceImporter
 
         if (!$this->ftpService->connect()) {
             Log::error('Patron import-all: failed to connect to FTP');
+
             return [
                 'dates' => [],
                 'totals' => [
@@ -112,7 +115,7 @@ class PatronDeliveryPreferenceImporter
         $dates = [];
         foreach ($files as $file) {
             $basename = basename($file);
-            
+
             if (preg_match('/(?:voice|text)_patrons_submitted_(\d{4}-\d{2}-\d{2})_/', $basename, $m)) {
                 $dates[$m[1]] = true;
             } elseif (preg_match('/(?:voice|text)_patrons_submitted_(\d{4})(\d{2})(\d{2})_/', $basename, $m)) {
@@ -143,6 +146,7 @@ class PatronDeliveryPreferenceImporter
                 if ($to && $d->gt($to->copy()->startOfDay())) {
                     return false;
                 }
+
                 return true;
             });
         } else {
@@ -228,7 +232,7 @@ class PatronDeliveryPreferenceImporter
 
                 if ($localPath) {
                     $results = $this->processPatronFile($localPath, $basename, $type, $progressCallback);
-                    
+
                     // Mark file as processed
                     $this->markFileAsProcessed($basename, $type, $results);
 
@@ -260,7 +264,7 @@ class PatronDeliveryPreferenceImporter
         ?callable $progressCallback = null
     ): array {
         $patrons = $this->parser->parsePatronList($filePath);
-        
+
         $deliveryMethod = match($type) {
             'voice' => 'voice',
             'text' => 'text',
@@ -292,7 +296,7 @@ class PatronDeliveryPreferenceImporter
         $toInsert = [];
         $toUpdate = [];
         $unchangedIds = [];
-        
+
         $newCount = 0;
         $changedCount = 0;
         $unchangedCount = 0;

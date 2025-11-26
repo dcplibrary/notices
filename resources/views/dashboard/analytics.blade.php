@@ -30,7 +30,7 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($typeDistribution as $type)
-                <a href="{{ route('notices.list', ['type_id' => $type->notification_type_id]) }}"
+                <a href="/notices/list?type_id={{ $type->notification_type_id }}"
                    class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
                     <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.notification_types')[$type->notification_type_id] ?? 'Unknown' }}
@@ -51,7 +51,7 @@
             </div>
             <div class="mt-4 space-y-2">
                 @foreach($deliveryDistribution as $delivery)
-                <a href="{{ route('notices.list', ['delivery_id' => $delivery->delivery_option_id]) }}"
+                <a href="/notices/list?delivery_id={{ $delivery->delivery_option_id }}"
                    class="flex justify-between text-sm p-2 rounded hover:bg-gray-50 transition-colors group">
                     <span class="text-gray-600 group-hover:text-indigo-600">
                         {{ config('notices.delivery_options')[$delivery->delivery_option_id] ?? 'Unknown' }}
@@ -178,7 +178,7 @@ new Chart(typeDistCtx, {
             if (elements.length > 0) {
                 const index = elements[0].index;
                 const typeId = typeIds[index];
-                window.location.href = '{{ route('notices.list') }}?type_id=' + typeId;
+                window.location.href = '/notices/list?type_id=' + typeId;
             }
         },
         onHover: (event, elements) => {
@@ -218,7 +218,7 @@ new Chart(deliveryDistCtx, {
             if (elements.length > 0) {
                 const index = elements[0].index;
                 const deliveryId = deliveryIds[index];
-                window.location.href = '{{ route('notices.list') }}?delivery_id=' + deliveryId;
+                window.location.href = '/notices/list?delivery_id=' + deliveryId;
             }
         },
         onHover: (event, elements) => {

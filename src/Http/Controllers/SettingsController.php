@@ -4,6 +4,8 @@ namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\DeliveryMethod;
 use Dcplibrary\Notices\Models\NotificationSetting;
+use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 use Dcplibrary\Notices\Models\SyncLog;
 use Dcplibrary\Notices\Services\SettingsManager;
 use Illuminate\Http\Request;
@@ -11,8 +13,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Dcplibrary\Notices\Models\NotificationStatus;
-use Dcplibrary\Notices\Models\NotificationType;
+use Throwable;
 
 class SettingsController extends Controller
 {
@@ -21,7 +22,7 @@ class SettingsController extends Controller
     public function __construct(SettingsManager $settingsManager)
     {
         $this->settingsManager = $settingsManager;
-        
+
         // Only allow users in Computer Services group to access settings when
         // explicitly enabled. In test environments and by default this check is
         // disabled so routes remain accessible.
@@ -30,6 +31,7 @@ class SettingsController extends Controller
                 if (!Auth::check() || !method_exists(Auth::user(), 'inGroup') || !Auth::user()->inGroup('Computer Services')) {
                     abort(403, 'Access denied. Settings are only available to Computer Services staff.');
                 }
+
                 return $next($request);
             });
         }
@@ -265,7 +267,7 @@ class SettingsController extends Controller
     public function updateNotificationType(Request $request, $id)
     {
         $type = NotificationType::findOrFail($id);
-        
+
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
@@ -283,7 +285,7 @@ class SettingsController extends Controller
     public function updateDeliveryMethod(Request $request, $id)
     {
         $method = DeliveryMethod::findOrFail($id);
-        
+
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
@@ -301,7 +303,7 @@ class SettingsController extends Controller
     public function updateNotificationStatus(Request $request, $id)
     {
         $status = NotificationStatus::findOrFail($id);
-        
+
         $validated = $request->validate([
             'enabled' => 'required|boolean',
             'display_order' => 'required|integer|min:0',
@@ -371,10 +373,11 @@ class SettingsController extends Controller
         try {
             Artisan::call('notices:normalize-phones', $options);
             $output = Artisan::output();
+
             return redirect()->route('notices.settings.index')
                 ->with('success', 'Phone normalization ' . ($dry ? '(dry run) ' : '') . 'completed.')
                 ->with('details', $output);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return redirect()->route('notices.settings.index')
                 ->withErrors(['error' => 'Normalization failed: ' . $e->getMessage()]);
         }

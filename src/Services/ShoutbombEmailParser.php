@@ -4,12 +4,13 @@ namespace Dcplibrary\Notices\Services;
 
 use Carbon\Carbon;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 class ShoutbombEmailParser
 {
     /**
-     * Parse email report and import data
+     * Parse email report and import data.
      */
     public function parseAndImport(array $emailReport): array
     {
@@ -36,7 +37,7 @@ class ShoutbombEmailParser
             }
 
             Log::info('Email report parsed and imported', $stats);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error parsing email report', [
                 'type' => $reportType,
                 'error' => $e->getMessage(),
@@ -48,7 +49,7 @@ class ShoutbombEmailParser
     }
 
     /**
-     * Parse opt-out and invalid phone number report
+     * Parse opt-out and invalid phone number report.
      *
      * Format: phone_number :: patron_barcode :: patron_id :: status_code :: delivery_type
      * Example: 2705559546 :: 23307012346316 :: 1154 :: 3 :: SMS
@@ -94,11 +95,11 @@ class ShoutbombEmailParser
                     // Create/update delivery record
                     $imported = $this->importDeliveryRecord([
                         'patron_barcode' => $patronBarcode,
-                        'patron_id' => (int)$patronId,
+                        'patron_id' => (int) $patronId,
                         'phone_number' => $this->normalizePhoneNumber($phoneNumber),
                         'delivery_type' => $deliveryType,
                         'status' => $status,
-                        'status_code' => (int)$statusCode,
+                        'status_code' => (int) $statusCode,
                         'sent_date' => Carbon::parse($reportDate),
                         'report_type' => ($currentSection === 'opted_out') ? 'email_optout' : 'email_invalid',
                     ]);
@@ -123,7 +124,7 @@ class ShoutbombEmailParser
     }
 
     /**
-     * Parse undelivered voice notices report
+     * Parse undelivered voice notices report.
      *
      * Format: phone_number | patron_barcode | library_name | patron_name | message_type
      * Example: 2705551797 | 23307015330009 | Daviess County Public Library | GRIFFIE, DALE | Overdue item message
@@ -181,7 +182,7 @@ class ShoutbombEmailParser
     }
 
     /**
-     * Import a delivery record into the database
+     * Import a delivery record into the database.
      */
     protected function importDeliveryRecord(array $data): bool
     {
@@ -198,6 +199,7 @@ class ShoutbombEmailParser
                     'barcode' => $data['patron_barcode'],
                     'phone' => $data['phone_number'],
                 ]);
+
                 return false;
             }
 
@@ -205,17 +207,18 @@ class ShoutbombEmailParser
             ShoutbombDelivery::create($data);
 
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error importing delivery record', [
                 'data' => $data,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Normalize phone number to consistent format
+     * Normalize phone number to consistent format.
      */
     protected function normalizePhoneNumber(string $phone): string
     {
@@ -231,7 +234,7 @@ class ShoutbombEmailParser
     }
 
     /**
-     * Extract report date from email subject
+     * Extract report date from email subject.
      *
      * Examples:
      * - "Invalid patron phone number Sat, November 8th 2025"
@@ -245,8 +248,9 @@ class ShoutbombEmailParser
             try {
                 // Clean up ordinal suffixes (1st, 2nd, 3rd, 4th)
                 $dateString = preg_replace('/(\d)(st|nd|rd|th)/', '$1', $matches[1]);
+
                 return Carbon::parse($dateString);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning('Failed to parse date from subject', [
                     'subject' => $subject,
                     'error' => $e->getMessage(),

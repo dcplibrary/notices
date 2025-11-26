@@ -2,11 +2,11 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
-use Dcplibrary\Notices\Models\NotificationLog;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombSubmission;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class DiagnoseDashboardDataCommand extends Command
@@ -89,6 +89,7 @@ class DiagnoseDashboardDataCommand extends Command
                     ['Delivery Option', 'Count'],
                     $deliveryBreakdown->map(function ($item) use ($deliveryOptions) {
                         $name = $deliveryOptions[$item->delivery_option_id] ?? "Unknown (ID: {$item->delivery_option_id})";
+
                         return [$name, number_format($item->count)];
                     })
                 );

@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\SyncLog;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -20,12 +21,13 @@ class SyncController extends Controller
             if (!Auth::check() || !Auth::user()->inGroup('Computer Services')) {
                 abort(403, 'Unauthorized');
             }
+
             return $next($request);
         });
     }
 
     /**
-     * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation
+     * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation.
      */
     public function syncAll(): JsonResponse
     {
@@ -49,7 +51,7 @@ class SyncController extends Controller
             if ($polarisResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['polaris'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -64,7 +66,7 @@ class SyncController extends Controller
             if ($syncResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['shoutbomb_sync'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -79,7 +81,7 @@ class SyncController extends Controller
             if ($aggregateResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['aggregate'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -105,7 +107,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import from Polaris only
+     * Import from Polaris only.
      */
     public function importPolaris(): JsonResponse
     {
@@ -118,7 +120,7 @@ class SyncController extends Controller
 
         try {
             $result = $this->runImportPolaris();
-            
+
             if ($result['status'] === 'success') {
                 $log->markCompleted(['polaris' => $result], $result['records'] ?? 0);
             } else {
@@ -126,8 +128,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -136,7 +139,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports)
+     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports).
      */
     public function importShoutbombReports(): JsonResponse
     {
@@ -160,8 +163,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -170,7 +174,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import Shoutbomb Submissions (what was sent to Shoutbomb)
+     * Import Shoutbomb Submissions (what was sent to Shoutbomb).
      */
     public function importShoutbombSubmissions(): JsonResponse
     {
@@ -194,8 +198,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -233,8 +238,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -352,7 +358,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Sync Shoutbomb phone notices to notification_logs
+     * Sync Shoutbomb phone notices to notification_logs.
      */
     public function syncShoutbombToLogs(): JsonResponse
     {
@@ -373,8 +379,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -383,7 +390,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run aggregation
+     * Run aggregation.
      */
     public function aggregate(): JsonResponse
     {
@@ -404,8 +411,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -414,7 +422,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Test connections to Polaris and Shoutbomb
+     * Test connections to Polaris and Shoutbomb.
      */
     public function testConnections(): JsonResponse
     {
@@ -427,7 +435,7 @@ class SyncController extends Controller
                 'status' => 'success',
                 'message' => 'Connected successfully',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['polaris'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -444,8 +452,9 @@ class SyncController extends Controller
                     config('notices.shoutbomb.ftp.timeout', 30)
                 );
 
-                if ($ftp && ftp_login($ftp, 
-                    config('notices.shoutbomb.ftp.username'), 
+                if ($ftp && ftp_login(
+                    $ftp,
+                    config('notices.shoutbomb.ftp.username'),
                     config('notices.shoutbomb.ftp.password')
                 )) {
                     $results['shoutbomb_ftp'] = [
@@ -459,7 +468,7 @@ class SyncController extends Controller
                         'message' => 'Failed to connect or login',
                     ];
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $results['shoutbomb_ftp'] = [
                     'status' => 'error',
                     'message' => $e->getMessage(),
@@ -476,7 +485,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Get sync logs
+     * Get sync logs.
      */
     public function logs(Request $request): JsonResponse
     {
@@ -488,7 +497,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Get a specific sync log with full details
+     * Get a specific sync log with full details.
      */
     public function getLog(int $id): JsonResponse
     {
@@ -509,7 +518,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Polaris import command
+     * Run Polaris import command.
      */
     private function runImportPolaris(): array
     {
@@ -528,7 +537,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Shoutbomb reports check via email (Graph API)
+     * Run Shoutbomb reports check via email (Graph API).
      */
     private function runImportShoutbombReports(): array
     {
@@ -556,7 +565,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run sync Shoutbomb to logs command
+     * Run sync Shoutbomb to logs command.
      */
     private function runSyncShoutbombToLogs(): array
     {
@@ -578,7 +587,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run aggregation command
+     * Run aggregation command.
      */
     private function runAggregate(): array
     {
@@ -592,7 +601,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Shoutbomb submissions import command
+     * Run Shoutbomb submissions import command.
      */
     private function runImportShoutbombSubmissions(): array
     {
@@ -619,7 +628,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run FTP files import command (PhoneNotices + Shoutbomb submissions + Patrons)
+     * Run FTP files import command (PhoneNotices + Shoutbomb submissions + Patrons).
      */
     private function runImportFTPFiles(?string $from = null, ?string $to = null, bool $importPatrons = false): array
     {
@@ -647,7 +656,7 @@ class SyncController extends Controller
         // Parse output to get record counts
         $records = 0;
         $patronsImported = false;
-        
+
         if (preg_match('/PhoneNotices[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }

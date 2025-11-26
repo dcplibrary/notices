@@ -12,28 +12,36 @@ use Carbon\Carbon;
 class VerificationResult
 {
     public bool $created = false;
+
     public ?Carbon $created_at = null;
 
     public bool $submitted = false;
+
     public ?Carbon $submitted_at = null;
+
     public ?string $submission_file = null;
 
     public bool $verified = false;
+
     public ?Carbon $verified_at = null;
+
     public ?string $verification_file = null;
 
     public bool $delivered = false;
+
     public ?Carbon $delivered_at = null;
+
     public ?string $delivery_status = null;
+
     public ?string $failure_reason = null;
 
     /**
-     * Overall status: success, failed, pending, partial
+     * Overall status: success, failed, pending, partial.
      */
     public string $overall_status = 'pending';
 
     /**
-     * Array of timeline events
+     * Array of timeline events.
      */
     public array $timeline = [];
 

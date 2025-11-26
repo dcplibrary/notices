@@ -3,12 +3,11 @@
 namespace Dcplibrary\Notices\Tests\Feature\Api;
 
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Carbon\Carbon;
 
 class VerificationControllerTest extends TestCase
 {
@@ -55,7 +54,7 @@ class VerificationControllerTest extends TestCase
                     'notice_type',
                     'verification',
                     'status_message',
-                ]
+                ],
             ],
             'summary' => [
                 'total',

@@ -50,7 +50,7 @@ class RoutesAndControllersTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'data' => ['id', 'patron_id', 'notification_date']
+                'data' => ['id', 'patron_id', 'notification_date'],
             ]);
     }
 
@@ -233,7 +233,7 @@ class RoutesAndControllersTest extends TestCase
     public function it_verifies_route_prefixes_are_correct()
     {
         $notificationRoute = Route::getRoutes()->getByName('notices.api.logs.index');
-        
+
         $this->assertNotNull($notificationRoute);
         $this->assertStringContainsString('api/notices', $notificationRoute->uri());
     }
@@ -246,7 +246,7 @@ class RoutesAndControllersTest extends TestCase
         $response = $this->getJson(route('notices.api.logs.show', $notification));
 
         $response->assertStatus(200);
-        
+
         // Verify that the response is transformed (wrapped in 'data' key)
         $this->assertArrayHasKey('data', $response->json());
     }

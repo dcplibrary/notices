@@ -2,12 +2,12 @@
 
 namespace Dcplibrary\Notices\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Carbon\Carbon;
 
 /**
  * API Controller for notice verification.
@@ -66,7 +66,7 @@ class VerificationController extends Controller
             ->get();
 
         // Verify each notice
-        $results = $notices->map(function($notice) {
+        $results = $notices->map(function ($notice) {
             $verification = $this->verificationService->verify($notice);
 
             return [
@@ -150,19 +150,19 @@ class VerificationController extends Controller
 
         // Calculate statistics
         $totalNotices = count($results);
-        $successfulCount = collect($results)->filter(function($item) {
+        $successfulCount = collect($results)->filter(function ($item) {
             return $item['verification']->overall_status === 'success';
         })->count();
 
-        $byType = collect($results)->groupBy(function($item) {
+        $byType = collect($results)->groupBy(function ($item) {
             return $this->getNoticeTypeName($item['notice']->notification_type_id);
-        })->map(function($group) {
+        })->map(function ($group) {
             return $group->count();
         });
 
-        $byMethod = collect($results)->groupBy(function($item) {
+        $byMethod = collect($results)->groupBy(function ($item) {
             return $this->getDeliveryMethodName($item['notice']->delivery_option_id);
-        })->map(function($group) {
+        })->map(function ($group) {
             return $group->count();
         });
 
@@ -173,7 +173,7 @@ class VerificationController extends Controller
                 'success_rate' => $totalNotices > 0 ? round(($successfulCount / $totalNotices) * 100, 1) : 0,
                 'last_notice' => $totalNotices > 0 ? $results[0]['notice']->notification_date->toISOString() : null,
             ],
-            'notices' => collect($results)->map(function($item) {
+            'notices' => collect($results)->map(function ($item) {
                 return [
                     'id' => $item['notice']->id,
                     'date' => $item['notice']->notification_date->toISOString(),
@@ -188,7 +188,7 @@ class VerificationController extends Controller
                 'by_method' => $byMethod,
             ],
             // Backwards-compatible key expected by some tests
-            'data' => collect($results)->map(function($item) {
+            'data' => collect($results)->map(function ($item) {
                 return [
                     'id' => $item['notice']->id,
                     'date' => $item['notice']->notification_date->toISOString(),
@@ -219,7 +219,7 @@ class VerificationController extends Controller
 
         $failures = $this->verificationService->getFailedNotices($dateFrom, $dateTo, $reason);
 
-        $byReason = collect($failures)->groupBy('failure_reason')->map(function($group) {
+        $byReason = collect($failures)->groupBy('failure_reason')->map(function ($group) {
             return $group->count();
         })->sortDesc();
 
@@ -258,7 +258,7 @@ class VerificationController extends Controller
         // Search query
         if ($request->has('q')) {
             $search = $request->q;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('patron_barcode', 'LIKE', "%{$search}%")
                   ->orWhere('phone', 'LIKE', "%{$search}%")
                   ->orWhere('email', 'LIKE', "%{$search}%")
@@ -287,8 +287,9 @@ class VerificationController extends Controller
             ->get();
 
         // Verify and filter by status if requested
-        $results = $notices->map(function($notice) {
+        $results = $notices->map(function ($notice) {
             $verification = $this->verificationService->verify($notice);
+
             return [
                 'notice' => $notice,
                 'verification' => $verification,
@@ -296,12 +297,12 @@ class VerificationController extends Controller
         });
 
         if ($request->has('status')) {
-            $results = $results->filter(function($item) use ($request) {
+            $results = $results->filter(function ($item) use ($request) {
                 return $item['verification']->overall_status === $request->status;
             })->values();
         }
 
-        $payload = $results->map(function($item) {
+        $payload = $results->map(function ($item) {
             return [
                 'id' => $item['notice']->id,
                 'date' => $item['notice']->notification_date->toISOString(),
@@ -333,6 +334,7 @@ class VerificationController extends Controller
     protected function getDeliveryMethodName(int $id): string
     {
         $methods = config('notices.delivery_options', []);
+
         return $methods[$id] ?? "Unknown";
     }
 
@@ -342,6 +344,7 @@ class VerificationController extends Controller
     protected function getNoticeTypeName(int $id): string
     {
         $types = config('notices.notification_types', []);
+
         return $types[$id] ?? "Unknown";
     }
 
