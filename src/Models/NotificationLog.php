@@ -88,10 +88,20 @@ class NotificationLog extends Model
 
     /**
      * Get the notification type name.
+     * Transforms "Email" to "SMS" when delivery method is SMS (delivery_option_id = 8).
+     * This is because Polaris used to send SMS messages using email infrastructure,
+     * but now we want to display accurate language to users.
      */
     public function getNotificationTypeNameAttribute(): string
     {
-        return config("notices.notification_types.{$this->notification_type_id}", 'Unknown');
+        $typeName = config("notices.notification_types.{$this->notification_type_id}", 'Unknown');
+
+        // If delivery method is SMS, replace "Email" with "SMS" in the type name
+        if ($this->delivery_option_id === 8) {
+            $typeName = str_replace('Email', 'SMS', $typeName);
+        }
+
+        return $typeName;
     }
 
     /**
@@ -117,10 +127,20 @@ class NotificationLog extends Model
 
     /**
      * Get the notification status name.
+     * Transforms "Email" to "SMS" when delivery method is SMS (delivery_option_id = 8).
+     * This is because Polaris used to send SMS messages using email infrastructure,
+     * but now we want to display accurate language to users.
      */
     public function getNotificationStatusNameAttribute(): string
     {
-        return config("notices.notification_statuses.{$this->notification_status_id}", 'Unknown');
+        $statusName = config("notices.notification_statuses.{$this->notification_status_id}", 'Unknown');
+
+        // If delivery method is SMS, replace "Email" with "SMS" in the status name
+        if ($this->delivery_option_id === 8) {
+            $statusName = str_replace('Email', 'SMS', $statusName);
+        }
+
+        return $statusName;
     }
 
     /**

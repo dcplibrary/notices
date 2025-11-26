@@ -450,9 +450,11 @@
                             <td class="px-6 py-4">
                                 @php
                                     // Get items from phone notices for performance
-                                    $phoneNotices = $notification->polaris_phone_notices;
+                                    // Use unique to match detail view's accurate count
+                                    $allPhoneNotices = $notification->polaris_phone_notices;
+                                    $phoneNotices = $allPhoneNotices->unique('item_record_id');
                                     $itemCount = $phoneNotices->count();
-                                    $firstNotice = $phoneNotices->first();
+                                    $firstNotice = $allPhoneNotices->first();
                                 @endphp
                                 @if($firstNotice && $firstNotice->title)
                                     <div class="text-sm">
