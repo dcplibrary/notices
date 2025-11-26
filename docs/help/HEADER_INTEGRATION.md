@@ -12,7 +12,7 @@ The header/navigation is typically in:
 
 ### 2. Add Help Icon
 
-Add this code to the header navigation (usually next to login/logout buttons):
+Add this code to the header navigation. It should be positioned at the far right of the header, after the user profile avatar component (see [User Profile Component](../deployment/USER_PROFILE_COMPONENT.md) for implementing the avatar):
 
 ```html
 <!-- Help Icon -->

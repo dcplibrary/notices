@@ -25,6 +25,11 @@ Route::get('/shoutbomb', [DashboardController::class, 'shoutbomb'])->name('shout
 Route::get('/troubleshooting', [DashboardController::class, 'troubleshooting'])->name('troubleshooting');
 Route::get('/troubleshooting/export', [DashboardController::class, 'exportFailures'])->name('troubleshooting.export');
 
+// Help page
+Route::get('/help', function () {
+    return view('notices::help.index');
+})->name('help');
+
 // Verification routes
 Route::prefix('verification')->name('verification.')->group(function () {
     Route::get('/', [DashboardController::class, 'verification'])->name('index');
