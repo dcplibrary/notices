@@ -11,6 +11,7 @@ use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Commands\SyncAllCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand;
+use Dcplibrary\Notices\Console\Commands\ImportPolarisCommand;
 use Dcplibrary\Notices\Console\Commands\SyncNotificationsFromLogs;
 use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
 use Dcplibrary\Notices\Http\Livewire\SyncAndImport;
@@ -138,6 +139,7 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\DiagnoseDataIssues::class,
             Commands\DiagnoseDashboardData::class,
             AggregateNotificationsCommand::class,
+            ImportPolarisCommand::class,
             SyncNotificationsFromLogs::class,
         ]);
 
@@ -252,7 +254,7 @@ class NoticesServiceProvider extends ServiceProvider
             // → Exported at 4:00 AM (voice) and 5:00 AM (text)
             // → 30 min buffer for FTP upload
             if ($settings->get('scheduler.import_patron_lists_enabled', true)) {
-                $schedule->command('notices:import-ftp-files --from=today --to=today')
+                $schedule->command('notices:import-ftp-files --days=1 --import-patrons')
                     ->dailyAt('05:30')
                     ->withoutOverlapping()
                     ->description('Import patron delivery preference lists (voice + text)');
@@ -284,7 +286,7 @@ class NoticesServiceProvider extends ServiceProvider
             // → Captures holds processed overnight
             // → 30 min buffer
             if ($settings->get('scheduler.import_morning_holds_enabled', true)) {
-                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                $schedule->command('notices:import-ftp-files --days=1')
                     ->dailyAt('09:30')
                     ->withoutOverlapping()
                     ->description('Import second morning hold notifications');
@@ -298,7 +300,7 @@ class NoticesServiceProvider extends ServiceProvider
             // → Hold Notifications Export #3 at 1:00 PM
             // → 30 min buffer
             if ($settings->get('scheduler.import_afternoon_holds_enabled', true)) {
-                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                $schedule->command('notices:import-ftp-files --days=1')
                     ->dailyAt('13:30')
                     ->withoutOverlapping()
                     ->description('Import afternoon hold notifications');
@@ -319,7 +321,7 @@ class NoticesServiceProvider extends ServiceProvider
             // → Final hold export of the day
             // → 30 min buffer
             if ($settings->get('scheduler.import_evening_holds_enabled', true)) {
-                $schedule->command('notices:import-ftp-files --from=today --to=today --type=holds')
+                $schedule->command('notices:import-ftp-files --days=1')
                     ->dailyAt('17:30')
                     ->withoutOverlapping()
                     ->description('Import evening hold notifications');
@@ -342,7 +344,7 @@ class NoticesServiceProvider extends ServiceProvider
             // Runs after all imports are complete and notifications have been projected
             // Aggregates data for dashboard and reporting
             if ($settings->get('scheduler.aggregation_enabled', true)) {
-                $schedule->command('notices:aggregate --yesterday')
+                $schedule->command('notices:aggregate --days=1')
                     ->dailyAt('22:00')
                     ->withoutOverlapping()
                     ->description('Aggregate yesterday\'s notification data for reporting');
