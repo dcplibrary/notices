@@ -134,6 +134,7 @@ class NoticesServiceProvider extends ServiceProvider
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,
             Commands\DiagnoseDashboardData::class,
+            \Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand::class,
             SyncNotificationsFromLogs::class,
         ]);
 

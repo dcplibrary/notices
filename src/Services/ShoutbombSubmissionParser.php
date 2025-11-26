@@ -280,13 +280,14 @@ class ShoutbombSubmissionParser
             return null;
         }
 
-        $deliveryType = strtoupper(trim($data[0]));
+        $rawDelivery = strtoupper(trim($data[0]));
+        $deliveryType = $rawDelivery === 'V' ? 'voice' : ($rawDelivery === 'T' ? 'text' : null);
 
         return [
-            // Map delivery type
-            'delivery_type' => $deliveryType === 'V' ? 'voice' : ($deliveryType === 'T' ? 'text' : null),
+            // Map delivery type (normalized + raw)
+            'delivery_type' => $deliveryType,
 
-            // All CSV fields
+            // Core CSV fields
             'language' => !empty($data[1]) ? trim($data[1]) : null, // Field 2
             'patron_barcode' => trim($data[4]), // Field 5
             'first_name' => !empty($data[6]) ? trim($data[6]) : null, // Field 7
@@ -300,9 +301,15 @@ class ShoutbombSubmissionParser
             'title' => !empty($data[14]) ? trim($data[14]) : null, // Field 15
             'organization_code' => !empty($data[15]) ? trim($data[15]) : null, // Field 16
             'language_code' => !empty($data[16]) ? trim($data[16]) : null, // Field 17
+
+            // Enrichment fields used by NotificationImportService
+            'notification_type_id' => !empty($data[17]) ? (int) trim($data[17]) : null, // Field 18
+            'delivery_option_id' => !empty($data[18]) ? (int) trim($data[18]) : null, // Field 19
             'patron_id' => !empty($data[19]) ? (int) trim($data[19]) : null, // Field 20
             'item_record_id' => !empty($data[20]) ? (int) trim($data[20]) : null, // Field 21
-            'bib_record_id' => !empty($data[21]) ? (int) trim($data[21]) : null, // Field 22
+            'sys_hold_request_id' => isset($data[21]) && $data[21] !== '' ? (int) trim($data[21]) : null, // Field 22
+            'account_balance' => isset($data[24]) && $data[24] !== '' ? (float) trim($data[24]) : null, // Field 25
+            'bib_record_id' => !empty($data[21]) ? (int) trim($data[21]) : null, // Field 22 (kept for backwards compatibility)
         ];
     }
 

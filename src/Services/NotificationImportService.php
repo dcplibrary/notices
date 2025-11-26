@@ -261,45 +261,14 @@ class NotificationImportService
      */
     public function importPhoneNotices(Carbon $startDate, Carbon $endDate): int
     {
-        if (!$this->ftpService->connect()) {
-            throw new \Exception('Failed to connect to FTP');
-        }
+        // Delegate to the dedicated PolarisPhoneNoticeImporter so that
+        // all PhoneNotices ingestion goes through a single, enriched path.
+        /** @var \Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter $importer */
+        $importer = app(\Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter::class);
 
-        $files = $this->ftpService->listFiles('/');
-        $totalImported = 0;
+        $results = $importer->importFromFTP(null, $startDate, $endDate);
 
-        foreach ($files as $file) {
-            $basename = basename($file);
-            if (!str_contains($basename, 'PhoneNotices') || !str_ends_with($basename, '.csv')) {
-                continue;
-            }
-
-            if (!preg_match('/_(\d{4}-\d{2}-\d{2})/', $basename, $matches)) {
-                continue;
-            }
-
-            $fileDate = Carbon::parse($matches[1]);
-            if (!$fileDate->between($startDate, $endDate)) {
-                continue;
-            }
-
-            $localPath = $this->ftpService->downloadFile('/' . $basename);
-            if (!$localPath) {
-                continue;
-            }
-
-            $imported = $this->parseAndImportPhoneNotices($localPath, $basename, $fileDate);
-            $totalImported += $imported;
-
-            Log::info("Imported PhoneNotices", [
-                'file' => $basename,
-                'count' => $imported,
-            ]);
-        }
-
-        $this->ftpService->disconnect();
-
-        return $totalImported;
+        return $results['imported'] ?? 0;
     }
 
     /**
@@ -464,7 +433,9 @@ class NotificationImportService
         string $type,
         Carbon $exportTimestamp
     ): int {
-        $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Use encoding-safe reader to handle Windows-1252 / ISO-8859-1 exports
+        // that include smart quotes and other non-UTF-8 characters.
+        $lines = $this->readFileWithEncoding($filePath);
         $imported = 0;
         $batch = [];
 
@@ -716,12 +687,61 @@ class NotificationImportService
 
         try {
             // Handle MM/DD/YYYY format
-            if (preg_match('#^\d{1,2}/\d{1,2}/\d{4}$#', $date)) {
+            if (preg_match('#^\\d{1,2}/\\d{1,2}/\\d{4}$#', $date)) {
                 return Carbon::createFromFormat('m/d/Y', $date)->format('Y-m-d');
             }
             return Carbon::parse($date)->format('Y-m-d');
-        } catch (\Exception $e) {
+        } catch (\\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Read a text file and return UTF-8 lines, handling common Polaris
+     * encodings (UTF-8, Windows-1252, ISO-8859-1) and BOM.
+     */
+    protected function readFileWithEncoding(string $filePath): array
+    {
+        $content = $this->readFileContentWithEncoding($filePath);
+        if ($content === false) {
+            return [];
+        }
+
+        // Split into lines and trim, removing empties
+        return array_filter(
+            array_map('trim', preg_split("#\\r\\n|\\n|\\r#", $content)),
+            static fn ($line) => $line !== ''
+        );
+    }
+
+    /**
+     * Read raw file content, detect encoding, and normalize to UTF-8.
+     */
+    protected function readFileContentWithEncoding(string $filePath): string|false
+    {
+        $content = @file_get_contents($filePath);
+        if ($content === false) {
+            return false;
+        }
+
+        // Strip UTF-8 BOM if present
+        $bom = pack('H*', 'EFBBBF');
+        if (str_starts_with($content, $bom)) {
+            $content = substr($content, 3);
+        }
+
+        // Detect likely encoding
+        $encoding = mb_detect_encoding($content, ['UTF-8', 'Windows-1252', 'ISO-8859-1', 'ASCII'], true);
+
+        if ($encoding && $encoding !== 'UTF-8') {
+            $content = mb_convert_encoding($content, 'UTF-8', $encoding);
+        }
+
+        // Ensure valid UTF-8; as a last resort, scrub invalid sequences
+        if (!mb_check_encoding($content, 'UTF-8')) {
+            $content = mb_convert_encoding($content, 'UTF-8', 'UTF-8');
+        }
+
+        return $content;
     }
 }
