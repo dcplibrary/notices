@@ -1,3 +1,10 @@
+# [5.0.0](https://github.com/dcplibrary/notices/compare/v4.0.6...v5.0.0) (2025-11-26)
+
+
+### Features
+
+* add microsoft graph api email ingestion ([1d0cbaa](https://github.com/dcplibrary/notices/commit/1d0cbaa42a7841a35e4ca463f76056bcbd96eca8))
+
 ## [4.0.6](https://github.com/dcplibrary/notices/compare/v4.0.5...v4.0.6) (2025-11-26)
 
 
