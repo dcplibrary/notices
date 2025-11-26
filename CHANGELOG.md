@@ -1,3 +1,11 @@
+## [4.0.6](https://github.com/dcplibrary/notices/compare/v4.0.5...v4.0.6) (2025-11-26)
+
+
+### Bug Fixes
+
+* update notification list view item counts and SMS language transformation ([45fb673](https://github.com/dcplibrary/notices/commit/45fb673b69094369703130310f2ffe0359a6b5c9))
+* update notification list view item counts and SMS language transformation ([afb7248](https://github.com/dcplibrary/notices/commit/afb7248f93554d916798fccecc2166c2fd725238))
+
 ## [4.0.5](https://github.com/dcplibrary/notices/compare/v4.0.4...v4.0.5) (2025-11-26)
 
 
