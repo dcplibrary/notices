@@ -43,6 +43,11 @@ This document provides a complete index of all documentation for the DC Public L
   - Tinker commands to test configuration
   - Common mistakes and fixes
   - Header verification
+- [**User Profile Component**](deployment/USER_PROFILE_COMPONENT.md) - Microsoft 365-style user avatar in dashboard header
+  - Display user initials or photo from Azure AD
+  - Dropdown menu with user info and logout
+  - Azure AD attribute configuration
+  - Profile photo fetching from Microsoft Graph API
 
 ## Integration Documentation
 
