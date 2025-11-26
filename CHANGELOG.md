@@ -1,3 +1,10 @@
+## [4.0.2](https://github.com/dcplibrary/notices/compare/v4.0.1...v4.0.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* change header icon and avatar ([564975e](https://github.com/dcplibrary/notices/commit/564975ecfc624c5f3d079e50c6aea582c9b9f7c1))
+
 ## [4.0.1](https://github.com/dcplibrary/notices/compare/v4.0.0...v4.0.1) (2025-11-26)
 
 
