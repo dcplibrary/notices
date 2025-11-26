@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/dcplibrary/notices/compare/v3.0.0...v3.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* fix extra backslash in notificationimportservice ([5ef9223](https://github.com/dcplibrary/notices/commit/5ef9223bb6e94bc9f9131d97377afc734dff36a8))
+
 # [3.0.0](https://github.com/dcplibrary/notices/compare/v2.0.2...v3.0.0) (2025-11-26)
 
 
