@@ -691,7 +691,7 @@ class NotificationImportService
                 return Carbon::createFromFormat('m/d/Y', $date)->format('Y-m-d');
             }
             return Carbon::parse($date)->format('Y-m-d');
-        } catch (\\Exception $e) {
+        } catch (\Exception $e) {
             return null;
         }
     }
