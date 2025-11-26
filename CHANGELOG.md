@@ -1,3 +1,10 @@
+## [4.0.5](https://github.com/dcplibrary/notices/compare/v4.0.4...v4.0.5) (2025-11-26)
+
+
+### Bug Fixes
+
+* only use AD attributes when both givenName and surname exist ([72ca4fa](https://github.com/dcplibrary/notices/commit/72ca4fa38f61f45827ed727608192f5f5657649c))
+
 ## [4.0.4](https://github.com/dcplibrary/notices/compare/v4.0.3...v4.0.4) (2025-11-26)
 
 
