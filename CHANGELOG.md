@@ -1,3 +1,10 @@
+# [6.0.0](https://github.com/dcplibrary/notices/compare/v5.0.0...v6.0.0) (2025-11-26)
+
+
+### Features
+
+* create combined sync command ([4e765cd](https://github.com/dcplibrary/notices/commit/4e765cd551344e876dba7a37013a93ba54ce8f7e))
+
 # [5.0.0](https://github.com/dcplibrary/notices/compare/v4.0.6...v5.0.0) (2025-11-26)
 
 
