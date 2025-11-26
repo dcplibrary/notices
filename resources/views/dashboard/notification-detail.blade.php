@@ -200,6 +200,95 @@
                         </dd>
                     </div>
 
+                    @php
+                        // Collect all unique source files from related data
+                        $sourceFiles = collect();
+
+                        // From PhoneNotices
+                        foreach($notification->polaris_phone_notices as $notice) {
+                            if ($notice->source_file && $notice->imported_at) {
+                                $sourceFiles->push([
+                                    'file' => $notice->source_file,
+                                    'imported_at' => $notice->imported_at,
+                                    'type' => 'phonenotice'
+                                ]);
+                            }
+                        }
+
+                        // From Shoutbomb submissions (holds, overdue, renew)
+                        foreach($notification->shoutbomb_submissions as $submission) {
+                            if ($submission->source_file && $submission->submitted_at) {
+                                $sourceFiles->push([
+                                    'file' => $submission->source_file,
+                                    'imported_at' => $submission->submitted_at,
+                                    'type' => 'submission'
+                                ]);
+                            }
+                        }
+
+                        // From Shoutbomb deliveries
+                        foreach($notification->shoutbomb_deliveries as $delivery) {
+                            if ($delivery->source_file && $delivery->sent_date) {
+                                $sourceFiles->push([
+                                    'file' => $delivery->source_file,
+                                    'imported_at' => $delivery->sent_date,
+                                    'type' => 'delivery'
+                                ]);
+                            }
+                        }
+
+                        // Deduplicate by filename, keeping earliest import time
+                        $uniqueSourceFiles = $sourceFiles->groupBy('file')->map(function($group) {
+                            $earliest = $group->sortBy('imported_at')->first();
+                            $file = $earliest['file'];
+                            $importedAt = $earliest['imported_at'];
+
+                            // Special handling for PhoneNotices.csv - determine export date from import time
+                            if (str_starts_with($file, 'PhoneNotices')) {
+                                // PhoneNotices exports daily at ~8:04-8:05 AM
+                                // If imported between 8:00-9:00 AM, it's that day's export
+                                // If imported before 8:00 AM, it's previous day's export
+                                $exportDate = $importedAt->copy();
+                                if ($importedAt->hour < 8) {
+                                    $exportDate->subDay();
+                                }
+                                return [
+                                    'display_name' => 'PhoneNotices.csv',
+                                    'export_date' => $exportDate->format('M d, Y'),
+                                    'imported_at' => $importedAt,
+                                ];
+                            }
+
+                            return [
+                                'display_name' => $file,
+                                'export_date' => null,
+                                'imported_at' => $importedAt,
+                            ];
+                        })->sortBy('imported_at')->values();
+                    @endphp
+
+                    @if($uniqueSourceFiles->count() > 0)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Data Sources</dt>
+                        <dd class="mt-1">
+                            <ul class="space-y-1">
+                                @foreach($uniqueSourceFiles as $source)
+                                    <li class="text-xs">
+                                        <span class="font-mono text-gray-900">{{ $source['display_name'] }}</span>
+                                        <span class="text-gray-500">
+                                            @if($source['export_date'])
+                                                ({{ $source['export_date'] }} export, imported {{ $source['imported_at']->format('g:i A') }})
+                                            @else
+                                                (imported {{ $source['imported_at']->format('M d, Y g:i A') }})
+                                            @endif
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </dd>
+                    </div>
+                    @endif
+
                     @if($notification->carrier_name)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Carrier</dt>
@@ -231,7 +320,7 @@
                 <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
-                Items ({{ max($phoneNotices->count(), $items->count()) }})
+                Items ({{ $phoneNotices->count() > 0 ? $phoneNotices->count() : $items->count() }})
             </h2>
         </div>
         <div class="px-6 py-4">
@@ -367,151 +456,6 @@
                     @endforeach
                 @endif
             </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Related Shoutbomb Records -->
-    @if($notification->shoutbomb_phone_notices->count() > 0 || $notification->shoutbomb_submissions->count() > 0 || $notification->shoutbomb_deliveries->count() > 0)
-    <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-                </svg>
-                Related Shoutbomb Records
-            </h2>
-        </div>
-        <div class="px-6 py-4 space-y-6">
-            <!-- Phone Notices -->
-            @if($notification->shoutbomb_phone_notices->count() > 0)
-            <div>
-                @php
-                    // Group by unique key to avoid duplicates
-                    $uniquePhoneNotices = $notification->shoutbomb_phone_notices->groupBy(function($notice) {
-                        return $notice->delivery_type . '|' . $notice->item_barcode . '|' . $notice->title;
-                    });
-                @endphp
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">PhoneNotices.csv Records ({{ $uniquePhoneNotices->count() }} unique)</h3>
-                <div class="space-y-2">
-                    @foreach($uniquePhoneNotices as $group)
-                    @php $phoneNotice = $group->first(); @endphp
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($phoneNotice->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Date:</span> {{ $phoneNotice->notice_date->format('M d, Y') }}</div>
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $phoneNotice->phone_number }}</span></div>
-                            <div><span class="font-medium text-gray-600">Library:</span> {{ $phoneNotice->library_name }}</div>
-                            @if($phoneNotice->title)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Title:</span> {{ Str::limit($phoneNotice->title, 80) }}</div>
-                            @endif
-                        </div>
-                        @if($group->count() > 1 || $phoneNotice->source_file)
-                        <div class="mt-2 pt-2 border-t border-gray-200">
-                            <div class="font-medium text-gray-600 mb-1">Import History ({{ $group->count() }} file{{ $group->count() > 1 ? 's' : '' }}):</div>
-                            <ul class="space-y-1">
-                                @foreach($group as $record)
-                                <li class="flex justify-between">
-                                    <span class="font-mono text-gray-700">{{ $record->source_file ?? 'Unknown file' }}</span>
-                                    <span class="text-gray-500">{{ $record->imported_at->format('M d, Y g:i A') }}</span>
-                                </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            <!-- Submissions -->
-            @if($notification->shoutbomb_submissions->count() > 0)
-            <div>
-                @php
-                    // Group by unique key to avoid duplicates
-                    $uniqueSubmissions = $notification->shoutbomb_submissions->groupBy(function($sub) {
-                        return $sub->notification_type . '|' . $sub->delivery_type . '|' . $sub->phone;
-                    });
-                @endphp
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Submission Records ({{ $uniqueSubmissions->count() }} unique)</h3>
-                <div class="space-y-2">
-                    @foreach($uniqueSubmissions as $group)
-                    @php $submission = $group->first(); @endphp
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($submission->notification_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Delivery:</span> {{ ucfirst($submission->delivery_type) }}</div>
-                            @if($submission->phone)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $submission->phone }}</span></div>
-                            @endif
-                        </div>
-                        @if($group->count() > 1)
-                        <div class="mt-2 pt-2 border-t border-gray-200">
-                            <div class="font-medium text-gray-600 mb-1">Submission History ({{ $group->count() }} submission{{ $group->count() > 1 ? 's' : '' }}):</div>
-                            <ul class="space-y-1">
-                                @foreach($group as $record)
-                                <li class="flex justify-between">
-                                    <span class="text-gray-700">{{ $record->source_file ?? 'Unknown file' }}</span>
-                                    <span class="text-gray-500">{{ $record->submitted_at->format('M d, Y g:i A') }}</span>
-                                </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @else
-                        <div class="mt-2">
-                            <span class="font-medium text-gray-600">Submitted:</span> {{ $submission->submitted_at->format('M d, Y g:i A') }}
-                        </div>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            <!-- Deliveries -->
-            @if($notification->shoutbomb_deliveries->count() > 0)
-            <div>
-                @php
-                    // Group by unique key to avoid duplicates
-                    $uniqueDeliveries = $notification->shoutbomb_deliveries->groupBy(function($del) {
-                        return $del->delivery_type . '|' . $del->phone_number . '|' . $del->status;
-                    });
-                @endphp
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Delivery Reports ({{ $uniqueDeliveries->count() }} unique)</h3>
-                <div class="space-y-2">
-                    @foreach($uniqueDeliveries as $group)
-                    @php $delivery = $group->first(); @endphp
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($delivery->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Status:</span> <span class="@if($delivery->status === 'Delivered') text-green-700 @else text-red-700 @endif font-medium">{{ $delivery->status }}</span></div>
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $delivery->phone_number }}</span></div>
-                            @if($group->count() == 1)
-                            <div><span class="font-medium text-gray-600">Sent:</span> {{ $delivery->sent_date?->format('M d, Y g:i A') ?? 'N/A' }}</div>
-                            @endif
-                            @if($delivery->message)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Message:</span> {{ $delivery->message }}</div>
-                            @endif
-                        </div>
-                        @if($group->count() > 1)
-                        <div class="mt-2 pt-2 border-t border-gray-200">
-                            <div class="font-medium text-gray-600 mb-1">Delivery History ({{ $group->count() }} report{{ $group->count() > 1 ? 's' : '' }}):</div>
-                            <ul class="space-y-1">
-                                @foreach($group as $record)
-                                <li class="flex justify-between">
-                                    <span class="text-gray-700">{{ $record->source_file ?? 'Report' }}</span>
-                                    <span class="text-gray-500">{{ $record->sent_date?->format('M d, Y g:i A') ?? 'N/A' }}</span>
-                                </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
         </div>
     </div>
     @endif
