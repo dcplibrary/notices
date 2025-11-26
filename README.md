@@ -811,6 +811,13 @@ Shoutbomb FTP → Parser → shoutbomb_* tables (MySQL)
 
 Comprehensive documentation is available in the `docs/` directory:
 
+### For Admins and Maintainers
+
+If you are responsible for configuring or operating the Notices dashboard:
+
+- See `docs/help/SETTINGS_USER_GUIDE.md` for an admin-focused guide to Settings (integration toggles, Sync & Import, and how DB overrides interact with `.env`/config).
+- See `docs/DEVELOPMENT_ROADMAP.md` for a high-level view of recent changes and recommended next steps.
+
 ### Setup & Deployment
 - **[Docker Setup Guide](docs/DOCKER_SETUP.md)** - Complete Docker-based installation
 - **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
