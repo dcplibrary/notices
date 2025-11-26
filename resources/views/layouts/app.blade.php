@@ -77,7 +77,6 @@
                                   stroke-linejoin="round"
                                   d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
                         </svg>
-                        <span class="ml-1 hidden md:inline text-sm">Help</span>
                     </a>
 
                     <!-- User Profile Dropdown -->
@@ -95,8 +94,8 @@
                             @else
                                 <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm border-2 border-blue-600 hover:border-blue-700 transition-colors">
                                     @php
-                                        $givenName = Auth::user()->given_name ?? Auth::user()->givenName ?? '';
-                                        $surname = Auth::user()->surname ?? Auth::user()->last_name ?? '';
+                                        $givenName = Auth::user()->givenName ?? '';
+                                        $surname = Auth::user()->surname ?? '';
                                         $initials = strtoupper(substr($givenName, 0, 1) . substr($surname, 0, 1));
                                         if (empty($initials)) {
                                             $initials = strtoupper(substr(Auth::user()->name ?? 'U', 0, 2));
@@ -204,8 +203,8 @@
                         <div class="text-sm text-gray-500">Logged in as</div>
                         <div class="text-base font-medium text-gray-800">
                             @php
-                                $givenName = Auth::user()->given_name ?? Auth::user()->givenName ?? '';
-                                $surname = Auth::user()->surname ?? Auth::user()->last_name ?? '';
+                                $givenName = Auth::user()->givenName ?? '';
+                                $surname = Auth::user()->surname ?? '';
                                 $displayName = trim(($givenName ?? '') . ' ' . ($surname ?? ''));
                                 if (empty($displayName)) {
                                     $displayName = Auth::user()->name ?? Auth::user()->email ?? 'User';
