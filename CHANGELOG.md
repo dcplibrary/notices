@@ -1,3 +1,11 @@
+# [4.0.0](https://github.com/dcplibrary/notices/compare/v3.0.3...v4.0.0) (2025-11-26)
+
+
+### Features
+
+* add help and profile menu to menu bar ([d072687](https://github.com/dcplibrary/notices/commit/d07268714302fd9cea82deb72970dc2791578d7e))
+* add user profile component and help icon to header ([665b3a4](https://github.com/dcplibrary/notices/commit/665b3a48e7daba374322c2803b81214e13148351))
+
 ## [3.0.3](https://github.com/dcplibrary/notices/compare/v3.0.2...v3.0.3) (2025-11-26)
 
 
