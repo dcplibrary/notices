@@ -96,8 +96,10 @@
                                     @php
                                         $givenName = Auth::user()->givenName ?? '';
                                         $surname = Auth::user()->surname ?? '';
-                                        $initials = strtoupper(substr($givenName, 0, 1) . substr($surname, 0, 1));
-                                        if (empty($initials)) {
+
+                                        if (!empty($givenName) && !empty($surname)) {
+                                            $initials = strtoupper(substr($givenName, 0, 1) . substr($surname, 0, 1));
+                                        } else {
                                             $initials = strtoupper(substr(Auth::user()->name ?? 'U', 0, 2));
                                         }
                                     @endphp
@@ -121,8 +123,12 @@
                                 <p class="text-sm text-gray-500">Logged in as</p>
                                 <p class="text-sm font-medium text-gray-900 truncate">
                                     @php
-                                        $displayName = trim(($givenName ?? '') . ' ' . ($surname ?? ''));
-                                        if (empty($displayName)) {
+                                        $givenName = Auth::user()->givenName ?? '';
+                                        $surname = Auth::user()->surname ?? '';
+
+                                        if (!empty($givenName) && !empty($surname)) {
+                                            $displayName = trim($givenName . ' ' . $surname);
+                                        } else {
                                             $displayName = Auth::user()->name ?? Auth::user()->email ?? 'User';
                                         }
                                     @endphp
@@ -205,8 +211,10 @@
                             @php
                                 $givenName = Auth::user()->givenName ?? '';
                                 $surname = Auth::user()->surname ?? '';
-                                $displayName = trim(($givenName ?? '') . ' ' . ($surname ?? ''));
-                                if (empty($displayName)) {
+
+                                if (!empty($givenName) && !empty($surname)) {
+                                    $displayName = trim($givenName . ' ' . $surname);
+                                } else {
                                     $displayName = Auth::user()->name ?? Auth::user()->email ?? 'User';
                                 }
                             @endphp
