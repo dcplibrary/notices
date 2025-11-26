@@ -21,12 +21,12 @@ The import schedule is designed to align with Polaris and Shoutbomb export times
 │ MORNING IMPORTS (5:30 AM - 9:30 AM)                             │
 └─────────────────────────────────────────────────────────────────┘
   5:30 AM  ✅ Import patron lists (voice + text)
-           Command: notices:import-ftp-files --from=today --to=today
+           Command: notices:import-ftp-files --days=1 --import-patrons
 
   6:01 AM  Daily Invalid Phone Report (Shoutbomb → Email)
 
   6:30 AM  ✅ Import invalid phone reports
-           Command: notices:import-email-reports --type=invalid --mark-read
+           Command: notices:import-email-reports --days=1 --mark-read
 
   8:00 AM  Hold Notifications Export #1 (Polaris → FTP)
   8:03 AM  Renewal Reminders Export (Polaris → FTP)
@@ -39,7 +39,7 @@ The import schedule is designed to align with Polaris and Shoutbomb export times
   9:00 AM  Hold Notifications Export #2 (Polaris → FTP)
 
   9:30 AM  ✅ Import second morning holds
-           Command: notices:import-ftp-files --from=today --to=today --type=holds
+           Command: notices:import-ftp-files --days=1
 
 ┌─────────────────────────────────────────────────────────────────┐
 │ AFTERNOON IMPORTS (1:00 PM - 5:30 PM)                           │
@@ -47,23 +47,23 @@ The import schedule is designed to align with Polaris and Shoutbomb export times
   1:00 PM  Hold Notifications Export #3 (Polaris → FTP)
 
   1:30 PM  ✅ Import afternoon holds
-           Command: notices:import-ftp-files --from=today --to=today --type=holds
+           Command: notices:import-ftp-files --days=1
 
   4:10 PM  Daily Voice Failure Report (Shoutbomb → Email)
 
   4:30 PM  ✅ Import voice failure reports
-           Command: notices:import-email-reports --type=voice-failures --mark-read
+           Command: notices:import-email-reports --days=1 --mark-read
 
   5:00 PM  Hold Notifications Export #4 (Polaris → FTP)
 
   5:30 PM  ✅ Import evening holds
-           Command: notices:import-ftp-files --from=today --to=today --type=holds
+           Command: notices:import-ftp-files --days=1
 
 ┌─────────────────────────────────────────────────────────────────┐
 │ END OF DAY PROCESSING (10:00 PM)                                │
 └─────────────────────────────────────────────────────────────────┘
   10:00 PM ✅ Aggregate daily data
-           Command: notices:aggregate --yesterday
+           Command: notices:aggregate --days=1
 ```
 
 ### Monthly Tasks
@@ -72,7 +72,7 @@ The import schedule is designed to align with Polaris and Shoutbomb export times
 1st of month, 1:14 PM  Monthly Statistics Report (Shoutbomb → Email)
 
 2nd of month, 2:00 PM  ✅ Import monthly statistics
-                       Command: notices:import-email-reports --type=monthly-stats --mark-read
+                       Command: notices:import-email-reports --all --mark-read
 ```
 
 ## Import Details
@@ -242,22 +242,22 @@ The import schedule is designed to align with Polaris and Shoutbomb export times
 
 ### Enabling/Disabling Tasks
 
-All scheduled tasks can be individually enabled or disabled via the settings table:
+All scheduled tasks can be individually enabled or disabled via the settings table (or corresponding config/setting keys in your host app). A typical production setup enables all of the per-phase imports and aggregation.
 
 ```php
-// Enable all tasks (recommended for production)
-'scheduler.import_patron_lists_enabled' => true,
-'scheduler.import_invalid_reports_enabled' => true,
+// Example: enable all recommended tasks
+'scheduler.import_patron_lists_enabled'        => true,
+'scheduler.import_invalid_reports_enabled'     => true,
 'scheduler.import_morning_notifications_enabled' => true,
-'scheduler.import_morning_holds_enabled' => true,
-'scheduler.import_afternoon_holds_enabled' => true,
-'scheduler.import_voice_failures_enabled' => true,
-'scheduler.import_evening_holds_enabled' => true,
-'scheduler.aggregation_enabled' => true,
-'scheduler.import_monthly_stats_enabled' => true,
+'scheduler.import_morning_holds_enabled'       => true,
+'scheduler.import_afternoon_holds_enabled'     => true,
+'scheduler.import_voice_failures_enabled'      => true,
+'scheduler.import_evening_holds_enabled'       => true,
+'scheduler.aggregation_enabled'                => true,
+'scheduler.import_monthly_stats_enabled'       => true,
+```
 
-// Legacy unified import (disabled by default)
-'scheduler.import_enabled' => false,
+> The legacy unified `scheduler.import_enabled` + `notices:import` pipeline has been removed in favor of the more explicit `notices:import-polaris`, `notices:import-ftp-files`, and `notices:import-email-reports` commands.
 ```
 
 ### Testing Individual Tasks
@@ -265,17 +265,17 @@ All scheduled tasks can be individually enabled or disabled via the settings tab
 You can manually run any scheduled task:
 
 ```bash
-# Run patron list import
-php artisan notices:import-ftp-files --from=today --to=today
+# Run patron list import for today (voice + text patrons)
+php artisan notices:import-ftp-files --days=1 --import-patrons
 
-# Run morning notifications import
+# Run morning notifications import from Polaris (yesterday or a given window)
 php artisan notices:import-polaris --days=1
 
-# Run email reports import
-php artisan notices:import-email-reports --type=invalid --mark-read
+# Run email reports import for yesterday's failures
+php artisan notices:import-email-reports --days=1 --mark-read
 
-# Run aggregation
-php artisan notices:aggregate --yesterday
+# Run aggregation for yesterday
+php artisan notices:aggregate --days=1
 ```
 
 ### Viewing Scheduled Tasks
