@@ -1,3 +1,10 @@
+## [3.0.2](https://github.com/dcplibrary/notices/compare/v3.0.1...v3.0.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* run php-cs-fixer ([75f7fd8](https://github.com/dcplibrary/notices/commit/75f7fd861695de4f474d327b23f89d98b99a0b70))
+
 ## [3.0.1](https://github.com/dcplibrary/notices/compare/v3.0.0...v3.0.1) (2025-11-26)
 
 
