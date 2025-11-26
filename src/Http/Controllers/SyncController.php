@@ -29,7 +29,7 @@ class SyncController extends Controller
     /**
      * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation.
      */
-    public function syncAll(): JsonResponse
+    public function syncAll(Request $request): JsonResponse
     {
         // Increase execution time limit for multiple operations (5 minutes)
         set_time_limit(300);
@@ -44,9 +44,11 @@ class SyncController extends Controller
         $results = [];
         $hasErrors = false;
 
+        $rangeOptions = $this->buildRangeOptionsFromRequest($request);
+
         // Step 1: Import from Polaris
         try {
-            $polarisResult = $this->runImportPolaris();
+            $polarisResult = $this->runImportPolaris($rangeOptions);
             $results['polaris'] = $polarisResult;
             if ($polarisResult['status'] === 'error') {
                 $hasErrors = true;
@@ -61,7 +63,7 @@ class SyncController extends Controller
 
         // Step 2: Sync Shoutbomb phone notices to notification_logs
         try {
-            $syncResult = $this->runSyncShoutbombToLogs();
+            $syncResult = $this->runSyncShoutbombToLogs($rangeOptions);
             $results['shoutbomb_sync'] = $syncResult;
             if ($syncResult['status'] === 'error') {
                 $hasErrors = true;
@@ -76,7 +78,7 @@ class SyncController extends Controller
 
         // Step 3: Run aggregation (continue even if imports had errors)
         try {
-            $aggregateResult = $this->runAggregate();
+            $aggregateResult = $this->runAggregate($rangeOptions);
             $results['aggregate'] = $aggregateResult;
             if ($aggregateResult['status'] === 'error') {
                 $hasErrors = true;
@@ -537,6 +539,39 @@ class SyncController extends Controller
         ]);
     }
 
+/**
+ * Normalize JSON range payload into Artisan-style options.
+ *
+ * Accepts: all/date/start/end/days on the request.
+ *
+ * @return array<string,mixed>
+ */
+private function buildRangeOptionsFromRequest(Request $request): array
+{
+    $options = [];
+
+    if ($request->boolean('all')) {
+        $options['--all'] = true;
+
+        return $options;
+    }
+
+    if ($request->filled('date')) {
+        $options['--date'] = $request->input('date');
+    } elseif ($request->filled('start') || $request->filled('end')) {
+        if ($request->filled('start')) {
+            $options['--start'] = $request->input('start');
+        }
+        if ($request->filled('end')) {
+            $options['--end'] = $request->input('end');
+        }
+    } elseif ($request->filled('days')) {
+        $options['--days'] = (int) $request->input('days');
+    }
+
+    return $options;
+}
+
     /**
      * Run Polaris import command.
      */
@@ -584,15 +619,21 @@ class SyncController extends Controller
         ];
     }
 
-    /**
-     * Run sync Shoutbomb to logs command.
-     */
-    private function runSyncShoutbombToLogs(): array
-    {
-        $exitCode = Artisan::call('notices:sync-shoutbomb-to-logs', [
-            '--days' => 30,
-            '--force' => true,
-        ]);
+/**
+ * Run sync Shoutbomb to logs command.
+ */
+private function runSyncShoutbombToLogs(array $rangeOptions = []): array
+{
+    // Only --days is currently supported by the sync command; derive from rangeOptions or default to 30
+    $days = 30;
+    if (isset($rangeOptions['--days'])) {
+        $days = (int) $rangeOptions['--days'];
+    }
+
+    $exitCode = Artisan::call('notices:sync-shoutbomb-to-logs', [
+        '--days'  => $days,
+        '--force' => true,
+    ]);
         $output = Artisan::output();
 
         // Parse output to get record count
@@ -606,19 +647,36 @@ class SyncController extends Controller
         ];
     }
 
-    /**
-     * Run aggregation command.
-     */
-    private function runAggregate(): array
-    {
-        $exitCode = Artisan::call('notices:aggregate');
-        $output = Artisan::output();
+/**
+ * Run aggregation command.
+ */
+private function runAggregate(array $rangeOptions = []): array
+{
+    $options = [];
 
-        return [
-            'status' => $exitCode === 0 ? 'success' : 'error',
-            'message' => trim($output),
-        ];
+    if (isset($rangeOptions['--all'])) {
+        $options['--all'] = true;
+    } elseif (isset($rangeOptions['--date'])) {
+        $options['--date'] = $rangeOptions['--date'];
+    } elseif (isset($rangeOptions['--start']) || isset($rangeOptions['--end'])) {
+        if (isset($rangeOptions['--start'])) {
+            $options['--start'] = $rangeOptions['--start'];
+        }
+        if (isset($rangeOptions['--end'])) {
+            $options['--end'] = $rangeOptions['--end'];
+        }
+    } elseif (isset($rangeOptions['--days'])) {
+        $options['--days'] = $rangeOptions['--days'];
     }
+
+    $exitCode = Artisan::call('notices:aggregate', $options);
+    $output = Artisan::output();
+
+    return [
+        'status'  => $exitCode === 0 ? 'success' : 'error',
+        'message' => trim($output),
+    ];
+}
 
     /**
      * Run Shoutbomb submissions import command.
