@@ -1,3 +1,10 @@
+## [6.0.1](https://github.com/dcplibrary/notices/compare/v6.0.0...v6.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* update NoticesServiceProvider ([695597a](https://github.com/dcplibrary/notices/commit/695597aa44940d10982b863fb5e1481804c89702))
+
 # [6.0.0](https://github.com/dcplibrary/notices/compare/v5.0.0...v6.0.0) (2025-11-26)
 
 
