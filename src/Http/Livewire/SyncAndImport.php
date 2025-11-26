@@ -13,12 +13,20 @@ use Symfony\Component\Process\Process;
  */
 class SyncAndImport extends Component
 {
-    public $dateRange = 'today'; // 'today', 'yesterday', 'last7days', 'custom'
+    // Shared date / range options for all imports
+    public $rangeMode = 'days'; // 'days', 'date', 'range'
 
-    public $startDate;
+    public $rangeDays = 7;
 
-    public $endDate;
+    public $rangeAll = false;
 
+    public $rangeDate;
+
+    public $rangeStart;
+
+    public $rangeEnd;
+
+    // FTP-specific options
     public $importPatrons = false; // Toggle for patron import
 
     public $isImporting = false;
@@ -29,21 +37,32 @@ class SyncAndImport extends Component
 
     public $importStats = [];
 
+    // Log viewer modal visibility
+    public $showLogModal = false;
+
     protected $rules = [
-        'dateRange' => 'required|in:today,yesterday,last7days,custom',
-        'startDate' => 'required_if:dateRange,custom|date',
-        'endDate' => 'required_if:dateRange,custom|date|after_or_equal:startDate',
+        'rangeMode' => 'required|in:days,date,range',
+        'rangeDays' => 'nullable|integer|min:1',
+        'rangeAll' => 'boolean',
+        'rangeDate' => 'required_if:rangeMode,date|date',
+        'rangeStart' => 'required_if:rangeMode,range|date',
+        'rangeEnd' => 'required_if:rangeMode,range|date|after_or_equal:rangeStart',
         'importPatrons' => 'boolean',
     ];
 
     public function mount()
     {
-        $this->startDate = now()->format('Y-m-d');
-        $this->endDate = now()->format('Y-m-d');
+        $today = now()->format('Y-m-d');
+
+        $this->rangeDate = $today;
+        $this->rangeStart = $today;
+        $this->rangeEnd = $today;
+
+        $this->showLogModal = false;
     }
 
     /**
-     * Start the import process.
+     * Start the FTP import process.
      */
     public function startImport()
     {
@@ -53,25 +72,14 @@ class SyncAndImport extends Component
         $this->progress = [];
         $this->currentFile = null;
         $this->importStats = [];
+        $this->showLogModal = true;
 
         // Build command
         $command = ['php', base_path('artisan'), 'notices:import-ftp-files'];
 
-        // Add date parameters
-        switch ($this->dateRange) {
-            case 'today':
-                // Default, no parameters needed
-                break;
-            case 'yesterday':
-                $command[] = '--days=1';
-                break;
-            case 'last7days':
-                $command[] = '--days=7';
-                break;
-            case 'custom':
-                $command[] = '--start-date=' . $this->startDate;
-                $command[] = '--end-date=' . $this->endDate;
-                break;
+        // Add shared range parameters (mapped to CLI flags)
+        foreach ($this->buildFtpRangeFlags() as $flag) {
+            $command[] = $flag;
         }
 
         // Add patron import flag if enabled
@@ -87,6 +95,102 @@ class SyncAndImport extends Component
             'type' => 'info',
             'message' => 'Import started...',
         ]);
+    }
+
+    /**
+     * Start Polaris import (non-streaming; JSON response only).
+     */
+    public function startPolarisImport(): void
+    {
+        // Validate shared range options for Polaris
+        $this->validate([
+            'rangeMode' => 'required|in:days,date,range',
+            'rangeAll' => 'boolean',
+            'rangeDays' => 'nullable|integer|min:1',
+            'rangeDate' => 'required_if:rangeMode,date|date',
+            'rangeStart' => 'required_if:rangeMode,range|date',
+            'rangeEnd' => 'required_if:rangeMode,range|date|after_or_equal:rangeStart',
+        ]);
+
+        [$options, $label] = $this->buildPolarisOptions();
+
+        $this->isImporting = true;
+        $this->progress = [];
+        $this->currentFile = null;
+        $this->importStats = [];
+        $this->showLogModal = true;
+
+        $this->dispatch('startPolarisImport', $options);
+
+        $this->dispatch('show-toast', [
+            'type' => 'info',
+            'message' => "Polaris import started for {$label}...",
+        ]);
+    }
+
+    /**
+     * Build CLI flags for FTP import from the shared range options.
+     */
+    private function buildFtpRangeFlags(): array
+    {
+        $flags = [];
+
+        if ($this->rangeAll) {
+            // If the FTP command supports --all, enable it; otherwise you can ignore this.
+            $flags[] = '--all';
+
+            return $flags;
+        }
+
+        if ($this->rangeMode === 'date') {
+            $flags[] = '--date=' . $this->rangeDate;
+        } elseif ($this->rangeMode === 'range') {
+            if ($this->rangeStart) {
+                $flags[] = '--start=' . $this->rangeStart;
+            }
+            if ($this->rangeEnd) {
+                $flags[] = '--end=' . $this->rangeEnd;
+            }
+        } else {
+            $days = (int) ($this->rangeDays ?: 1);
+            $flags[] = '--days=' . $days;
+        }
+
+        return $flags;
+    }
+
+    /**
+     * Build JSON options array for Polaris import from shared range options.
+     *
+     * @return array{0: array, 1: string} [options, human label]
+     */
+    private function buildPolarisOptions(): array
+    {
+        $options = [];
+
+        if ($this->rangeAll) {
+            $options['all'] = true;
+
+            return [$options, 'all history'];
+        }
+
+        if ($this->rangeMode === 'date') {
+            $options['date'] = $this->rangeDate;
+
+            return [$options, 'date ' . $this->rangeDate];
+        }
+
+        if ($this->rangeMode === 'range') {
+            $options['start'] = $this->rangeStart;
+            $options['end'] = $this->rangeEnd;
+
+            return [$options, "range {$this->rangeStart} → {$this->rangeEnd}"];
+        }
+
+        $days = (int) ($this->rangeDays ?: 1);
+        $options['days'] = $days;
+
+        return [$options, "last {$days} day(s)"];
     }
 
     /**
@@ -127,11 +231,28 @@ class SyncAndImport extends Component
     {
         $this->dispatch('cancelImport');
         $this->isImporting = false;
+        $this->showLogModal = false;
 
         $this->dispatch('show-toast', [
             'type' => 'warning',
             'message' => 'Import cancelled',
         ]);
+    }
+
+    /**
+     * Open the log viewer modal.
+     */
+    public function openLogModal(): void
+    {
+        $this->showLogModal = true;
+    }
+
+    /**
+     * Close (minimize) the log viewer modal.
+     */
+    public function closeLogModal(): void
+    {
+        $this->showLogModal = false;
     }
 
     public function render()

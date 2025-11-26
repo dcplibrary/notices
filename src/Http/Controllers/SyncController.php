@@ -109,7 +109,7 @@ class SyncController extends Controller
     /**
      * Import from Polaris only.
      */
-    public function importPolaris(): JsonResponse
+    public function importPolaris(Request $request): JsonResponse
     {
         $log = SyncLog::create([
             'operation_type' => 'import_polaris',
@@ -119,7 +119,27 @@ class SyncController extends Controller
         ]);
 
         try {
-            $result = $this->runImportPolaris();
+            $options = [];
+
+            // Map JSON payload to Artisan options for notices:import-polaris
+            if ($request->boolean('all')) {
+                $options['--all'] = true;
+            } else {
+                if ($request->filled('date')) {
+                    $options['--date'] = $request->input('date');
+                } elseif ($request->filled('start') || $request->filled('end')) {
+                    if ($request->filled('start')) {
+                        $options['--start'] = $request->input('start');
+                    }
+                    if ($request->filled('end')) {
+                        $options['--end'] = $request->input('end');
+                    }
+                } elseif ($request->filled('days')) {
+                    $options['--days'] = (int) $request->input('days');
+                }
+            }
+
+            $result = $this->runImportPolaris($options);
 
             if ($result['status'] === 'success') {
                 $log->markCompleted(['polaris' => $result], $result['records'] ?? 0);
@@ -520,9 +540,9 @@ class SyncController extends Controller
     /**
      * Run Polaris import command.
      */
-    private function runImportPolaris(): array
+    private function runImportPolaris(array $options = []): array
     {
-        $exitCode = Artisan::call('notices:import-polaris');
+        $exitCode = Artisan::call('notices:import-polaris', $options);
         $output = Artisan::output();
 
         // Parse output to get record count
