@@ -6,6 +6,7 @@ use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\ShoutbombMonthlyStat;
 use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
 use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,13 +21,14 @@ class CheckShoutbombReportsCommand extends Command
     protected $description = 'Check Outlook for Shoutbomb report emails and process them';
 
     protected ShoutbombGraphApiService $graphApi;
+
     protected ShoutbombFailureReportParser $parser;
 
     public function __construct(ShoutbombGraphApiService $graphApi, ShoutbombFailureReportParser $parser)
     {
         parent::__construct();
         $this->graphApi = $graphApi;
-        $this->parser   = $parser;
+        $this->parser = $parser;
     }
 
     public function handle(): int
@@ -37,6 +39,7 @@ class CheckShoutbombReportsCommand extends Command
         $graphConfig = config('notices.integrations.shoutbomb_reports.graph');
         if (empty($graphConfig['tenant_id']) || empty($graphConfig['client_id']) || empty($graphConfig['client_secret']) || empty($graphConfig['user_email'])) {
             $this->error('Microsoft Graph API not configured. Set SHOUTBOMB_TENANT_ID, SHOUTBOMB_CLIENT_ID, SHOUTBOMB_CLIENT_SECRET, SHOUTBOMB_USER_EMAIL, etc. in .env');
+
             return self::FAILURE;
         }
 
@@ -56,6 +59,7 @@ class CheckShoutbombReportsCommand extends Command
 
             if (empty($messages)) {
                 $this->info('No matching emails found.');
+
                 return self::SUCCESS;
             }
 
@@ -84,7 +88,7 @@ class CheckShoutbombReportsCommand extends Command
                     } else {
                         $skippedCount++;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $skippedCount++;
                     Log::error('Failed to process Shoutbomb report', [
                         'message_id' => $message['id'] ?? 'unknown',
@@ -111,12 +115,13 @@ class CheckShoutbombReportsCommand extends Command
             );
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Failed to check Shoutbomb reports: {$e->getMessage()}");
             Log::error('Shoutbomb report check failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return self::FAILURE;
         }
     }
@@ -138,6 +143,7 @@ class CheckShoutbombReportsCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->displayParsedRecords($records);
+
             return count($records);
         }
 
@@ -175,7 +181,7 @@ class CheckShoutbombReportsCommand extends Command
             ]);
 
             return $saved;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -214,7 +220,7 @@ class CheckShoutbombReportsCommand extends Command
                 'report_month' => $stats['report_month'] ?? 'unknown',
                 'branch' => $stats['branch_name'] ?? 'unknown',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to save monthly statistics', [
                 'message_id' => $message['id'] ?? 'unknown',
                 'error' => $e->getMessage(),

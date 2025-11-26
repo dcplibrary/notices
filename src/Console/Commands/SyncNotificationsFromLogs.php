@@ -32,6 +32,7 @@ class SyncNotificationsFromLogs extends Command
             $end = Carbon::parse($toOption)->endOfDay();
         } elseif ($fromOption xor $toOption) {
             $this->error('You must provide both --from and --to, or neither.');
+
             return self::FAILURE;
         } else {
             // Default: sync last N days ending today

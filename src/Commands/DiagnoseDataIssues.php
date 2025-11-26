@@ -30,10 +30,10 @@ class DiagnoseDataIssues extends Command
             $this->warn('  ⚠️  Found Unknown notification types:');
             $this->table(
                 ['Type ID', 'Count', 'Status'],
-                $unknownTypes->map(fn($item) => [
+                $unknownTypes->map(fn ($item) => [
                     $item->notification_type_id,
                     number_format($item->count),
-                    'Not in config - will show as "Unknown"'
+                    'Not in config - will show as "Unknown"',
                 ])
             );
         }
@@ -53,10 +53,10 @@ class DiagnoseDataIssues extends Command
             $this->warn('  ⚠️  Found Unknown delivery options:');
             $this->table(
                 ['Delivery ID', 'Count', 'Status'],
-                $unknownDelivery->map(fn($item) => [
+                $unknownDelivery->map(fn ($item) => [
                     $item->delivery_option_id,
                     number_format($item->count),
-                    'Not in config - will show as "Unknown"'
+                    'Not in config - will show as "Unknown"',
                 ])
             );
         }
@@ -76,10 +76,10 @@ class DiagnoseDataIssues extends Command
             $this->warn('  ⚠️  Found Unknown notification statuses:');
             $this->table(
                 ['Status ID', 'Count', 'Status'],
-                $unknownStatus->map(fn($item) => [
+                $unknownStatus->map(fn ($item) => [
                     $item->notification_status_id,
                     number_format($item->count),
-                    'Not in config - will show as "Unknown"'
+                    'Not in config - will show as "Unknown"',
                 ])
             );
         }

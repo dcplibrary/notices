@@ -5,11 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 /**
- * NoticeImportController
- * 
+ * NoticeImportController.
+ *
  * Handles streaming of command output to the browser for real-time progress updates.
  */
 class NoticeImportController extends Controller
@@ -17,7 +16,7 @@ class NoticeImportController extends Controller
     private static $currentProcess = null;
 
     /**
-     * Stream command output to browser in real-time
+     * Stream command output to browser in real-time.
      */
     public function stream(Request $request)
     {
@@ -49,10 +48,10 @@ class NoticeImportController extends Controller
                             } else {
                                 // Send plain text wrapped in JSON
                                 echo json_encode([
-                                    'progress' => $this->stripAnsiCodes($line)
+                                    'progress' => $this->stripAnsiCodes($line),
                                 ]) . "\n";
                             }
-                            
+
                             ob_flush();
                             flush();
                         }
@@ -60,9 +59,9 @@ class NoticeImportController extends Controller
                 } elseif ($process::ERR === $type) {
                     // Error output
                     echo json_encode([
-                        'error' => $this->stripAnsiCodes($data)
+                        'error' => $this->stripAnsiCodes($data),
                     ]) . "\n";
-                    
+
                     ob_flush();
                     flush();
                 }
@@ -77,14 +76,14 @@ class NoticeImportController extends Controller
                     'completed' => true,
                     'success' => true,
                     'message' => 'Import completed successfully',
-                    'exit_code' => $process->getExitCode()
+                    'exit_code' => $process->getExitCode(),
                 ]) . "\n";
             } else {
                 echo json_encode([
                     'completed' => true,
                     'success' => false,
                     'message' => 'Import failed with exit code ' . $process->getExitCode(),
-                    'exit_code' => $process->getExitCode()
+                    'exit_code' => $process->getExitCode(),
                 ]) . "\n";
             }
 
@@ -101,27 +100,27 @@ class NoticeImportController extends Controller
     }
 
     /**
-     * Cancel the currently running import process
+     * Cancel the currently running import process.
      */
     public function cancel(Request $request)
     {
         if (self::$currentProcess && self::$currentProcess->isRunning()) {
             self::$currentProcess->stop(3, SIGTERM);
-            
+
             return response()->json([
                 'success' => true,
-                'message' => 'Import process cancelled'
+                'message' => 'Import process cancelled',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'No active import process'
+            'message' => 'No active import process',
         ], 400);
     }
 
     /**
-     * Get current import status
+     * Get current import status.
      */
     public function status(Request $request)
     {
@@ -132,16 +131,17 @@ class NoticeImportController extends Controller
     }
 
     /**
-     * Check if string is valid JSON
+     * Check if string is valid JSON.
      */
     private function isJson($string): bool
     {
         json_decode($string);
+
         return json_last_error() === JSON_ERROR_NONE;
     }
 
     /**
-     * Strip ANSI color codes from string
+     * Strip ANSI color codes from string.
      */
     private function stripAnsiCodes($string): string
     {

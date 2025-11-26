@@ -2,10 +2,12 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Plugins;
 
-use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Plugins\ShoutbombPlugin;
 use Dcplibrary\Notices\Services\VerificationResult;
 use Dcplibrary\Notices\Tests\TestCase;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 /**
  * Tests for the ShoutbombPlugin.
@@ -149,7 +151,7 @@ class ShoutbombPluginTest extends TestCase
             now()
         );
 
-        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $failures);
+        $this->assertInstanceOf(Collection::class, $failures);
     }
 
     /** @test */
@@ -161,7 +163,7 @@ class ShoutbombPluginTest extends TestCase
             'test reason'
         );
 
-        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $failures);
+        $this->assertInstanceOf(Collection::class, $failures);
     }
 
     /** @test */
@@ -174,7 +176,7 @@ class ShoutbombPluginTest extends TestCase
 
         // Widget may be null or a View depending on implementation
         if ($widget !== null) {
-            $this->assertInstanceOf(\Illuminate\View\View::class, $widget);
+            $this->assertInstanceOf(View::class, $widget);
         } else {
             $this->assertNull($widget);
         }

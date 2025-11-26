@@ -2,6 +2,7 @@
 
 namespace Dcplibrary\Notices\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Http\Resources\ShoutbombDeliveryResource;
 use Dcplibrary\Notices\Http\Resources\ShoutbombKeywordUsageResource;
 use Dcplibrary\Notices\Http\Resources\ShoutbombRegistrationResource;
@@ -12,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ShoutbombController extends Controller
 {

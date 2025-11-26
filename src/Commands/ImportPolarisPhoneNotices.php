@@ -2,13 +2,14 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
-use Illuminate\Console\Command;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter;
+use Exception;
+use Illuminate\Console\Command;
 
 /**
- * Import Polaris PhoneNotices.csv
- * 
+ * Import Polaris PhoneNotices.csv.
+ *
  * This command imports PhoneNotices.csv, which is a Polaris-generated export
  * used for verification of notices sent to Shoutbomb.
  */
@@ -102,6 +103,7 @@ class ImportPolarisPhoneNotices extends Command
 
         if (!file_exists($filePath)) {
             $this->error("File not found: {$filePath}");
+
             return Command::FAILURE;
         }
 
@@ -119,8 +121,9 @@ class ImportPolarisPhoneNotices extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Import failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
     }

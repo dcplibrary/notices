@@ -2,11 +2,11 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
-use Carbon\Carbon;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 
 /**
  * Service for verifying the complete lifecycle of a notice.
@@ -56,6 +56,7 @@ class NoticeVerificationService
             if ($plugin) {
                 $result = $plugin->verify($log, $result);
                 $result->determineOverallStatus();
+
                 return $result;
             }
         }
@@ -232,6 +233,7 @@ class NoticeVerificationService
     protected function getDeliveryMethodName(int $id): string
     {
         $methods = config('notices.delivery_options', []);
+
         return $methods[$id] ?? "Unknown ($id)";
     }
 
@@ -241,6 +243,7 @@ class NoticeVerificationService
     protected function getNoticeTypeName(int $id): string
     {
         $types = config('notices.notification_types', []);
+
         return $types[$id] ?? "Unknown ($id)";
     }
 
@@ -260,7 +263,7 @@ class NoticeVerificationService
 
         $notices = $query->orderBy('notification_date', 'desc')->get();
 
-        return $notices->map(function($notice) {
+        return $notices->map(function ($notice) {
             return [
                 'notice' => $notice,
                 'verification' => $this->verify($notice),
@@ -310,7 +313,7 @@ class NoticeVerificationService
 
         $total = $failures->sum('count');
 
-        return $failures->map(function($failure) use ($total) {
+        return $failures->map(function ($failure) use ($total) {
             return [
                 'reason' => $failure->failure_reason,
                 'count' => $failure->count,
@@ -353,7 +356,7 @@ class NoticeVerificationService
 
         $total = array_sum($byType);
 
-        return array_map(function($type, $count) use ($total) {
+        return array_map(function ($type, $count) use ($total) {
             return [
                 'type' => ucfirst($type),
                 'count' => $count,
@@ -396,7 +399,7 @@ class NoticeVerificationService
 
             // Check if there's a matching phone notice (same day or next day due to timing offset)
             $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $submission->patron_barcode)
-                ->where(function($query) use ($submittedAt) {
+                ->where(function ($query) use ($submittedAt) {
                     $query->whereDate('notice_date', $submittedAt->format('Y-m-d'))
                           ->orWhereDate('notice_date', $submittedAt->copy()->addDay()->format('Y-m-d'));
                 })
@@ -430,12 +433,12 @@ class NoticeVerificationService
             // Check for failure report (Shoutbomb only reports failures)
             $failureReport = ShoutbombDelivery::where('phone_number', $phoneNotice->phone_number)
                 ->failed()
-                ->where(function($query) use ($noticeDate) {
+                ->where(function ($query) use ($noticeDate) {
                     // Match same day or within 24 hours
                     $query->whereDate('sent_date', $noticeDate->format('Y-m-d'))
                           ->orWhereBetween('sent_date', [
                               $noticeDate->copy()->subHours(2),
-                              $noticeDate->copy()->addHours(24)
+                              $noticeDate->copy()->addHours(24),
                           ]);
                 })
                 ->first();

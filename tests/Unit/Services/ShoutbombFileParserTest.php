@@ -2,14 +2,11 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\ShoutbombFileParser;
-use Dcplibrary\Notices\Models\ShoutbombRegistration;
-use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
-use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class ShoutbombFileParserTest extends TestCase
 {
@@ -29,7 +26,7 @@ class ShoutbombFileParserTest extends TestCase
     /** @test */
     public function it_can_parse_monthly_report_registration_statistics()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Shoutbomb Monthly Report - October 2025
 ========================================
 
@@ -54,7 +51,7 @@ EOT;
     /** @test */
     public function it_can_parse_monthly_report_keyword_usage()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Shoutbomb Monthly Report - October 2025
 
 Registration Statistics: 13307 text (72%), 5199 voice (28%)
@@ -85,7 +82,7 @@ EOT;
     /** @test */
     public function it_can_parse_weekly_report()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Shoutbomb Weekly Report
 
 Registration Statistics: 13500 text, 5300 voice
@@ -113,7 +110,7 @@ EOT;
     /** @test */
     public function it_can_parse_daily_invalid_report()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Invalid Phone Numbers - 2025-11-08
 ===================================
 
@@ -139,7 +136,7 @@ EOT;
     /** @test */
     public function it_normalizes_phone_numbers()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Patron: 21234567890 Phone: 2705550123
 Patron: 21234567891 Phone: 270.555.0124
 Patron: 21234567892 Phone: 270-555-0125
@@ -158,7 +155,7 @@ EOT;
     /** @test */
     public function it_can_parse_daily_undelivered_report()
     {
-        $content = <<<EOT
+        $content = <<<'EOT'
 Undelivered Voice Notices - 2025-11-08
 ======================================
 
@@ -297,12 +294,13 @@ EOT;
     }
 
     /**
-     * Helper method to create a temporary file for testing
+     * Helper method to create a temporary file for testing.
      */
     protected function createTempFile(string $filename, string $content): string
     {
         $path = sys_get_temp_dir() . '/' . $filename;
         file_put_contents($path, $content);
+
         return $path;
     }
 

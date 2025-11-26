@@ -6,20 +6,27 @@ use Livewire\Component;
 use Symfony\Component\Process\Process;
 
 /**
- * SyncAndImport Livewire Component
- * 
+ * SyncAndImport Livewire Component.
+ *
  * Provides UI for importing FTP files with real-time progress feedback.
  * Includes toggle for patron delivery preference import.
  */
 class SyncAndImport extends Component
 {
     public $dateRange = 'today'; // 'today', 'yesterday', 'last7days', 'custom'
+
     public $startDate;
+
     public $endDate;
+
     public $importPatrons = false; // Toggle for patron import
+
     public $isImporting = false;
+
     public $progress = [];
+
     public $currentFile = null;
+
     public $importStats = [];
 
     protected $rules = [
@@ -36,7 +43,7 @@ class SyncAndImport extends Component
     }
 
     /**
-     * Start the import process
+     * Start the import process.
      */
     public function startImport()
     {
@@ -83,7 +90,7 @@ class SyncAndImport extends Component
     }
 
     /**
-     * Handle progress updates from the command
+     * Handle progress updates from the command.
      */
     public function updateProgress($data)
     {
@@ -114,7 +121,7 @@ class SyncAndImport extends Component
     }
 
     /**
-     * Cancel the import
+     * Cancel the import.
      */
     public function cancelImport()
     {

@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Models;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Carbon\Carbon;
 
 class DailyNotificationSummaryTest extends TestCase
 {

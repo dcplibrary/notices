@@ -5,13 +5,13 @@ namespace Dcplibrary\Notices\Http\Controllers;
 use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DeliveryMethod;
 use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\NotificationStatus;
+use Dcplibrary\Notices\Models\NotificationType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Dcplibrary\Notices\Models\NotificationStatus;
-use Dcplibrary\Notices\Models\NotificationType;
 
 class ExportController extends Controller
 {
@@ -22,12 +22,13 @@ class ExportController extends Controller
             if (!Auth::check() || !Auth::user()->inGroup('Computer Services')) {
                 abort(403, 'Unauthorized');
             }
+
             return $next($request);
         });
     }
 
     /**
-     * Export reference data configuration as JSON
+     * Export reference data configuration as JSON.
      */
     public function exportReferenceData(): Response
     {
@@ -74,7 +75,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Export reference data configuration as SQL
+     * Export reference data configuration as SQL.
      */
     public function exportReferenceDataSql(): Response
     {
@@ -130,7 +131,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Export notification logs as CSV by date range
+     * Export notification logs as CSV by date range.
      */
     public function exportNotificationData(Request $request): Response
     {
@@ -155,7 +156,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Export as CSV
+     * Export as CSV.
      */
     private function exportAsCsv($notifications, $startDate, $endDate): Response
     {
@@ -213,7 +214,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Export as JSON
+     * Export as JSON.
      */
     private function exportAsJson($notifications, $startDate, $endDate): Response
     {
@@ -270,7 +271,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Generate database backup SQL dump
+     * Generate database backup SQL dump.
      */
     public function exportDatabaseBackup(Request $request): Response
     {
@@ -298,7 +299,7 @@ class ExportController extends Controller
     }
 
     /**
-     * Generate backup SQL for a specific table
+     * Generate backup SQL for a specific table.
      */
     private function generateTableBackup(string $table): string
     {
@@ -309,6 +310,7 @@ class ExportController extends Controller
 
         if ($rows->isEmpty()) {
             $sql .= "-- No data in table\n\n";
+
             return $sql;
         }
 
@@ -324,7 +326,7 @@ class ExportController extends Controller
                 }
             }
 
-            $columns = array_keys((array)$row);
+            $columns = array_keys((array) $row);
             $sql .= sprintf(
                 "INSERT INTO `%s` (`%s`) VALUES (%s);\n",
                 $table,

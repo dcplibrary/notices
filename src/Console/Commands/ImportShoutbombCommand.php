@@ -2,7 +2,9 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportShoutbombCommand extends Command
@@ -17,8 +19,8 @@ class ImportShoutbombCommand extends Command
         $this->info('Starting Shoutbomb submission import...');
 
         try {
-            $startDate = $this->option('start-date') 
-                ? \Carbon\Carbon::parse($this->option('start-date')) 
+            $startDate = $this->option('start-date')
+                ? Carbon::parse($this->option('start-date'))
                 : null;
 
             $result = $importer->importFromFTP($startDate);
@@ -34,8 +36,9 @@ class ImportShoutbombCommand extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('✗ Shoutbomb import failed: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
     }

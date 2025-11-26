@@ -23,7 +23,7 @@ class SettingsManager
         // Try cache first
         $cacheKey = "notification_setting:global:{$key}";
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function() use ($key, $default) {
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($key, $default) {
             // Parse key
             [$group, $settingKey] = $this->parseKey($key);
 
@@ -54,7 +54,7 @@ class SettingsManager
     {
         $cacheKey = "notification_setting:{$scope}:{$scopeId}:" . ($key ?? 'all');
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function() use ($scope, $scopeId, $key) {
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($scope, $scopeId, $key) {
             $query = NotificationSetting::forScope($scope, $scopeId);
 
             if ($key) {
@@ -68,7 +68,7 @@ class SettingsManager
 
             // Return all settings for this scope
             return $query->get()
-                ->mapWithKeys(function($setting) {
+                ->mapWithKeys(function ($setting) {
                     return [$setting->full_key => $setting->getTypedValue()];
                 })
                 ->toArray();
@@ -85,11 +85,11 @@ class SettingsManager
     {
         $cacheKey = "notification_setting:group:{$group}";
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function() use ($group) {
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($group) {
             return NotificationSetting::global()
                 ->inGroup($group)
                 ->get()
-                ->mapWithKeys(function($setting) {
+                ->mapWithKeys(function ($setting) {
                     return [$setting->key => $setting->getTypedValue()];
                 })
                 ->toArray();
@@ -166,7 +166,7 @@ class SettingsManager
     {
         $cacheKey = "patron_preferences:{$patronBarcode}";
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function() use ($patronBarcode) {
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($patronBarcode) {
             return PatronPreference::where('patron_barcode', $patronBarcode)->first();
         });
     }
@@ -217,7 +217,7 @@ class SettingsManager
      */
     public function getEditableSettings(): array
     {
-        return Cache::remember('notification_settings:editable', $this->cacheTtl, function() {
+        return Cache::remember('notification_settings:editable', $this->cacheTtl, function () {
             return NotificationSetting::global()
                 ->editable()
                 ->orderBy('group')

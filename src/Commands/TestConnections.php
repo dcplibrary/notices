@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Commands;
 
+use Dcplibrary\Notices\Services\EmailReportService;
 use Dcplibrary\Notices\Services\PolarisImportService;
 use Dcplibrary\Notices\Services\ShoutbombFTPService;
-use Dcplibrary\Notices\Services\EmailReportService;
 use Illuminate\Console\Command;
 
 class TestConnections extends Command

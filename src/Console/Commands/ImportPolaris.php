@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Console\Commands;
 
 use Carbon\Carbon;
 use Dcplibrary\Notices\Services\PolarisNotificationImporter;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportPolaris extends Command
@@ -71,14 +72,15 @@ class ImportPolaris extends Command
             $this->info("   ⏭️  Skipped: {$result['skipped']}");
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("❌ Import failed: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }
 
     /**
-     * Determine the date range for import
+     * Determine the date range for import.
      */
     protected function determineDateRange(): array
     {
@@ -89,6 +91,7 @@ class ImportPolaris extends Command
 
         if ($this->option('days')) {
             $days = (int) $this->option('days');
+
             return [
                 Carbon::now()->subDays($days)->startOfDay(),
                 Carbon::now()->endOfDay(),

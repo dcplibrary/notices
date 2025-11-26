@@ -5,7 +5,7 @@ namespace Dcplibrary\Notices\Models\Polaris;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Polaris Patron Model
+ * Polaris Patron Model.
  *
  * Queries patron data directly from the Polaris ILS database.
  * Read-only model for displaying patron information.
@@ -13,8 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 class Patron extends Model
 {
     protected $connection = 'polaris';
+
     protected $table = 'Polaris.Polaris.PatronRegistration';
+
     protected $primaryKey = 'PatronID';
+
     public $timestamps = false;
 
     protected $casts = [

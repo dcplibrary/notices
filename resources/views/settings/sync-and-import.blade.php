@@ -190,7 +190,7 @@
                             completed: true,
                             success: true,
                             message: 'Import completed successfully!'
-                        });
+                        })
                         return;
                     }
 
@@ -200,10 +200,10 @@
                     lines.forEach(line => {
                         try {
                             const data = JSON.parse(line);
-                            @this.call('updateProgress', data);
+                            @this.call('updateProgress', data)
                         } catch (e) {
                             // Plain text output
-                            @this.call('updateProgress', { progress: line });
+                            @this.call('updateProgress', { progress: line })
                         }
                     });
 
@@ -219,7 +219,7 @@
                 completed: true,
                 success: false,
                 message: 'Import failed: ' + error.message
-            });
+            })
         });
     });
 

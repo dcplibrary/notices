@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Commands;
 
 use Dcplibrary\Notices\Services\ShoutbombFTPService;
+use Exception;
 use Illuminate\Console\Command;
 
 class ListShoutbombFiles extends Command
@@ -20,11 +21,13 @@ class ListShoutbombFiles extends Command
 
         if (!config('notices.shoutbomb.enabled')) {
             $this->warn('⚠️  Shoutbomb is disabled in configuration.');
+
             return Command::SUCCESS;
         }
 
         if (!$ftpService->connect()) {
             $this->error('❌ Failed to connect to FTP server');
+
             return Command::FAILURE;
         }
 
@@ -37,6 +40,7 @@ class ListShoutbombFiles extends Command
 
             if (empty($files)) {
                 $this->warn('No files found in this directory');
+
                 return Command::SUCCESS;
             }
 
@@ -93,8 +97,9 @@ class ListShoutbombFiles extends Command
                 }
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Error: " . $e->getMessage());
+
             return Command::FAILURE;
         } finally {
             $ftpService->disconnect();

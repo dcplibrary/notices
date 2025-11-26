@@ -2,11 +2,11 @@
 
 namespace Dcplibrary\Notices\Tests\Feature;
 
-use Dcplibrary\Notices\Models\NotificationLog;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Carbon\Carbon;
 
 class NotificationWorkflowTest extends TestCase
 {

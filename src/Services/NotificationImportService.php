@@ -2,13 +2,14 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Carbon\Carbon;
+use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\NotificationHold;
 use Dcplibrary\Notices\Models\NotificationOverdue;
 use Dcplibrary\Notices\Models\NotificationRenewal;
-use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\PatronNotificationPreference;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -118,7 +119,7 @@ class NotificationImportService
         $results = ['voice' => 0, 'text' => 0];
 
         if (!$this->ftpService->connect()) {
-            throw new \Exception('Failed to connect to FTP');
+            throw new Exception('Failed to connect to FTP');
         }
 
         $files = $this->ftpService->listFiles('/');
@@ -263,8 +264,8 @@ class NotificationImportService
     {
         // Delegate to the dedicated PolarisPhoneNoticeImporter so that
         // all PhoneNotices ingestion goes through a single, enriched path.
-        /** @var \Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter $importer */
-        $importer = app(\Dcplibrary\Notices\Services\PolarisPhoneNoticeImporter::class);
+        /** @var PolarisPhoneNoticeImporter $importer */
+        $importer = app(PolarisPhoneNoticeImporter::class);
 
         $results = $importer->importFromFTP(null, $startDate, $endDate);
 
@@ -378,7 +379,7 @@ class NotificationImportService
     public function importNotifications(string $type, Carbon $startDate, Carbon $endDate): int
     {
         if (!$this->ftpService->connect()) {
-            throw new \Exception('Failed to connect to FTP');
+            throw new Exception('Failed to connect to FTP');
         }
 
         $files = $this->ftpService->listFiles('/');
@@ -482,7 +483,7 @@ class NotificationImportService
     }
 
     /**
-     * Parse holds line: BTitle|CreationDate|SysHoldRequestID|PatronID|PickupOrgID|HoldTillDate|PatronBarcode
+     * Parse holds line: BTitle|CreationDate|SysHoldRequestID|PatronID|PickupOrgID|HoldTillDate|PatronBarcode.
      */
     protected function parseHoldsLine(array $parts, string $filename, Carbon $exportTimestamp): ?array
     {
@@ -509,7 +510,7 @@ class NotificationImportService
     }
 
     /**
-     * Parse overdue/renew line: PatronID|ItemBarcode|Title|DueDate|ItemRecordID|...|Renewals|BibRecordID|RenewalLimit|PatronBarcode
+     * Parse overdue/renew line: PatronID|ItemBarcode|Title|DueDate|ItemRecordID|...|Renewals|BibRecordID|RenewalLimit|PatronBarcode.
      */
     protected function parseOverdueLine(array $parts, string $filename, Carbon $exportTimestamp): ?array
     {
@@ -546,6 +547,7 @@ class NotificationImportService
         if ($record) {
             $record['notification_type_id'] = 7; // Always 7 for renewals
         }
+
         return $record;
     }
 
@@ -690,8 +692,9 @@ class NotificationImportService
             if (preg_match('#^\\d{1,2}/\\d{1,2}/\\d{4}$#', $date)) {
                 return Carbon::createFromFormat('m/d/Y', $date)->format('Y-m-d');
             }
+
             return Carbon::parse($date)->format('Y-m-d');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }

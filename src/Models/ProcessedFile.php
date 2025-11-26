@@ -81,11 +81,11 @@ class ProcessedFile extends Model
                 ->selectRaw('file_type, COUNT(*) as count, SUM(records_processed) as total_records')
                 ->groupBy('file_type')
                 ->get()
-                ->mapWithKeys(fn($item) => [
+                ->mapWithKeys(fn ($item) => [
                     $item->file_type => [
                         'files' => $item->count,
                         'records' => $item->total_records,
-                    ]
+                    ],
                 ])
                 ->toArray(),
             'by_status' => $query->clone()

@@ -2,7 +2,9 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\PolarisImportService;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportPolarisCommand extends Command
@@ -20,8 +22,8 @@ class ImportPolarisCommand extends Command
 
         try {
             $days = $this->option('days');
-            $startDate = $this->option('from') ? \Carbon\Carbon::parse($this->option('from')) : null;
-            $endDate = $this->option('to') ? \Carbon\Carbon::parse($this->option('to')) : null;
+            $startDate = $this->option('from') ? Carbon::parse($this->option('from')) : null;
+            $endDate = $this->option('to') ? Carbon::parse($this->option('to')) : null;
 
             $result = $importService->importNotifications($days, $startDate, $endDate);
 
@@ -32,8 +34,9 @@ class ImportPolarisCommand extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('✗ Polaris import failed: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
     }

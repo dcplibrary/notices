@@ -2,6 +2,12 @@
 
 namespace Dcplibrary\Notices\Commands;
 
+use Dcplibrary\Notices\Database\Seeders\DeliveryMethodSeeder;
+use Dcplibrary\Notices\Database\Seeders\NoticesSettingsSeeder;
+use Dcplibrary\Notices\Database\Seeders\NotificationStatusSeeder;
+use Dcplibrary\Notices\Database\Seeders\NotificationTypeSeeder;
+use Dcplibrary\Notices\Database\Seeders\PopulateReferenceDataLabelsSeeder;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
@@ -34,6 +40,7 @@ class InstallCommand extends Command
             $this->warn('Some Notices tables already exist.');
             if (!$this->confirm('Do you want to continue? This will run any pending migrations and update reference data.')) {
                 $this->info('Installation cancelled.');
+
                 return Command::SUCCESS;
             }
         }
@@ -41,6 +48,7 @@ class InstallCommand extends Command
         if ($this->option('fresh')) {
             if (!$this->option('force') && !$this->confirm('⚠️  This will DROP all Notices tables and recreate them. All data will be lost. Continue?', false)) {
                 $this->info('Installation cancelled.');
+
                 return Command::SUCCESS;
             }
             $this->dropTables();
@@ -120,13 +128,16 @@ class InstallCommand extends Command
 
             if ($exitCode === 0) {
                 $this->info('  ✓ Migrations completed');
+
                 return ['status' => 'success', 'message' => trim($output)];
             } else {
                 $this->error('  ✗ Migration failed');
+
                 return ['status' => 'error', 'message' => trim($output)];
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Migration error: {$e->getMessage()}");
+
             return ['status' => 'error', 'message' => $e->getMessage()];
         }
     }
@@ -140,11 +151,11 @@ class InstallCommand extends Command
         $this->line('→ Seeding reference data...');
 
         $seeders = [
-            'Delivery Methods' => \Dcplibrary\Notices\Database\Seeders\DeliveryMethodSeeder::class,
-            'Notification Types' => \Dcplibrary\Notices\Database\Seeders\NotificationTypeSeeder::class,
-            'Notification Statuses' => \Dcplibrary\Notices\Database\Seeders\NotificationStatusSeeder::class,
-            'Reference Data Labels' => \Dcplibrary\Notices\Database\Seeders\PopulateReferenceDataLabelsSeeder::class,
-            'Default Settings' => \Dcplibrary\Notices\Database\Seeders\NoticesSettingsSeeder::class,
+            'Delivery Methods' => DeliveryMethodSeeder::class,
+            'Notification Types' => NotificationTypeSeeder::class,
+            'Notification Statuses' => NotificationStatusSeeder::class,
+            'Reference Data Labels' => PopulateReferenceDataLabelsSeeder::class,
+            'Default Settings' => NoticesSettingsSeeder::class,
         ];
 
         $results = [];
@@ -158,7 +169,7 @@ class InstallCommand extends Command
                 ]);
                 $this->line("  ✓ {$name}");
                 $results[$name] = 'success';
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ {$name}: {$e->getMessage()}");
                 $results[$name] = 'error';
                 $hasErrors = true;
@@ -168,10 +179,12 @@ class InstallCommand extends Command
         $this->newLine();
         if ($hasErrors) {
             $this->warn('  ⚠ Some seeders had errors');
+
             return ['status' => 'partial', 'details' => $results];
         }
 
         $this->info('  ✓ Reference data seeded');
+
         return ['status' => 'success', 'details' => $results];
     }
 

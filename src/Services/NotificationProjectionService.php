@@ -3,10 +3,18 @@
 namespace Dcplibrary\Notices\Services;
 
 use Carbon\Carbon;
+use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\Notification;
 use Dcplibrary\Notices\Models\NotificationEvent;
+use Dcplibrary\Notices\Models\NotificationHold;
 use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\NotificationOverdue;
+use Dcplibrary\Notices\Models\NotificationRenewal;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
+use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Projects rows from notification_logs (Polaris NotificationLog)
@@ -87,7 +95,7 @@ class NotificationProjectionService
                     try {
                         $this->syncFromLog($log);
                         $count++;
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Log::warning('Failed projecting NotificationLog row', [
                             'notification_log_id' => $log->id,
                             'polaris_log_id'      => $log->polaris_log_id,
@@ -141,7 +149,7 @@ class NotificationProjectionService
         }
 
         // Find matching PhoneNotices record
-        $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $notification->patron_barcode)
+        $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $notification->patron_barcode)
             ->whereDate('import_date', $notification->notice_date)
             ->first();
 
@@ -150,10 +158,10 @@ class NotificationProjectionService
         }
 
         // Enrich with item/bib/hold IDs
-        $notification->item_barcode          = $notification->item_barcode ?: $phoneNotice->item_barcode;
-        $notification->item_record_id        = $notification->item_record_id ?: $phoneNotice->item_record_id;
-        $notification->bib_record_id         = $notification->bib_record_id ?: $phoneNotice->bib_record_id;
-        $notification->sys_hold_request_id   = $notification->sys_hold_request_id ?: $phoneNotice->sys_hold_request_id;
+        $notification->item_barcode = $notification->item_barcode ?: $phoneNotice->item_barcode;
+        $notification->item_record_id = $notification->item_record_id ?: $phoneNotice->item_record_id;
+        $notification->bib_record_id = $notification->bib_record_id ?: $phoneNotice->bib_record_id;
+        $notification->sys_hold_request_id = $notification->sys_hold_request_id ?: $phoneNotice->sys_hold_request_id;
 
         // Enrich with detailed type/level (especially for overdue disambiguation)
         if ($phoneNotice->notification_type_id) {
@@ -163,16 +171,16 @@ class NotificationProjectionService
         }
 
         // Enrich with site/branch context
-        $notification->site_code                 = $notification->site_code ?: $phoneNotice->library_code;
-        $notification->site_name                 = $notification->site_name ?: $phoneNotice->library_name;
-        $notification->reporting_org_id          = $notification->reporting_org_id ?: $phoneNotice->reporting_org_id;
-        $notification->pickup_area_description   = $notification->pickup_area_description ?: null; // PhoneNotices doesn't populate this in schema, leaving for exports
+        $notification->site_code = $notification->site_code ?: $phoneNotice->library_code;
+        $notification->site_name = $notification->site_name ?: $phoneNotice->library_name;
+        $notification->reporting_org_id = $notification->reporting_org_id ?: $phoneNotice->reporting_org_id;
+        $notification->pickup_area_description = $notification->pickup_area_description ?: null; // PhoneNotices doesn't populate this in schema, leaving for exports
 
         // Enrich with due_date (for overdues/renewals)
-        $notification->due_date                  = $notification->due_date ?: $phoneNotice->notice_date;
+        $notification->due_date = $notification->due_date ?: $phoneNotice->notice_date;
 
         // Enrich with title
-        $notification->browse_title              = $notification->browse_title ?: $phoneNotice->title;
+        $notification->browse_title = $notification->browse_title ?: $phoneNotice->title;
 
         // Enrich with account balance (for fines/bills)
         if ($phoneNotice->account_balance) {
@@ -181,9 +189,9 @@ class NotificationProjectionService
 
         // Better patron snapshots from PhoneNotices if NotificationLog was sparse
         $notification->patron_name_first = $notification->patron_name_first ?: $phoneNotice->first_name;
-        $notification->patron_name_last  = $notification->patron_name_last  ?: $phoneNotice->last_name;
-        $notification->patron_email      = $notification->patron_email      ?: $phoneNotice->email;
-        $notification->patron_phone      = $notification->patron_phone      ?: $phoneNotice->phone_number;
+        $notification->patron_name_last = $notification->patron_name_last ?: $phoneNotice->last_name;
+        $notification->patron_email = $notification->patron_email ?: $phoneNotice->email;
+        $notification->patron_phone = $notification->patron_phone ?: $phoneNotice->phone_number;
 
         $notification->save();
 
@@ -225,7 +233,7 @@ class NotificationProjectionService
      */
     protected function enrichFromHoldsExport(Notification $notification): void
     {
-        $hold = \\Dcplibrary\\Notices\\Models\\NotificationHold::where('patron_barcode', $notification->patron_barcode)
+        $hold = NotificationHold::where('patron_barcode', $notification->patron_barcode)
             ->whereDate('export_timestamp', $notification->notice_date)
             ->first();
 
@@ -233,9 +241,9 @@ class NotificationProjectionService
             return;
         }
 
-        $notification->browse_title           = $notification->browse_title ?: $hold->browse_title;
-        $notification->sys_hold_request_id    = $notification->sys_hold_request_id ?: $hold->sys_hold_request_id;
-        $notification->held_until             = $notification->held_until ?: $hold->hold_till_date;
+        $notification->browse_title = $notification->browse_title ?: $hold->browse_title;
+        $notification->sys_hold_request_id = $notification->sys_hold_request_id ?: $hold->sys_hold_request_id;
+        $notification->held_until = $notification->held_until ?: $hold->hold_till_date;
         $notification->pickup_organization_id = $notification->pickup_organization_id ?: $hold->pickup_organization_id;
 
         $notification->save();
@@ -248,7 +256,8 @@ class NotificationProjectionService
      */
     protected function enrichFromOverdueExport(Notification $notification): void
     {
-        $overdue = \\Dcplibrary\\Notices\\Models\\NotificationOverdue::where('patron_barcode', $notification->patron_barcode)
+        $overdue = null;
+        NotificationOverdue::where('patron_barcode', $notification->patron_barcode)
             ->whereDate('export_timestamp', $notification->notice_date)
             ->first();
 
@@ -256,11 +265,11 @@ class NotificationProjectionService
             return;
         }
 
-        $notification->item_barcode        = $notification->item_barcode ?: $overdue->item_barcode;
-        $notification->item_record_id      = $notification->item_record_id ?: $overdue->item_record_id;
-        $notification->bib_record_id       = $notification->bib_record_id ?: $overdue->bibliographic_record_id;
-        $notification->browse_title        = $notification->browse_title ?: $overdue->title;
-        $notification->due_date            = $notification->due_date ?: $overdue->due_date;
+        $notification->item_barcode = $notification->item_barcode ?: $overdue->item_barcode;
+        $notification->item_record_id = $notification->item_record_id ?: $overdue->item_record_id;
+        $notification->bib_record_id = $notification->bib_record_id ?: $overdue->bibliographic_record_id;
+        $notification->browse_title = $notification->browse_title ?: $overdue->title;
+        $notification->due_date = $notification->due_date ?: $overdue->due_date;
 
         $notification->save();
 
@@ -272,7 +281,8 @@ class NotificationProjectionService
      */
     protected function enrichFromRenewalExport(Notification $notification): void
     {
-        $renewal = \\Dcplibrary\\Notices\\Models\\NotificationRenewal::where('patron_barcode', $notification->patron_barcode)
+        $renewal = null;
+        NotificationRenewal::where('patron_barcode', $notification->patron_barcode)
             ->whereDate('export_timestamp', $notification->notice_date)
             ->first();
 
@@ -280,11 +290,11 @@ class NotificationProjectionService
             return;
         }
 
-        $notification->item_barcode        = $notification->item_barcode ?: $renewal->item_barcode;
-        $notification->item_record_id      = $notification->item_record_id ?: $renewal->item_record_id;
-        $notification->bib_record_id       = $notification->bib_record_id ?: $renewal->bibliographic_record_id;
-        $notification->browse_title        = $notification->browse_title ?: $renewal->title;
-        $notification->due_date            = $notification->due_date ?: $renewal->due_date;
+        $notification->item_barcode = $notification->item_barcode ?: $renewal->item_barcode;
+        $notification->item_record_id = $notification->item_record_id ?: $renewal->item_record_id;
+        $notification->bib_record_id = $notification->bib_record_id ?: $renewal->bibliographic_record_id;
+        $notification->browse_title = $notification->browse_title ?: $renewal->title;
+        $notification->due_date = $notification->due_date ?: $renewal->due_date;
 
         $notification->save();
 
@@ -294,7 +304,7 @@ class NotificationProjectionService
     /**
      * Record a lifecycle event from PhoneNotices baseline.
      */
-    protected function recordPhoneNoticesEvent(Notification $notification, \\Dcplibrary\\Notices\\Models\\PolarisPhoneNotice $phoneNotice): void
+    protected function recordPhoneNoticesEvent(Notification $notification, PolarisPhoneNotice $phoneNotice): void
     {
         NotificationEvent::updateOrCreate(
             [
@@ -317,9 +327,9 @@ class NotificationProjectionService
     /**
      * Build a human-readable status text for PhoneNotices events.
      */
-    protected function buildPhoneNoticesStatusText(\\Dcplibrary\\Notices\\Models\\PolarisPhoneNotice $phoneNotice): string
+    protected function buildPhoneNoticesStatusText(PolarisPhoneNotice $phoneNotice): string
     {
-        $typeId   = $phoneNotice->notification_type_id;
+        $typeId = $phoneNotice->notification_type_id;
         $typeName = $typeId !== null
             ? config("notices.notification_types.{$typeId}", "Type {$typeId}")
             : 'Unknown type';
@@ -338,9 +348,9 @@ class NotificationProjectionService
      */
     protected function recordHoldExportEvent(
         Notification $notification,
-        \\Dcplibrary\\Notices\\Models\\NotificationHold $hold
+        NotificationHold $hold
     ): void {
-        $typeId   = $notification->notification_type_id;
+        $typeId = $notification->notification_type_id;
         $typeName = $typeId !== null
             ? config("notices.notification_types.{$typeId}", "Type {$typeId}")
             : 'Unknown type';
@@ -370,9 +380,9 @@ class NotificationProjectionService
      */
     protected function recordOverdueExportEvent(
         Notification $notification,
-        \\Dcplibrary\\Notices\\Models\\NotificationOverdue $overdue
+        NotificationOverdue $overdue
     ): void {
-        $typeId   = $notification->notification_type_id;
+        $typeId = $notification->notification_type_id;
         $typeName = $typeId !== null
             ? config("notices.notification_types.{$typeId}", "Type {$typeId}")
             : 'Unknown type';
@@ -402,9 +412,9 @@ class NotificationProjectionService
      */
     protected function recordRenewalExportEvent(
         Notification $notification,
-        \\Dcplibrary\\Notices\\Models\\NotificationRenewal $renewal
+        NotificationRenewal $renewal
     ): void {
-        $typeId   = $notification->notification_type_id;
+        $typeId = $notification->notification_type_id;
         $typeName = $typeId !== null
             ? config("notices.notification_types.{$typeId}", "Type {$typeId}")
             : 'Unknown type';
@@ -436,7 +446,7 @@ class NotificationProjectionService
     protected function recordSubmissionAndDeliveryEvents(Notification $notification): void
     {
         // 1) Shoutbomb submissions → TYPE_SUBMITTED
-        $submission = \Dcplibrary\Notices\Models\ShoutbombSubmission::where('patron_barcode', $notification->patron_barcode)
+        $submission = ShoutbombSubmission::where('patron_barcode', $notification->patron_barcode)
             ->whereDate('submitted_at', $notification->notice_date)
             ->orderBy('submitted_at')
             ->first();
@@ -467,7 +477,7 @@ class NotificationProjectionService
 
         // 2) Shoutbomb deliveries → TYPE_DELIVERED / TYPE_FAILED
         // Match by barcode + date window
-        $deliveries = \Dcplibrary\Notices\Models\ShoutbombDelivery::forPatron($notification->patron_barcode)
+        $deliveries = ShoutbombDelivery::forPatron($notification->patron_barcode)
             ->whereDate('sent_date', $notification->notice_date)
             ->get();
 
@@ -501,8 +511,8 @@ class NotificationProjectionService
         }
 
         // 3) Failure reports → TYPE_FAILED (email-based failures)
-        $failure = \Dcplibrary\Notices\Models\NoticeFailureReport::forPatron($notification->patron_barcode)
-            ->around(\Carbon\Carbon::parse($notification->notice_date), 24)
+        $failure = NoticeFailureReport::forPatron($notification->patron_barcode)
+            ->around(Carbon::parse($notification->notice_date), 24)
             ->first();
 
         if ($failure) {

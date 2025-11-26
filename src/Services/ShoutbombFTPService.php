@@ -2,12 +2,14 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ShoutbombFTPService
 {
     protected $connection;
+
     protected $parser;
 
     public function __construct(ShoutbombFileParser $parser)
@@ -22,6 +24,7 @@ class ShoutbombFTPService
     {
         if (!config('notices.shoutbomb.enabled')) {
             Log::info('Shoutbomb FTP is disabled');
+
             return false;
         }
 
@@ -35,13 +38,13 @@ class ShoutbombFTPService
             }
 
             if (!$this->connection) {
-                throw new \Exception('Could not create FTP connection');
+                throw new Exception('Could not create FTP connection');
             }
 
             $login = ftp_login($this->connection, $config['username'], $config['password']);
 
             if (!$login) {
-                throw new \Exception('FTP login failed');
+                throw new Exception('FTP login failed');
             }
 
             if ($config['passive']) {
@@ -49,12 +52,14 @@ class ShoutbombFTPService
             }
 
             Log::info('Successfully connected to Shoutbomb FTP');
+
             return true;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to connect to Shoutbomb FTP', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -84,7 +89,7 @@ class ShoutbombFTPService
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
-                throw new \Exception('Could not list files in monthly reports directory');
+                throw new Exception('Could not list files in monthly reports directory');
             }
 
             $stats = ['files_processed' => 0, 'total_imported' => []];
@@ -111,8 +116,9 @@ class ShoutbombFTPService
 
             return ['success' => true, 'stats' => $stats];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error importing monthly reports', ['error' => $e->getMessage()]);
+
             return ['success' => false, 'error' => $e->getMessage()];
         } finally {
             $this->disconnect();
@@ -133,7 +139,7 @@ class ShoutbombFTPService
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
-                throw new \Exception('Could not list files in weekly reports directory');
+                throw new Exception('Could not list files in weekly reports directory');
             }
 
             $stats = ['files_processed' => 0, 'total_imported' => []];
@@ -159,8 +165,9 @@ class ShoutbombFTPService
 
             return ['success' => true, 'stats' => $stats];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error importing weekly reports', ['error' => $e->getMessage()]);
+
             return ['success' => false, 'error' => $e->getMessage()];
         } finally {
             $this->disconnect();
@@ -181,7 +188,7 @@ class ShoutbombFTPService
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
-                throw new \Exception('Could not list files in daily invalid directory');
+                throw new Exception('Could not list files in daily invalid directory');
             }
 
             $stats = ['files_processed' => 0, 'total_imported' => []];
@@ -207,8 +214,9 @@ class ShoutbombFTPService
 
             return ['success' => true, 'stats' => $stats];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error importing daily invalid reports', ['error' => $e->getMessage()]);
+
             return ['success' => false, 'error' => $e->getMessage()];
         } finally {
             $this->disconnect();
@@ -229,7 +237,7 @@ class ShoutbombFTPService
             $files = ftp_nlist($this->connection, $remotePath);
 
             if ($files === false) {
-                throw new \Exception('Could not list files in daily undelivered directory');
+                throw new Exception('Could not list files in daily undelivered directory');
             }
 
             $stats = ['files_processed' => 0, 'total_imported' => []];
@@ -255,8 +263,9 @@ class ShoutbombFTPService
 
             return ['success' => true, 'stats' => $stats];
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error importing daily undelivered reports', ['error' => $e->getMessage()]);
+
             return ['success' => false, 'error' => $e->getMessage()];
         } finally {
             $this->disconnect();
@@ -280,14 +289,16 @@ class ShoutbombFTPService
             $downloaded = ftp_get($this->connection, $localFile, $remoteFile, FTP_BINARY);
 
             if (!$downloaded) {
-                throw new \Exception("Failed to download {$remoteFile}");
+                throw new Exception("Failed to download {$remoteFile}");
             }
 
             Log::info("Downloaded file: {$remoteFile} to {$localFile}");
+
             return $localFile;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Error downloading file: {$remoteFile}", ['error' => $e->getMessage()]);
+
             return null;
         }
     }
@@ -299,7 +310,7 @@ class ShoutbombFTPService
     {
         try {
             if (!$this->connection) {
-                throw new \Exception('Not connected to FTP server');
+                throw new Exception('Not connected to FTP server');
             }
 
             $files = ftp_nlist($this->connection, $directory);
@@ -309,13 +320,15 @@ class ShoutbombFTPService
             }
 
             // Filter out . and ..
-            return array_filter($files, function($file) {
+            return array_filter($files, function ($file) {
                 $basename = basename($file);
+
                 return $basename !== '.' && $basename !== '..';
             });
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Error listing files in {$directory}", ['error' => $e->getMessage()]);
+
             return [];
         }
     }
@@ -327,6 +340,7 @@ class ShoutbombFTPService
     {
         if ($this->connect()) {
             $this->disconnect();
+
             return [
                 'success' => true,
                 'message' => 'Successfully connected to Shoutbomb FTP',

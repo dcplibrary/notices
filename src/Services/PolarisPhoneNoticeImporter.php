@@ -2,21 +2,24 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\PolarisPhoneNotice;
-use Dcplibrary\Notices\Models\PatronProfile;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Dcplibrary\Notices\Models\PatronProfile;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
- * PolarisPhoneNoticeImporter
- * 
+ * PolarisPhoneNoticeImporter.
+ *
  * Imports PhoneNotices.csv - a Polaris-generated export file used for
  * VERIFICATION/CORROBORATION of notices sent to Shoutbomb.
  */
 class PolarisPhoneNoticeImporter
 {
     protected ShoutbombSubmissionParser $parser;
+
     protected ShoutbombFTPService $ftpService;
 
     public function __construct(ShoutbombSubmissionParser $parser, ShoutbombFTPService $ftpService)
@@ -57,7 +60,7 @@ class PolarisPhoneNoticeImporter
 
             // Connect to FTP
             if (!$this->ftpService->connect()) {
-                throw new \Exception('Failed to connect to FTP');
+                throw new Exception('Failed to connect to FTP');
             }
 
             // Find PhoneNotices files (both .csv and dated .txt patterns)
@@ -138,7 +141,7 @@ class PolarisPhoneNoticeImporter
 
             $this->ftpService->disconnect();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("PhoneNotices import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -184,7 +187,7 @@ class PolarisPhoneNoticeImporter
                             }
                             continue;
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // If date parsing fails, skip record
                         if ($progressCallback) {
                             $progressCallback($index + 1, $total, $filename, false);
@@ -198,7 +201,7 @@ class PolarisPhoneNoticeImporter
                 $notice['imported_at'] = $timestamp;
 
                 // Convert notice_date to proper format if it's a Carbon instance
-                if (isset($notice['notice_date']) && $notice['notice_date'] instanceof \Carbon\Carbon) {
+                if (isset($notice['notice_date']) && $notice['notice_date'] instanceof Carbon) {
                     $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
                 }
 
@@ -206,7 +209,7 @@ class PolarisPhoneNoticeImporter
                 if (!empty($notice['notice_date'])) {
                     try {
                         $notice['import_date'] = Carbon::parse($notice['notice_date'])->format('Y-m-d');
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $notice['import_date'] = $timestamp->format('Y-m-d');
                     }
                 } else {
@@ -289,7 +292,7 @@ class PolarisPhoneNoticeImporter
                     if (!empty($notice['notice_date'])) {
                         try {
                             $seenAt = Carbon::parse($notice['notice_date']);
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $seenAt = null;
                         }
                     }
@@ -310,7 +313,7 @@ class PolarisPhoneNoticeImporter
                     $progressCallback($index + 1, $total, $filename, false);
                 }
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Failed to import phone notice", [
                     'error' => $e->getMessage(),
                     'notice' => $notice,
@@ -383,7 +386,7 @@ class PolarisPhoneNoticeImporter
     public function compareWithSubmissions(Carbon $date): array
     {
         $phoneNotices = PolarisPhoneNotice::whereDate('notice_date', $date)->get();
-        $submissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereDate('submitted_at', $date)->get();
+        $submissions = ShoutbombSubmission::whereDate('submitted_at', $date)->get();
 
         return [
             'date' => $date->format('Y-m-d'),

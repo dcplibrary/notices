@@ -6,7 +6,7 @@ use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Dcplibrary\Notices\Models\NoticeFailureReport>
+ * @extends Factory<NoticeFailureReport>
  */
 class NoticeFailureReportFactory extends Factory
 {

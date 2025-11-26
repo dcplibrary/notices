@@ -12,11 +12,17 @@ class NotificationEvent extends Model
     protected $table = 'notification_events';
 
     public const TYPE_QUEUED = 'queued';
+
     public const TYPE_EXPORTED = 'exported';
+
     public const TYPE_SUBMITTED = 'submitted';
+
     public const TYPE_PHONENOTICES_RECORDED = 'phonenotices_recorded';
+
     public const TYPE_DELIVERED = 'delivered';
+
     public const TYPE_FAILED = 'failed';
+
     public const TYPE_VERIFIED = 'verified';
 
     protected $fillable = [

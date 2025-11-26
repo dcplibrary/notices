@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
+use Dcplibrary\Notices\Database\Factories\ShoutbombKeywordUsageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class ShoutbombKeywordUsage extends Model
 {
     use HasFactory;
+
     /**
      * The table associated with the model.
      */
@@ -109,6 +111,6 @@ class ShoutbombKeywordUsage extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notices\Database\Factories\ShoutbombKeywordUsageFactory::new();
+        return ShoutbombKeywordUsageFactory::new();
     }
 }

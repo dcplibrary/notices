@@ -5,7 +5,7 @@ namespace Dcplibrary\Notices\Models\Polaris;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Polaris Bibliographic Record Model
+ * Polaris Bibliographic Record Model.
  *
  * Queries bibliographic data (titles, authors, etc.) from Polaris ILS database.
  * Read-only model for displaying book/media information.
@@ -13,8 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 class BibliographicRecord extends Model
 {
     protected $connection = 'polaris';
+
     protected $table = 'Polaris.Polaris.BibliographicRecords';
+
     protected $primaryKey = 'BibliographicRecordID';
+
     public $timestamps = false;
 
     protected $casts = [

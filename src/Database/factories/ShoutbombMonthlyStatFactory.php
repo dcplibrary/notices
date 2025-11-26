@@ -2,11 +2,12 @@
 
 namespace Dcplibrary\Notices\Database\Factories;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\ShoutbombMonthlyStat;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\Dcplibrary\Notices\Models\ShoutbombMonthlyStat>
+ * @extends Factory<ShoutbombMonthlyStat>
  */
 class ShoutbombMonthlyStatFactory extends Factory
 {
@@ -114,7 +115,7 @@ class ShoutbombMonthlyStatFactory extends Factory
      */
     public function forMonth(int $year, int $month): static
     {
-        $date = \Carbon\Carbon::create($year, $month, 1);
+        $date = Carbon::create($year, $month, 1);
 
         return $this->state(fn (array $attributes) => [
             'report_month' => $date,

@@ -2,11 +2,13 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\PolarisNotificationLog;
-use Dcplibrary\Notices\Models\NotificationLog;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Models\NotificationLog;
+use Dcplibrary\Notices\Models\PolarisNotificationLog;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PDOException;
 
 class PolarisImportService
 {
@@ -70,7 +72,7 @@ class PolarisImportService
 
                         $records[] = $notification->toLocalFormat();
                         $imported++;
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         Log::error("Error processing notification {$notification->NotificationLogID}", [
                             'error' => $e->getMessage(),
                         ]);
@@ -90,7 +92,7 @@ class PolarisImportService
                 'errors' => $errors,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Polaris import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -197,7 +199,7 @@ class PolarisImportService
                 'message' => 'Successfully connected to Polaris database',
                 'total_notifications' => $count,
             ];
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             // Check if this is a driver issue
             if (str_contains($e->getMessage(), 'could not find driver')) {
                 $driver = config('notices.polaris_connection.driver', 'sqlsrv');
@@ -215,7 +217,7 @@ class PolarisImportService
                 'message' => 'Failed to connect to Polaris database',
                 'error' => $e->getMessage(),
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => 'Failed to connect to Polaris database',
