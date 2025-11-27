@@ -30,6 +30,17 @@ Route::get('/help', function () {
     return view('notices::help.index');
 })->name('help');
 
+Route::get('/help/content', function () {
+    $markdownPath = base_path('vendor/dcplibrary/notices/docs/help/USER_GUIDE.md');
+
+    if (!file_exists($markdownPath)) {
+        return response('User guide not found', 404);
+    }
+
+    return response(file_get_contents($markdownPath))
+        ->header('Content-Type', 'text/plain; charset=utf-8');
+})->name('help.content');
+
 // Verification routes
 Route::prefix('verification')->name('verification.')->group(function () {
     Route::get('/', [DashboardController::class, 'verification'])->name('index');
