@@ -2,12 +2,12 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
-use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ShoutbombFileParser
 {
@@ -36,11 +36,11 @@ class ShoutbombFileParser
             if (preg_match('/Registration Statistics:\s*(\d+)\s*text\s*\((\d+)%\),\s*(\d+)\s*voice\s*\((\d+)%\)/', $line, $matches)) {
                 $data['registration_stats'] = [
                     'snapshot_date' => $reportDate,
-                    'total_text_subscribers' => (int)$matches[1],
-                    'text_percentage' => (float)$matches[2],
-                    'total_voice_subscribers' => (int)$matches[3],
-                    'voice_percentage' => (float)$matches[4],
-                    'total_subscribers' => (int)$matches[1] + (int)$matches[3],
+                    'total_text_subscribers' => (int) $matches[1],
+                    'text_percentage' => (float) $matches[2],
+                    'total_voice_subscribers' => (int) $matches[3],
+                    'voice_percentage' => (float) $matches[4],
+                    'total_subscribers' => (int) $matches[1] + (int) $matches[3],
                     'report_file' => basename($filePath),
                     'report_type' => 'Monthly',
                 ];
@@ -51,7 +51,7 @@ class ShoutbombFileParser
                 $data['keyword_usage'][] = [
                     'keyword' => strtoupper($matches[1]),
                     'keyword_description' => trim($matches[2]),
-                    'usage_count' => (int)$matches[3],
+                    'usage_count' => (int) $matches[3],
                     'usage_date' => $reportDate,
                     'report_file' => basename($filePath),
                     'report_period' => 'Monthly',
@@ -83,8 +83,8 @@ class ShoutbombFileParser
         foreach ($lines as $line) {
             // Registration statistics
             if (preg_match('/Registration Statistics:\s*(\d+)\s*text.*?(\d+)\s*voice/i', $line, $matches)) {
-                $textCount = (int)$matches[1];
-                $voiceCount = (int)$matches[2];
+                $textCount = (int) $matches[1];
+                $voiceCount = (int) $matches[2];
                 $total = $textCount + $voiceCount;
 
                 $data['registration_stats'] = [
@@ -103,7 +103,7 @@ class ShoutbombFileParser
             if (preg_match('/^([A-Z]+).*?(\d+)\s*use/i', $line, $matches)) {
                 $data['keyword_usage'][] = [
                     'keyword' => strtoupper($matches[1]),
-                    'usage_count' => (int)$matches[2],
+                    'usage_count' => (int) $matches[2],
                     'usage_date' => $reportDate,
                     'report_file' => basename($filePath),
                     'report_period' => 'Weekly',
@@ -216,7 +216,7 @@ class ShoutbombFileParser
                     array_merge($statsData, ['snapshot_date' => $snapshotDate])
                 );
                 $stats['registrations'] = 1;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Error importing registration stats", ['error' => $e->getMessage()]);
             }
         }
@@ -227,7 +227,7 @@ class ShoutbombFileParser
                 try {
                     ShoutbombKeywordUsage::create($keyword);
                     $stats['keyword_usage']++;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Log::error("Error importing keyword usage", ['error' => $e->getMessage()]);
                 }
             }
@@ -239,7 +239,7 @@ class ShoutbombFileParser
                 try {
                     ShoutbombDelivery::create($delivery);
                     $stats['deliveries']++;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Log::error("Error importing delivery", ['error' => $e->getMessage()]);
                 }
             }
@@ -274,6 +274,7 @@ class ShoutbombFileParser
         // Try to extract date from filename patterns like "Report_2025-11-06.txt"
         if (preg_match('/(\d{4}[-_]\d{2}[-_]\d{2})/', $filename, $matches)) {
             $dateStr = str_replace('_', '-', $matches[1]);
+
             return Carbon::parse($dateStr);
         }
 
@@ -281,6 +282,7 @@ class ShoutbombFileParser
         if (preg_match('/([A-Za-z]+)[-_](\d{4})/', $filename, $matches)) {
             $monthStr = $matches[1];
             $year = $matches[2];
+
             return Carbon::parse("$monthStr 1, $year")->endOfMonth();
         }
 

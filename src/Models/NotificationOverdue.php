@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * NotificationOverdue Model
+ * NotificationOverdue Model.
  *
  * Stores overdue/fine/bill notifications sent to ShoutBomb from overdue*.txt exports.
  * notification_type_id can be: 1, 7, 8, 11, 12, or 13 - MUST be enriched from PhoneNotices.

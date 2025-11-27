@@ -22,6 +22,7 @@ class BackfillNotificationStatus extends Command
      * Status ID mappings.
      */
     private const COMPLETED_STATUSES = [1, 2, 12, 15, 16];
+
     private const FAILED_STATUSES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
 
     /**
@@ -30,16 +31,17 @@ class BackfillNotificationStatus extends Command
     public function handle(): int
     {
         $this->info('Starting notification status backfill...');
-        
+
         $chunkSize = (int) $this->option('chunk');
         $totalProcessed = 0;
         $progressBar = null;
 
         // Get total count
         $total = NotificationLog::count();
-        
+
         if ($total === 0) {
             $this->info('No notification logs found to process.');
+
             return Command::SUCCESS;
         }
 

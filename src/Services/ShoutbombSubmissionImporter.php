@@ -2,14 +2,17 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Dcplibrary\Notices\Models\PatronDeliveryPreference;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShoutbombSubmissionImporter
 {
     protected ShoutbombSubmissionParser $parser;
+
     protected ShoutbombFTPService $ftpService;
 
     public function __construct(ShoutbombSubmissionParser $parser, ShoutbombFTPService $ftpService)
@@ -28,8 +31,8 @@ class ShoutbombSubmissionImporter
     {
         $startDate = $startDate ?? now()->subDays(1);
 
-        $config   = config('notices.shoutbomb_submissions');
-        $root     = rtrim($config['root'] ?? '/', '/');
+        $config = config('notices.shoutbomb_submissions');
+        $root = rtrim($config['root'] ?? '/', '/');
         $patterns = $config['patterns'] ?? [];
 
         Log::info("Starting Shoutbomb submission import (official system)", [
@@ -50,7 +53,7 @@ class ShoutbombSubmissionImporter
         try {
             // Connect to FTP
             if (!$this->ftpService->connect()) {
-                throw new \Exception('Failed to connect to FTP');
+                throw new Exception('Failed to connect to FTP');
             }
 
             // Download and process patron lists
@@ -71,7 +74,7 @@ class ShoutbombSubmissionImporter
 
             $this->ftpService->disconnect();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Shoutbomb submission import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -93,15 +96,15 @@ class ShoutbombSubmissionImporter
      */
     public function importAllFromFTP(?Carbon $from = null, ?Carbon $to = null, ?callable $progressCallback = null): array
     {
-        $config   = config('notices.shoutbomb_submissions');
-        $root     = rtrim($config['root'] ?? '/', '/');
+        $config = config('notices.shoutbomb_submissions');
+        $root = rtrim($config['root'] ?? '/', '/');
         $patterns = $config['patterns'] ?? [];
         $directory = $root === '' ? '/' : $root;
 
         // We need a connection only long enough to list files here; each
         // per-date import will manage its own FTP lifecycle.
         $ftpConfig = config('notices.shoutbomb.ftp');
-        if (! $this->ftpService->connect()) {
+        if (!$this->ftpService->connect()) {
             Log::error('Shoutbomb submission import-all: failed to connect to FTP', [
                 'host' => $ftpConfig['host'] ?? 'not set',
                 'root' => $directory,
@@ -153,6 +156,7 @@ class ShoutbombSubmissionImporter
                 'total_files_on_ftp' => count($files),
                 'sample_files' => array_slice(array_map('basename', $files), 0, 10),
             ]);
+
             return [
                 'dates' => [],
                 'totals' => [
@@ -183,6 +187,7 @@ class ShoutbombSubmissionImporter
                 if ($to && $d->gt($to->copy()->startOfDay())) {
                     return false;
                 }
+
                 return true;
             });
 
@@ -245,8 +250,8 @@ class ShoutbombSubmissionImporter
      */
     protected function downloadAndParsePatronList(string $type, Carbon $date, ?callable $progressCallback = null): array
     {
-        $config   = config('notices.shoutbomb_submissions');
-        $root     = rtrim($config['root'] ?? '/', '/');
+        $config = config('notices.shoutbomb_submissions');
+        $root = rtrim($config['root'] ?? '/', '/');
         $directory = $root === '' ? '/' : $root;
 
         // Support both YYYY-MM-DD and YYYYMMDD formats
@@ -311,7 +316,7 @@ class ShoutbombSubmissionImporter
 
         foreach ($patrons as $barcode => $phone) {
             try {
-                $result = \Dcplibrary\Notices\Models\PatronDeliveryPreference::updateOrCreateFromPatronList(
+                $result = PatronDeliveryPreference::updateOrCreateFromPatronList(
                     $barcode,
                     $phone,
                     $deliveryMethod,
@@ -331,7 +336,7 @@ class ShoutbombSubmissionImporter
                 } else {
                     $unchangedPatrons++;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning("Failed to track delivery preference for patron", [
                     'patron_barcode' => $barcode,
                     'error' => $e->getMessage(),
@@ -361,8 +366,8 @@ class ShoutbombSubmissionImporter
         $imported = 0;
 
         try {
-            $config   = config('notices.shoutbomb_submissions');
-            $root     = rtrim($config['root'] ?? '/', '/');
+            $config = config('notices.shoutbomb_submissions');
+            $root = rtrim($config['root'] ?? '/', '/');
             $directory = $root === '' ? '/' : $root;
 
             // Find submission files (support both YYYY-MM-DD and YYYYMMDD formats)
@@ -411,7 +416,7 @@ class ShoutbombSubmissionImporter
                 ]);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Failed to import {$type} submissions", [
                 'error' => $e->getMessage(),
             ]);

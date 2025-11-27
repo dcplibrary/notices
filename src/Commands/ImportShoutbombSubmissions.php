@@ -2,8 +2,9 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportShoutbombSubmissions extends Command
@@ -111,8 +112,8 @@ class ImportShoutbombSubmissions extends Command
         $totals = $summary['totals'] ?? [];
 
         if (empty($dates)) {
-            $config   = config('notices.shoutbomb_submissions');
-            $root     = $config['root'] ?? '/';
+            $config = config('notices.shoutbomb_submissions');
+            $root = $config['root'] ?? '/';
             $patterns = $config['patterns'] ?? [];
 
             $this->warn('⚠️  No submission files were found matching expected patterns.');
@@ -183,11 +184,13 @@ class ImportShoutbombSubmissions extends Command
         if (!$type) {
             $this->error('--type is required when importing from file');
             $this->line('Valid types: holds, overdue, renew');
+
             return Command::FAILURE;
         }
 
         if (!file_exists($filePath)) {
             $this->error("File not found: {$filePath}");
+
             return Command::FAILURE;
         }
 
@@ -204,8 +207,9 @@ class ImportShoutbombSubmissions extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Import failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
     }

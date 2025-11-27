@@ -73,7 +73,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the delivery was successful.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function delivered()
     {
@@ -88,7 +88,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the delivery failed.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function failed()
     {
@@ -111,7 +111,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the phone number was invalid.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function invalid()
     {
@@ -154,7 +154,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the delivery was SMS.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function sms()
     {
@@ -169,7 +169,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the delivery was Voice.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function voice()
     {
@@ -184,7 +184,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the message was a hold notification.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function holdNotice()
     {
@@ -198,7 +198,7 @@ class ShoutbombDeliveryFactory extends Factory
     /**
      * Indicate that the message was an overdue notification.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function overdueNotice()
     {

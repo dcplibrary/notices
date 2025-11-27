@@ -2,10 +2,13 @@
 
 namespace Dcplibrary\Notices\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SyncLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'operation_type',
         'status',

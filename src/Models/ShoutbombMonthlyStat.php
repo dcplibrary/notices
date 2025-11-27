@@ -5,7 +5,7 @@ namespace Dcplibrary\Notices\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * ShoutbombMonthlyStat Model
+ * ShoutbombMonthlyStat Model.
  *
  * Stores aggregate statistics from Shoutbomb monthly email reports.
  * Parsed from "Shoutbomb Rpt [Month]" emails via notices:import-shoutbomb-email
@@ -146,6 +146,7 @@ class ShoutbombMonthlyStat extends Model
         if ($total === 0) {
             return 0.0;
         }
+
         return round(($this->total_delivered / $total) * 100, 2);
     }
 }

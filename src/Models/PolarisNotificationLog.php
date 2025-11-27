@@ -3,13 +3,18 @@
 namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
+use DB;
+use Dcplibrary\Notices\Database\Factories\PolarisNotificationLogFactory;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Log;
 
 class PolarisNotificationLog extends Model
 {
     use HasFactory;
+
     /**
      * The connection name for the model.
      * This should point to the Polaris MSSQL database.
@@ -95,7 +100,7 @@ class PolarisNotificationLog extends Model
         // Parse phone/email from delivery_string based on delivery type
         $phone = null;
         $email = null;
-        
+
         if ($this->DeliveryOptionID == 3 || $this->DeliveryOptionID == 8) {
             // Voice (3) or SMS (8)
             // DeliveryString may be a phone number or an email-to-SMS address (e.g., 2705551234@txt.att.net)
@@ -112,17 +117,17 @@ class PolarisNotificationLog extends Model
             // Email (2) - delivery_string contains email
             $email = $this->DeliveryString;
         }
-        
+
         // Get patron name from Polaris (cached per import batch for performance)
         $patronName = $this->getPatronName();
-        
+
         // Get primary item info (first hold/overdue item if available)
         $itemInfo = $this->getPrimaryItemInfo();
-        
+
         // Map notification_status_id to simplified status field
         $completedStatuses = [1, 2, 12, 15, 16];
         $failedStatuses = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14];
-        
+
         if (in_array($this->NotificationStatusID, $completedStatuses)) {
             $status = 'completed';
         } elseif (in_array($this->NotificationStatusID, $failedStatuses)) {
@@ -170,22 +175,22 @@ class PolarisNotificationLog extends Model
     protected function getPatronName(): ?string
     {
         try {
-            $patron = \DB::connection('polaris')
+            $patron = DB::connection('polaris')
                 ->table('Polaris.Polaris.PatronRegistration')
                 ->where('PatronID', $this->PatronID)
                 ->select('NameLast', 'NameFirst')
                 ->first();
-            
+
             if ($patron) {
                 return trim(($patron->NameFirst ?? '') . ' ' . ($patron->NameLast ?? ''));
             }
-        } catch (\Exception $e) {
-            \Log::warning('Failed to fetch patron name', [
+        } catch (Exception $e) {
+            Log::warning('Failed to fetch patron name', [
                 'patron_id' => $this->PatronID,
                 'error' => $e->getMessage(),
             ]);
         }
-        
+
         return null;
     }
 
@@ -230,6 +235,6 @@ class PolarisNotificationLog extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notices\Database\Factories\PolarisNotificationLogFactory::new();
+        return PolarisNotificationLogFactory::new();
     }
 }

@@ -2,10 +2,11 @@
 
 namespace Dcplibrary\Notices\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
+use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class SyncShoutbombToLogs extends Command
 {
@@ -24,7 +25,7 @@ class SyncShoutbombToLogs extends Command
 
         // Determine date range
         if ($this->option('date')) {
-            $startDate = \Carbon\Carbon::parse($this->option('date'))->startOfDay();
+            $startDate = Carbon::parse($this->option('date'))->startOfDay();
             $endDate = $startDate->copy()->endOfDay();
         } else {
             $days = (int) $this->option('days');
@@ -41,6 +42,7 @@ class SyncShoutbombToLogs extends Command
 
         if ($phoneNotices->isEmpty()) {
             $this->warn('No Shoutbomb phone notices found for this date range.');
+
             return Command::SUCCESS;
         }
 
@@ -62,12 +64,14 @@ class SyncShoutbombToLogs extends Command
         if ($this->option('dry-run')) {
             $this->warn('Dry run mode - no data will be synced');
             $this->line('These notifications would be added to notification_logs');
+
             return Command::SUCCESS;
         }
 
         // Confirm before proceeding (skip if --force is used)
         if (!$this->option('force') && !$this->confirm('Sync these notifications to notification_logs?')) {
             $this->line('Cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -113,7 +117,7 @@ class SyncShoutbombToLogs extends Command
 
                 $synced++;
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors++;
                 $this->newLine();
                 $this->error("Error syncing notice {$phoneNotice->id}: {$e->getMessage()}");

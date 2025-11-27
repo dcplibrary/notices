@@ -2,8 +2,8 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Console\Command;
 
 class InspectDeliveryMethods extends Command

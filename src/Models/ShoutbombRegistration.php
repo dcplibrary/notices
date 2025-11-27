@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
+use Dcplibrary\Notices\Database\Factories\ShoutbombRegistrationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class ShoutbombRegistration extends Model
 {
     use HasFactory;
+
     /**
      * The table associated with the model.
      */
@@ -110,6 +112,6 @@ class ShoutbombRegistration extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notices\Database\Factories\ShoutbombRegistrationFactory::new();
+        return ShoutbombRegistrationFactory::new();
     }
 }

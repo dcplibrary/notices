@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class EmailReportService
 {
     protected $connection;
+
     protected $config;
 
     public function __construct()
@@ -16,12 +17,13 @@ class EmailReportService
     }
 
     /**
-     * Connect to the email server via IMAP
+     * Connect to the email server via IMAP.
      */
     public function connect(): bool
     {
         if (!$this->config['enabled']) {
             Log::info('Email reports are disabled in configuration');
+
             return false;
         }
 
@@ -60,12 +62,13 @@ class EmailReportService
             Log::error('Email connection failed', [
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Disconnect from email server
+     * Disconnect from email server.
      */
     public function disconnect(): void
     {
@@ -76,7 +79,7 @@ class EmailReportService
     }
 
     /**
-     * Fetch unread emails matching Shoutbomb report criteria
+     * Fetch unread emails matching Shoutbomb report criteria.
      */
     public function fetchShoutbombReports(): array
     {
@@ -93,6 +96,7 @@ class EmailReportService
 
             if (!$emailIds) {
                 Log::info('No unread Shoutbomb emails found');
+
                 return $reports;
             }
 
@@ -114,7 +118,7 @@ class EmailReportService
     }
 
     /**
-     * Fetch a specific email by ID
+     * Fetch a specific email by ID.
      */
     protected function fetchEmail(int $emailId): ?array
     {
@@ -130,6 +134,7 @@ class EmailReportService
                 Log::debug('Skipping email - not a recognized Shoutbomb report', [
                     'subject' => $subject,
                 ]);
+
                 return null;
             }
 
@@ -153,12 +158,13 @@ class EmailReportService
             Log::error('Error fetching email ID ' . $emailId, [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
 
     /**
-     * Determine report type from subject line
+     * Determine report type from subject line.
      */
     protected function determineReportType(string $subject): ?string
     {
@@ -176,7 +182,7 @@ class EmailReportService
     }
 
     /**
-     * Clean email body (remove HTML, extra whitespace, etc.)
+     * Clean email body (remove HTML, extra whitespace, etc.).
      */
     protected function cleanEmailBody(string $body): string
     {
@@ -198,7 +204,7 @@ class EmailReportService
     }
 
     /**
-     * Mark an email as read
+     * Mark an email as read.
      */
     public function markAsRead(int $emailId): bool
     {
@@ -207,20 +213,22 @@ class EmailReportService
         }
 
         try {
-            imap_setflag_full($this->connection, (string)$emailId, '\\Seen');
+            imap_setflag_full($this->connection, (string) $emailId, '\\Seen');
             Log::info('Marked email as read', ['email_id' => $emailId]);
+
             return true;
         } catch (Exception $e) {
             Log::error('Failed to mark email as read', [
                 'email_id' => $emailId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Move an email to a different folder
+     * Move an email to a different folder.
      */
     public function moveToFolder(int $emailId, string $folder): bool
     {
@@ -229,12 +237,13 @@ class EmailReportService
         }
 
         try {
-            imap_mail_move($this->connection, (string)$emailId, $folder);
+            imap_mail_move($this->connection, (string) $emailId, $folder);
             imap_expunge($this->connection);
             Log::info('Moved email to folder', [
                 'email_id' => $emailId,
                 'folder' => $folder,
             ]);
+
             return true;
         } catch (Exception $e) {
             Log::error('Failed to move email', [
@@ -242,12 +251,13 @@ class EmailReportService
                 'folder' => $folder,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
 
     /**
-     * Test connection to email server
+     * Test connection to email server.
      */
     public function testConnection(): array
     {
@@ -289,7 +299,7 @@ class EmailReportService
     }
 
     /**
-     * Get email statistics
+     * Get email statistics.
      */
     public function getStats(): array
     {

@@ -1,14 +1,3 @@
-<?php
-
-namespace Dcplibrary\Notices\Commands;
-
-use Dcplibrary\Notices\Services\PolarisImportService;
-use Dcplibrary\Notices\Services\NotificationAggregatorService;
-use Illuminate\Console\Command;
-use Carbon\Carbon;
-
-class ImportNotifications extends Command
-{
     /**
      * The name and signature of the console command.
      */
@@ -16,7 +5,8 @@ class ImportNotifications extends Command
                             {--days=1 : Number of days to import}
                             {--start-date= : Start date for import (Y-m-d format)}
                             {--end-date= : End date for import (Y-m-d format)}
-                            {--full : Import all historical data}';
+                            {--full : Import all historical data (deprecated, use --all)}
+                            {--all : Import all historical data}';
 
     /**
      * The console command description.
@@ -34,7 +24,9 @@ class ImportNotifications extends Command
         try {
             $result = null;
 
-            if ($this->option('full')) {
+            $full = $this->option('full') || $this->option('all');
+
+            if ($full) {
                 // Full historical import
                 $this->warn('⚠️  Full historical import requested. This may take a while...');
 
@@ -48,6 +40,7 @@ class ImportNotifications extends Command
                     );
                 } else {
                     $this->info('Import cancelled.');
+
                     return Command::SUCCESS;
                 }
 
@@ -89,12 +82,12 @@ class ImportNotifications extends Command
             // Automatically aggregate imported data
             if ($result['imported'] > 0) {
                 $this->info('📊 Aggregating imported data for analytics...');
-                
+
                 $startDate = Carbon::parse($result['start_date'])->startOfDay();
                 $endDate = Carbon::parse($result['end_date'])->startOfDay();
-                
+
                 $aggResult = $aggregator->aggregateDateRange($startDate, $endDate);
-                
+
                 $this->info("✅ Aggregated {$aggResult['combinations_aggregated']} combinations");
                 $this->newLine();
             }
@@ -117,7 +110,7 @@ class ImportNotifications extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ Import failed: ' . $e->getMessage());
 
             if ($this->option('verbose')) {

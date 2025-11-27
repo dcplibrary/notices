@@ -2,13 +2,15 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
-use Illuminate\Console\Command;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
+use Exception;
+use Illuminate\Console\Command;
 
 class DiagnosePatronDataCommand extends Command
 {
     protected $signature = 'notices:diagnose-patron-data';
+
     protected $description = 'Diagnose why patron names and item titles are not showing';
 
     public function handle()
@@ -90,7 +92,7 @@ class DiagnosePatronDataCommand extends Command
                             } else {
                                 $this->line("  Polaris patron: NULL");
                             }
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             $this->error("  Polaris error: {$e->getMessage()}");
                         }
                     } else {
@@ -137,6 +139,7 @@ class DiagnosePatronDataCommand extends Command
 
         if (!$notification) {
             $this->error('No notifications found in database');
+
             return 1;
         }
 

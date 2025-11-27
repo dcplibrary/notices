@@ -3,18 +3,23 @@
 namespace Dcplibrary\Notices\Http\Controllers;
 
 use Carbon\Carbon;
+use DB;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Dcplibrary\Notices\Models\DeliveryMethod;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\NotificationStatus;
 use Dcplibrary\Notices\Models\NotificationType;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
+use Log;
 
 class DashboardController extends Controller
 {
@@ -45,7 +50,7 @@ class DashboardController extends Controller
         $byDelivery = DailyNotificationSummary::getBreakdownByDelivery($startDate, $endDate);
 
         // Fallback: if analytics table is empty for the range, compute from notification_logs directly
-        $needsFallback = empty($totals) || ((int)($totals['total_sent'] ?? 0) === 0 && (count($byType) === 0) && (count($byDelivery) === 0));
+        $needsFallback = empty($totals) || ((int) ($totals['total_sent'] ?? 0) === 0 && (count($byType) === 0) && (count($byDelivery) === 0));
         if ($needsFallback) {
             $totalsObj = NotificationLog::whereBetween('notification_date', [$startDate, $endDate])
                 ->selectRaw('
@@ -106,6 +111,7 @@ class DashboardController extends Controller
             if (is_string($row->summary_date)) {
                 $row->summary_date = Carbon::parse($row->summary_date);
             }
+
             return $row;
         });
 
@@ -144,6 +150,7 @@ class DashboardController extends Controller
             if (is_string($row->summary_date)) {
                 $row->summary_date = Carbon::parse($row->summary_date);
             }
+
             return $row;
         });
 
@@ -225,11 +232,11 @@ class DashboardController extends Controller
                 $query->where('status', $status);
             }
         }
-        
+
         // Legacy: Support old status_id filtering (supports single or multiple statuses)
         if ($request->filled('status_id')) {
             $statusId = $request->input('status_id');
-            
+
             // Handle comma-separated string or array
             if (is_string($statusId) && str_contains($statusId, ',')) {
                 $statusIds = array_map('intval', explode(',', $statusId));
@@ -246,7 +253,7 @@ class DashboardController extends Controller
             $search = $request->input('search');
 
             // Find patron barcodes from Shoutbomb phone notices that match the search term
-            $matchingBarcodes = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where(function ($q) use ($search) {
+            $matchingBarcodes = PolarisPhoneNotice::where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%");
             })
@@ -276,7 +283,7 @@ class DashboardController extends Controller
             'patron_barcode',
             'notification_type_id',
             'delivery_option_id',
-            'notification_status_id'
+            'notification_status_id',
         ];
 
         if (in_array($sortField, $allowedSorts)) {
@@ -293,7 +300,7 @@ class DashboardController extends Controller
         // Get filter options - only enabled items
         $notificationTypes = NotificationType::enabled()->ordered()->pluck('description', 'notification_type_id')->toArray();
         $deliveryOptions = DeliveryMethod::enabled()->ordered()->pluck('delivery_option', 'delivery_option_id')->toArray();
-        
+
         // Filter detailed statuses by selected status category if applicable
         $notificationStatusesQuery = NotificationStatus::enabled()->ordered();
         if ($request->filled('status') && in_array($request->input('status'), ['completed', 'pending', 'failed'])) {
@@ -369,9 +376,9 @@ class DashboardController extends Controller
         // Top items by notification count (across all channels)
         $topItems = NotificationLog::whereBetween('notification_logs.notification_date', [$startDate, $endDate])
             ->join(
-                \DB::raw('(
+                DB::raw('(
                     SELECT patron_barcode, notice_date, title, item_record_id, COUNT(*) as count
-                    FROM ' . \DB::connection()->getTablePrefix() . 'polaris_phone_notices
+                    FROM ' . DB::connection()->getTablePrefix() . 'polaris_phone_notices
                     WHERE notice_date BETWEEN ? AND ?
                     GROUP BY patron_barcode, notice_date, title, item_record_id
                 ) as items'),
@@ -407,7 +414,7 @@ class DashboardController extends Controller
         $endDate = now();
 
         // Get submission statistics (official SQL-generated files)
-        $submissionStats = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionStats = ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_submissions,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -420,7 +427,7 @@ class DashboardController extends Controller
             ->first();
 
         // Get phone notices statistics (verification/corroboration)
-        $phoneNoticeStats = \Dcplibrary\Notices\Models\PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeStats = PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('
                 COUNT(*) as total_notices,
                 COUNT(DISTINCT patron_barcode) as unique_patrons,
@@ -430,7 +437,7 @@ class DashboardController extends Controller
             ->first();
 
         // Daily submission trend
-        $submissionTrend = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $submissionTrend = ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->selectRaw('DATE(submitted_at) as date, COUNT(*) as count, notification_type')
             ->groupBy('date', 'notification_type')
             ->orderBy('date')
@@ -438,7 +445,7 @@ class DashboardController extends Controller
             ->groupBy('date');
 
         // Daily phone notice trend
-        $phoneNoticeTrend = \Dcplibrary\Notices\Models\PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
+        $phoneNoticeTrend = PolarisPhoneNotice::whereBetween('notice_date', [$startDate, $endDate])
             ->selectRaw('DATE(notice_date) as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date')
@@ -446,7 +453,7 @@ class DashboardController extends Controller
             ->pluck('count', 'date');
 
         // Get recent submissions for display
-        $recentSubmissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
+        $recentSubmissions = ShoutbombSubmission::whereBetween('submitted_at', [$startDate, $endDate])
             ->orderBy('submitted_at', 'desc')
             ->limit(10)
             ->get();
@@ -530,9 +537,9 @@ class DashboardController extends Controller
 
             // Calculate summary
             $summary['total'] = $results->count();
-            $summary['verified'] = $results->filter(fn($r) => $r['verification']->overall_status === 'success')->count();
-            $summary['failed'] = $results->filter(fn($r) => $r['verification']->overall_status === 'failed')->count();
-            $summary['pending'] = $results->filter(fn($r) => $r['verification']->overall_status === 'pending')->count();
+            $summary['verified'] = $results->filter(fn ($r) => $r['verification']->overall_status === 'success')->count();
+            $summary['failed'] = $results->filter(fn ($r) => $r['verification']->overall_status === 'failed')->count();
+            $summary['pending'] = $results->filter(fn ($r) => $r['verification']->overall_status === 'pending')->count();
         }
 
         return view('notices::dashboard.verification', compact('results', 'summary'));
@@ -568,9 +575,9 @@ class DashboardController extends Controller
         // Calculate statistics
         $stats = [
             'total_notices' => count($results),
-            'success_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'success')->count(),
-            'failed_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'failed')->count(),
-            'pending_count' => collect($results)->filter(fn($r) => $r['verification']->overall_status === 'pending')->count(),
+            'success_count' => collect($results)->filter(fn ($r) => $r['verification']->overall_status === 'success')->count(),
+            'failed_count' => collect($results)->filter(fn ($r) => $r['verification']->overall_status === 'failed')->count(),
+            'pending_count' => collect($results)->filter(fn ($r) => $r['verification']->overall_status === 'pending')->count(),
         ];
 
         if ($stats['total_notices'] > 0) {
@@ -607,38 +614,72 @@ class DashboardController extends Controller
      */
     public function troubleshooting(Request $request): View
     {
-        $service = app(NoticeVerificationService::class);
+        try {
+            $service = app(NoticeVerificationService::class);
 
-        // Get date range
-        $days = $request->input('days', 7);
-        $startDate = now()->subDays($days);
-        $endDate = now();
+            // Get date range
+            $days = $request->input('days', 7);
+            $startDate = now()->subDays($days);
+            $endDate = now();
 
-        // Get troubleshooting summary
-        $summary = $service->getTroubleshootingSummary($startDate, $endDate);
+            // Get troubleshooting summary
+            try {
+                $summary = $service->getTroubleshootingSummary($startDate, $endDate);
+            } catch (Exception $e) {
+                Log::error('Error in getTroubleshootingSummary: ' . $e->getMessage());
+                throw new Exception('Failed to get troubleshooting summary: ' . $e->getMessage());
+            }
 
-        // Get failures grouped by reason
-        $failuresByReason = $service->getFailuresByReason($startDate, $endDate);
+            // Get failures grouped by reason
+            try {
+                $failuresByReason = $service->getFailuresByReason($startDate, $endDate);
+            } catch (Exception $e) {
+                Log::error('Error in getFailuresByReason: ' . $e->getMessage());
+                $failuresByReason = [];
+            }
 
-        // Get failures grouped by type
-        $failuresByType = $service->getFailuresByType($startDate, $endDate);
+            // Get failures grouped by type
+            try {
+                $failuresByType = $service->getFailuresByType($startDate, $endDate);
+            } catch (Exception $e) {
+                Log::error('Error in getFailuresByType: ' . $e->getMessage());
+                $failuresByType = [];
+            }
 
-        // Get mismatches
-        $mismatches = $service->getMismatches($startDate, $endDate);
+            // Get mismatches
+            try {
+                $mismatches = $service->getMismatches($startDate, $endDate);
+            } catch (Exception $e) {
+                Log::error('Error in getMismatches: ' . $e->getMessage());
+                $mismatches = [
+                    'submitted_not_verified' => [],
+                    'pending_verification' => [],
+                    'actually_failed' => [],
+                ];
+            }
 
-        // Get recent failures (limit to 20 for display)
-        $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
+            // Get recent failures (limit to 20 for display)
+            try {
+                $recentFailures = collect($service->getFailedNotices($startDate, $endDate))->take(20);
+            } catch (Exception $e) {
+                Log::error('Error in getFailedNotices: ' . $e->getMessage());
+                $recentFailures = collect([]);
+            }
 
-        return view('notices::dashboard.troubleshooting', compact(
-            'days',
-            'startDate',
-            'endDate',
-            'summary',
-            'failuresByReason',
-            'failuresByType',
-            'mismatches',
-            'recentFailures'
-        ));
+            return view('notices::dashboard.troubleshooting', compact(
+                'days',
+                'startDate',
+                'endDate',
+                'summary',
+                'failuresByReason',
+                'failuresByType',
+                'mismatches',
+                'recentFailures'
+            ));
+        } catch (Exception $e) {
+            Log::error('Troubleshooting page error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            abort(500, 'Error loading troubleshooting dashboard: ' . $e->getMessage());
+        }
     }
 
     /**

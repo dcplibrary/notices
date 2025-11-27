@@ -2,7 +2,9 @@
 
 namespace Dcplibrary\Notices\Console\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\NotificationAggregatorService;
+use Exception;
 use Illuminate\Console\Command;
 
 class AggregateNotificationsCommand extends Command
@@ -26,21 +28,21 @@ class AggregateNotificationsCommand extends Command
                 $this->info("✓ Re-aggregated all historical data");
                 $this->line("  Date range: {$result['start_date']} to {$result['end_date']}");
                 $this->line("  Combinations: {$result['combinations_aggregated']}");
-                
+
             } elseif ($this->option('start-date') && $this->option('end-date')) {
-                $startDate = \Carbon\Carbon::parse($this->option('start-date'));
-                $endDate = \Carbon\Carbon::parse($this->option('end-date'));
+                $startDate = Carbon::parse($this->option('start-date'));
+                $endDate = Carbon::parse($this->option('end-date'));
                 $result = $aggregator->aggregateDateRange($startDate, $endDate);
                 $this->info("✓ Aggregated date range");
                 $this->line("  Date range: {$result['start_date']} to {$result['end_date']}");
                 $this->line("  Combinations: {$result['combinations_aggregated']}");
-                
+
             } elseif ($this->option('date')) {
-                $date = \Carbon\Carbon::parse($this->option('date'));
+                $date = Carbon::parse($this->option('date'));
                 $result = $aggregator->aggregateDate($date);
                 $this->info("✓ Aggregated date: {$result['date']}");
                 $this->line("  Combinations: {$result['combinations_aggregated']}");
-                
+
             } else {
                 // Default: aggregate yesterday
                 $result = $aggregator->aggregateYesterday();
@@ -51,8 +53,9 @@ class AggregateNotificationsCommand extends Command
 
             return Command::SUCCESS;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('✗ Aggregation failed: ' . $e->getMessage());
+
             return Command::FAILURE;
         }
     }

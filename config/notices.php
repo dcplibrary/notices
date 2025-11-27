@@ -203,30 +203,31 @@ return [
             // Prefer an explicit NOTICES_* toggle; fall back to SHOUTBOMB_LOG_PROCESSING if present.
             'enabled' => env('NOTICES_SHOUTBOMB_REPORTS_ENABLED', env('SHOUTBOMB_LOG_PROCESSING', false)),
 
-            // Name of the failure table (reuses existing SHOUTBOMB_FAILURE_TABLE from the app .env)
-            'table' => env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports'),
+            // Name of the failure table (prefer EMAIL_FAILURE_TABLE, fall back to legacy SHOUTBOMB_FAILURE_TABLE)
+            'table' => env('EMAIL_FAILURE_TABLE', env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports')),
 
             // Hours around the notice date to search failure emails for a match
             'date_window_hours' => env('SHOUTBOMB_REPORTS_DATE_WINDOW_HOURS', 24),
 
             // Microsoft Graph API configuration (migrated from dcplibrary/shoutbomb-reports)
-            'graph' => [
-                'tenant_id' => env('SHOUTBOMB_TENANT_ID'),
-                'client_id' => env('SHOUTBOMB_CLIENT_ID'),
-                'client_secret' => env('SHOUTBOMB_CLIENT_SECRET'),
-                'user_email' => env('SHOUTBOMB_USER_EMAIL'),
-                'api_version' => env('SHOUTBOMB_API_VERSION', 'v1.0'),
+'graph' => [
+                // Prefer new EMAIL_* vars, but fall back to legacy SHOUTBOMB_* for compatibility
+                'tenant_id' => env('EMAIL_TENANT_ID', env('SHOUTBOMB_TENANT_ID')),
+                'client_id' => env('EMAIL_CLIENT_ID', env('SHOUTBOMB_CLIENT_ID')),
+                'client_secret' => env('EMAIL_CLIENT_SECRET', env('SHOUTBOMB_CLIENT_SECRET')),
+                'user_email' => env('EMAIL_USER', env('SHOUTBOMB_USER_EMAIL')),
+                'api_version' => env('EMAIL_API_VERSION', env('SHOUTBOMB_API_VERSION', 'v1.0')),
             ],
 
-            // Email filtering configuration
+            // Email filtering configuration (Graph-based)
             'filters' => [
-                'folder' => env('SHOUTBOMB_FOLDER', null),
-                'subject_contains' => env('SHOUTBOMB_SUBJECT_FILTER', null),
-                'from_addresses' => env('SHOUTBOMB_FROM_FILTER', null),
-                'max_emails' => env('SHOUTBOMB_MAX_EMAILS', 50),
-                'unread_only' => env('SHOUTBOMB_UNREAD_ONLY', true),
-                'mark_as_read' => env('SHOUTBOMB_MARK_AS_READ', true),
-                'move_to_folder' => env('SHOUTBOMB_MOVE_TO_FOLDER', null),
+                'folder' => env('EMAIL_FOLDER', env('SHOUTBOMB_FOLDER', null)),
+                'subject_contains' => env('EMAIL_SUBJECT_FILTER', env('SHOUTBOMB_SUBJECT_FILTER', null)),
+                'from_addresses' => env('EMAIL_FROM_FILTER', env('SHOUTBOMB_FROM_FILTER', null)),
+                'max_emails' => env('EMAIL_MAX_EMAILS', env('SHOUTBOMB_MAX_EMAILS', 50)),
+                'unread_only' => env('EMAIL_UNREAD_ONLY', env('SHOUTBOMB_UNREAD_ONLY', true)),
+                'mark_as_read' => env('EMAIL_MARK_AS_READ', env('SHOUTBOMB_MARK_AS_READ', true)),
+                'move_to_folder' => env('EMAIL_MOVE_TO_FOLDER', env('SHOUTBOMB_MOVE_TO_FOLDER', null)),
             ],
 
             // Parsing configuration
@@ -249,9 +250,10 @@ return [
 
             // Storage configuration
             'storage' => [
-                'table_name' => env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports'),
-                'store_raw_content' => env('SHOUTBOMB_STORE_RAW', false),
-                'log_processing' => env('SHOUTBOMB_LOG_PROCESSING', true),
+                // Prefer EMAIL_FAILURE_TABLE but allow SHOUTBOMB_FAILURE_TABLE for backward compatibility
+                'table_name'      => env('EMAIL_FAILURE_TABLE', env('SHOUTBOMB_FAILURE_TABLE', 'notice_failure_reports')),
+                'store_raw_content' => env('EMAIL_STORE_RAW', env('SHOUTBOMB_STORE_RAW', false)),
+                'log_processing'    => env('EMAIL_LOG_PROCESSING', env('SHOUTBOMB_LOG_PROCESSING', true)),
             ],
         ],
     ],

@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\SyncLog;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -20,14 +21,15 @@ class SyncController extends Controller
             if (!Auth::check() || !Auth::user()->inGroup('Computer Services')) {
                 abort(403, 'Unauthorized');
             }
+
             return $next($request);
         });
     }
 
     /**
-     * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation
+     * Run all sync operations: Polaris import → Shoutbomb sync → Aggregation.
      */
-    public function syncAll(): JsonResponse
+    public function syncAll(Request $request): JsonResponse
     {
         // Increase execution time limit for multiple operations (5 minutes)
         set_time_limit(300);
@@ -42,14 +44,16 @@ class SyncController extends Controller
         $results = [];
         $hasErrors = false;
 
+        $rangeOptions = $this->buildRangeOptionsFromRequest($request);
+
         // Step 1: Import from Polaris
         try {
-            $polarisResult = $this->runImportPolaris();
+            $polarisResult = $this->runImportPolaris($rangeOptions);
             $results['polaris'] = $polarisResult;
             if ($polarisResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['polaris'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -59,12 +63,12 @@ class SyncController extends Controller
 
         // Step 2: Sync Shoutbomb phone notices to notification_logs
         try {
-            $syncResult = $this->runSyncShoutbombToLogs();
+            $syncResult = $this->runSyncShoutbombToLogs($rangeOptions);
             $results['shoutbomb_sync'] = $syncResult;
             if ($syncResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['shoutbomb_sync'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -74,12 +78,12 @@ class SyncController extends Controller
 
         // Step 3: Run aggregation (continue even if imports had errors)
         try {
-            $aggregateResult = $this->runAggregate();
+            $aggregateResult = $this->runAggregate($rangeOptions);
             $results['aggregate'] = $aggregateResult;
             if ($aggregateResult['status'] === 'error') {
                 $hasErrors = true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['aggregate'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -105,9 +109,9 @@ class SyncController extends Controller
     }
 
     /**
-     * Import from Polaris only
+     * Import from Polaris only.
      */
-    public function importPolaris(): JsonResponse
+    public function importPolaris(Request $request): JsonResponse
     {
         $log = SyncLog::create([
             'operation_type' => 'import_polaris',
@@ -117,8 +121,28 @@ class SyncController extends Controller
         ]);
 
         try {
-            $result = $this->runImportPolaris();
-            
+            $options = [];
+
+            // Map JSON payload to Artisan options for notices:import-polaris
+            if ($request->boolean('all')) {
+                $options['--all'] = true;
+            } else {
+                if ($request->filled('date')) {
+                    $options['--date'] = $request->input('date');
+                } elseif ($request->filled('start') || $request->filled('end')) {
+                    if ($request->filled('start')) {
+                        $options['--start'] = $request->input('start');
+                    }
+                    if ($request->filled('end')) {
+                        $options['--end'] = $request->input('end');
+                    }
+                } elseif ($request->filled('days')) {
+                    $options['--days'] = (int) $request->input('days');
+                }
+            }
+
+            $result = $this->runImportPolaris($options);
+
             if ($result['status'] === 'success') {
                 $log->markCompleted(['polaris' => $result], $result['records'] ?? 0);
             } else {
@@ -126,8 +150,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -136,7 +161,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports)
+     * Import Shoutbomb Reports via external package command (shoutbomb:check-reports).
      */
     public function importShoutbombReports(): JsonResponse
     {
@@ -160,8 +185,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -170,7 +196,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Import Shoutbomb Submissions (what was sent to Shoutbomb)
+     * Import Shoutbomb Submissions (what was sent to Shoutbomb).
      */
     public function importShoutbombSubmissions(): JsonResponse
     {
@@ -194,8 +220,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -233,8 +260,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -352,7 +380,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Sync Shoutbomb phone notices to notification_logs
+     * Sync Shoutbomb phone notices to notification_logs.
      */
     public function syncShoutbombToLogs(): JsonResponse
     {
@@ -373,8 +401,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -383,7 +412,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run aggregation
+     * Run aggregation.
      */
     public function aggregate(): JsonResponse
     {
@@ -404,8 +433,9 @@ class SyncController extends Controller
             }
 
             return response()->json($result);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $log->markFailed($e->getMessage());
+
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -414,7 +444,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Test connections to Polaris and Shoutbomb
+     * Test connections to Polaris and Shoutbomb.
      */
     public function testConnections(): JsonResponse
     {
@@ -427,7 +457,7 @@ class SyncController extends Controller
                 'status' => 'success',
                 'message' => 'Connected successfully',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['polaris'] = [
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -444,8 +474,9 @@ class SyncController extends Controller
                     config('notices.shoutbomb.ftp.timeout', 30)
                 );
 
-                if ($ftp && ftp_login($ftp, 
-                    config('notices.shoutbomb.ftp.username'), 
+                if ($ftp && ftp_login(
+                    $ftp,
+                    config('notices.shoutbomb.ftp.username'),
                     config('notices.shoutbomb.ftp.password')
                 )) {
                     $results['shoutbomb_ftp'] = [
@@ -459,7 +490,7 @@ class SyncController extends Controller
                         'message' => 'Failed to connect or login',
                     ];
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $results['shoutbomb_ftp'] = [
                     'status' => 'error',
                     'message' => $e->getMessage(),
@@ -476,7 +507,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Get sync logs
+     * Get sync logs.
      */
     public function logs(Request $request): JsonResponse
     {
@@ -488,7 +519,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Get a specific sync log with full details
+     * Get a specific sync log with full details.
      */
     public function getLog(int $id): JsonResponse
     {
@@ -508,12 +539,45 @@ class SyncController extends Controller
         ]);
     }
 
+/**
+ * Normalize JSON range payload into Artisan-style options.
+ *
+ * Accepts: all/date/start/end/days on the request.
+ *
+ * @return array<string,mixed>
+ */
+private function buildRangeOptionsFromRequest(Request $request): array
+{
+    $options = [];
+
+    if ($request->boolean('all')) {
+        $options['--all'] = true;
+
+        return $options;
+    }
+
+    if ($request->filled('date')) {
+        $options['--date'] = $request->input('date');
+    } elseif ($request->filled('start') || $request->filled('end')) {
+        if ($request->filled('start')) {
+            $options['--start'] = $request->input('start');
+        }
+        if ($request->filled('end')) {
+            $options['--end'] = $request->input('end');
+        }
+    } elseif ($request->filled('days')) {
+        $options['--days'] = (int) $request->input('days');
+    }
+
+    return $options;
+}
+
     /**
-     * Run Polaris import command
+     * Run Polaris import command.
      */
-    private function runImportPolaris(): array
+    private function runImportPolaris(array $options = []): array
     {
-        $exitCode = Artisan::call('notices:import-polaris');
+        $exitCode = Artisan::call('notices:import-polaris', $options);
         $output = Artisan::output();
 
         // Parse output to get record count
@@ -528,20 +592,20 @@ class SyncController extends Controller
     }
 
     /**
-     * Run Shoutbomb reports check via email (Graph API)
+     * Run Shoutbomb reports check via email (Graph API).
      */
     private function runImportShoutbombReports(): array
     {
         // Preflight: ensure the command is registered so web-triggered Artisan::call works
         $commands = Artisan::all();
-        if (!array_key_exists('notices:import-shoutbomb-email', $commands)) {
+        if (!array_key_exists('notices:import-email-reports', $commands)) {
             return [
                 'status' => 'error',
-                'message' => "Command 'notices:import-shoutbomb-email' is not registered. Check that the CheckShoutbombReportsCommand is loaded.",
+                'message' => "Command 'notices:import-email-reports' is not registered. Check that the CheckShoutbombReportsCommand is loaded.",
             ];
         }
 
-        $exitCode = Artisan::call('notices:import-shoutbomb-email', ['--mark-read' => true]);
+        $exitCode = Artisan::call('notices:import-email-reports', ['--mark-read' => true]);
         $output = Artisan::output();
 
         // Attempt to parse a generic processed count if present
@@ -555,15 +619,21 @@ class SyncController extends Controller
         ];
     }
 
-    /**
-     * Run sync Shoutbomb to logs command
-     */
-    private function runSyncShoutbombToLogs(): array
-    {
-        $exitCode = Artisan::call('notices:sync-shoutbomb-to-logs', [
-            '--days' => 30,
-            '--force' => true,
-        ]);
+/**
+ * Run sync Shoutbomb to logs command.
+ */
+private function runSyncShoutbombToLogs(array $rangeOptions = []): array
+{
+    // Only --days is currently supported by the sync command; derive from rangeOptions or default to 30
+    $days = 30;
+    if (isset($rangeOptions['--days'])) {
+        $days = (int) $rangeOptions['--days'];
+    }
+
+    $exitCode = Artisan::call('notices:sync-shoutbomb-to-logs', [
+        '--days'  => $days,
+        '--force' => true,
+    ]);
         $output = Artisan::output();
 
         // Parse output to get record count
@@ -577,22 +647,39 @@ class SyncController extends Controller
         ];
     }
 
-    /**
-     * Run aggregation command
-     */
-    private function runAggregate(): array
-    {
-        $exitCode = Artisan::call('notices:aggregate');
-        $output = Artisan::output();
+/**
+ * Run aggregation command.
+ */
+private function runAggregate(array $rangeOptions = []): array
+{
+    $options = [];
 
-        return [
-            'status' => $exitCode === 0 ? 'success' : 'error',
-            'message' => trim($output),
-        ];
+    if (isset($rangeOptions['--all'])) {
+        $options['--all'] = true;
+    } elseif (isset($rangeOptions['--date'])) {
+        $options['--date'] = $rangeOptions['--date'];
+    } elseif (isset($rangeOptions['--start']) || isset($rangeOptions['--end'])) {
+        if (isset($rangeOptions['--start'])) {
+            $options['--start'] = $rangeOptions['--start'];
+        }
+        if (isset($rangeOptions['--end'])) {
+            $options['--end'] = $rangeOptions['--end'];
+        }
+    } elseif (isset($rangeOptions['--days'])) {
+        $options['--days'] = $rangeOptions['--days'];
     }
 
+    $exitCode = Artisan::call('notices:aggregate', $options);
+    $output = Artisan::output();
+
+    return [
+        'status'  => $exitCode === 0 ? 'success' : 'error',
+        'message' => trim($output),
+    ];
+}
+
     /**
-     * Run Shoutbomb submissions import command
+     * Run Shoutbomb submissions import command.
      */
     private function runImportShoutbombSubmissions(): array
     {
@@ -619,7 +706,7 @@ class SyncController extends Controller
     }
 
     /**
-     * Run FTP files import command (PhoneNotices + Shoutbomb submissions + Patrons)
+     * Run FTP files import command (PhoneNotices + Shoutbomb submissions + Patrons).
      */
     private function runImportFTPFiles(?string $from = null, ?string $to = null, bool $importPatrons = false): array
     {
@@ -647,7 +734,7 @@ class SyncController extends Controller
         // Parse output to get record counts
         $records = 0;
         $patronsImported = false;
-        
+
         if (preg_match('/PhoneNotices[^\d]*(\d+)/i', $output, $m)) {
             $records += (int) $m[1];
         }

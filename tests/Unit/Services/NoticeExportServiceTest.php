@@ -2,10 +2,10 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Services;
 
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Services\NoticeExportService;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Services\VerificationResult;
-use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Support\Collection;
 
@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 class NoticeExportServiceTest extends TestCase
 {
     protected NoticeExportService $exportService;
+
     protected NoticeVerificationService $verificationService;
 
     protected function setUp(): void

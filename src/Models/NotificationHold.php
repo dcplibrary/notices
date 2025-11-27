@@ -4,10 +4,9 @@ namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * NotificationHold Model
+ * NotificationHold Model.
  *
  * Stores hold notifications sent to ShoutBomb from holds*.txt exports.
  * notification_type_id is ALWAYS 2 (Hold) - inferred from filename.

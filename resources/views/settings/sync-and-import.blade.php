@@ -49,12 +49,62 @@
                 <input type="date" wire:model.live="endDate" class="form-input w-full rounded-md border-gray-300" wire:loading.attr="disabled">
                 @error('endDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
+
+            @if(!$rangeAll)
+                @if($rangeMode === 'days')
+                    <div class="flex items-end gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Days</label>
+                            <input type="number" min="1" wire:model.defer="rangeDays"
+                                   class="form-input w-24 rounded-md border-gray-300">
+                            @error('rangeDays')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @else
+                            <p class="mt-1 text-xs text-gray-500">
+                                Examples: <code>--days={{ $rangeDays ?? 1 }}</code> for both <code>notices:import-polaris</code> and <code>notices:import-ftp-files</code>.
+                            </p>
+                            @enderror
+                        </div>
+                    </div>
+                @elseif($rangeMode === 'date')
+                    <div class="flex items-end gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" wire:model="rangeDate" class="form-input rounded-md border-gray-300">
+                            @error('rangeDate')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                @elseif($rangeMode === 'range')
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+                            <input type="date" wire:model="rangeStart" class="form-input w-full rounded-md border-gray-300">
+                            @error('rangeStart')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">End date</label>
+                            <input type="date" wire:model="rangeEnd" class="form-input w-full rounded-md border-gray-300">
+                            @error('rangeEnd')
+                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                @endif
+            @else
+                <p class="mt-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded px-3 py-2">
+                    Warning: importing all history can take a long time on large datasets.
+                </p>
+            @endif
         </div>
         @endif
 
         <!-- Import Options -->
         <div class="mb-6 p-4 bg-gray-50 rounded-md">
-            <h3 class="text-lg font-semibold mb-3">Import Options</h3>
+            <h3 class="text-lg font-semibold mb-3">FTP Import Options</h3>
             
             <!-- Patron Import Toggle -->
             <div class="flex items-center justify-between mb-2">
@@ -88,7 +138,7 @@
         </div>
 
         <!-- Import Button -->
-        <div class="mb-6">
+        <div class="mb-4 flex flex-col gap-3">
             @if($isImporting)
             <button wire:click="cancelImport"
                     wire:loading.attr="disabled"
@@ -106,30 +156,42 @@
             @endif
         </div>
 
-        <!-- Progress Display -->
-        @if($isImporting || !empty($progress))
-        <div class="mt-6 p-4 bg-gray-50 rounded-md">
-            <h3 class="text-lg font-semibold mb-3">Import Progress</h3>
-            
-            @if($currentFile)
-            <div class="mb-4 flex items-center">
-                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="text-sm font-medium">Currently importing: <span class="text-blue-600">{{ $currentFile }}</span></span>
-            </div>
-            @endif
+        <!-- Log Viewer Modal -->
+        @if($showLogModal && ($isImporting || !empty($progress)))
+            <div class="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-40">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+                    <div class="flex items-center justify-between px-4 py-3 border-b">
+                        <div>
+                            <h3 class="text-lg font-semibold">Import Progress</h3>
+                            @if($currentFile)
+                                <p class="mt-1 text-xs text-gray-600">
+                                    Currently importing: <span class="font-mono text-blue-700">{{ $currentFile }}</span>
+                                </p>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @if($isImporting)
+                                <button type="button" wire:click="cancelImport" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-red-500 text-red-600 hover:bg-red-50">
+                                    Cancel
+                                </button>
+                            @endif
+                            <button type="button" wire:click="closeLogModal" class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                Minimize
+                            </button>
+                        </div>
+                    </div>
 
-            <!-- Progress Log -->
-            <div class="max-h-64 overflow-y-auto bg-gray-900 text-green-400 p-4 rounded font-mono text-xs" id="progress-log">
-                @forelse($progress as $line)
-                <div>{{ $line }}</div>
-                @empty
-                <div class="text-gray-500">Waiting for output...</div>
-                @endforelse
+                    <div class="px-4 py-3 flex-1 overflow-hidden">
+                        <div class="max-h-[55vh] overflow-y-auto bg-gray-900 text-green-400 p-4 rounded font-mono text-xs" id="progress-log">
+                            @forelse($progress as $line)
+                                <div>{{ $line }}</div>
+                            @empty
+                                <div class="text-gray-500">Waiting for output...</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
         @endif
 
         <!-- Import Stats -->
@@ -180,6 +242,39 @@
         });
     });
 
+    // Polaris import (JSON-only)
+    Livewire.on('startPolarisImport', (options) => {
+        const payload = options || {};
+
+        fetch('/notices/sync/polaris', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        })
+            .then(response => response.json())
+            .then(data => {
+                @this.call('updateProgress', {
+                    progress: data.message || `Polaris import completed (${data.records ?? 0} records)`,
+                    stats: data.records != null ? { records: data.records } : {},
+                    completed: true,
+                    success: data.status === 'success',
+                    message: data.message || 'Polaris import finished',
+                });
+            })
+            .catch(error => {
+                console.error('Polaris import error:', error);
+                @this.call('updateProgress', {
+                    completed: true,
+                    success: false,
+                    message: 'Polaris import failed: ' + error.message,
+                });
+            });
+    });
+
     // Command output streaming
     let importProcess = null;
 
@@ -207,7 +302,7 @@
                             completed: true,
                             success: true,
                             message: 'Import completed successfully!'
-                        });
+                        })
                         return;
                     }
 
@@ -217,10 +312,10 @@
                     lines.forEach(line => {
                         try {
                             const data = JSON.parse(line);
-                            @this.call('updateProgress', data);
+                            @this.call('updateProgress', data)
                         } catch (e) {
                             // Plain text output
-                            @this.call('updateProgress', { progress: line });
+                            @this.call('updateProgress', { progress: line })
                         }
                     });
 
@@ -236,7 +331,7 @@
                 completed: true,
                 success: false,
                 message: 'Import failed: ' + error.message
-            });
+            })
         });
     });
 

@@ -1,9 +1,9 @@
 <?php
 
 use Dcplibrary\Notices\Http\Controllers\DashboardController;
+use Dcplibrary\Notices\Http\Controllers\ExportController;
 use Dcplibrary\Notices\Http\Controllers\SettingsController;
 use Dcplibrary\Notices\Http\Controllers\SyncController;
-use Dcplibrary\Notices\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,7 +62,7 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/{id}/edit', [SettingsController::class, 'edit'])->name('edit');
     Route::put('/{id}', [SettingsController::class, 'update'])->name('update');
     Route::delete('/{id}', [SettingsController::class, 'destroy'])->name('destroy');
-    
+
     // Reference data management
     Route::put('/notification-type/{id}', [SettingsController::class, 'updateNotificationType'])->name('update-notification-type');
     Route::put('/delivery-method/{id}', [SettingsController::class, 'updateDeliveryMethod'])->name('update-delivery-method');

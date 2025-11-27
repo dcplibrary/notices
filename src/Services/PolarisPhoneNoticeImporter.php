@@ -2,20 +2,24 @@
 
 namespace Dcplibrary\Notices\Services;
 
-use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Dcplibrary\Notices\Models\PatronProfile;
+use Dcplibrary\Notices\Models\PolarisPhoneNotice;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
- * PolarisPhoneNoticeImporter
- * 
+ * PolarisPhoneNoticeImporter.
+ *
  * Imports PhoneNotices.csv - a Polaris-generated export file used for
  * VERIFICATION/CORROBORATION of notices sent to Shoutbomb.
  */
 class PolarisPhoneNoticeImporter
 {
     protected ShoutbombSubmissionParser $parser;
+
     protected ShoutbombFTPService $ftpService;
 
     public function __construct(ShoutbombSubmissionParser $parser, ShoutbombFTPService $ftpService)
@@ -56,7 +60,7 @@ class PolarisPhoneNoticeImporter
 
             // Connect to FTP
             if (!$this->ftpService->connect()) {
-                throw new \Exception('Failed to connect to FTP');
+                throw new Exception('Failed to connect to FTP');
             }
 
             // Find PhoneNotices files (both .csv and dated .txt patterns)
@@ -72,7 +76,9 @@ class PolarisPhoneNoticeImporter
                         'path' => $file,
                         'basename' => basename($file),
                         'dated' => false,
-                        'file_date' => now()->setTime(9, 0, 0), // Default to today at 09:00:00
+                        // Default logical file date to today at 09:00, but the
+                        // per-row import will still rely on notice_date.
+                        'file_date' => now()->setTime(9, 0, 0),
                     ];
                 }
                 // Match PhoneNotices_YYYY-MM-DD_HH-MM-SS.txt
@@ -135,7 +141,7 @@ class PolarisPhoneNoticeImporter
 
             $this->ftpService->disconnect();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("PhoneNotices import failed", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -149,8 +155,10 @@ class PolarisPhoneNoticeImporter
     /**
      * Import PhoneNotices file.
      *
-     * Note: Using individual inserts instead of bulk for reliable parameter binding
-     * across all database drivers (SQLite, MySQL, etc.)
+     * Note: Using individual upserts instead of bulk for reliable parameter
+     * binding across all database drivers (SQLite, MySQL, etc.) and to keep
+     * the import idempotent. Re-importing the same file will update existing
+     * rows rather than creating duplicates.
      *
      * @param string $filePath Local path to the downloaded file
      * @param string $filename Original filename
@@ -179,7 +187,7 @@ class PolarisPhoneNoticeImporter
                             }
                             continue;
                         }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         // If date parsing fails, skip record
                         if ($progressCallback) {
                             $progressCallback($index + 1, $total, $filename, false);
@@ -191,16 +199,113 @@ class PolarisPhoneNoticeImporter
                 // Add metadata
                 $notice['source_file'] = $filename;
                 $notice['imported_at'] = $timestamp;
-                $notice['created_at'] = $timestamp;
-                $notice['updated_at'] = $timestamp;
 
                 // Convert notice_date to proper format if it's a Carbon instance
-                if (isset($notice['notice_date']) && $notice['notice_date'] instanceof \Carbon\Carbon) {
+                if (isset($notice['notice_date']) && $notice['notice_date'] instanceof Carbon) {
                     $notice['notice_date'] = $notice['notice_date']->format('Y-m-d');
                 }
 
-                // Insert individual record - this ensures proper PDO parameter binding
-                PolarisPhoneNotice::create($notice);
+                // Set import_date from notice_date or fall back to today
+                if (!empty($notice['notice_date'])) {
+                    try {
+                        $notice['import_date'] = Carbon::parse($notice['notice_date'])->format('Y-m-d');
+                    } catch (Exception $e) {
+                        $notice['import_date'] = $timestamp->format('Y-m-d');
+                    }
+                } else {
+                    // If notice_date is missing, fall back to fileDate if provided
+                    // or to the current timestamp's date.
+                    $notice['import_date'] = $fileDate
+                        ? $fileDate->toDateString()
+                        : $timestamp->format('Y-m-d');
+                }
+
+                // Define a logical uniqueness key so that re-importing the same
+                // PhoneNotices file updates existing rows instead of creating
+                // duplicates. This matches the idea of one record per
+                // patron+item+delivery_type+notice_date.
+                $uniqueKey = [
+                    'patron_barcode' => $notice['patron_barcode'] ?? null,
+                    'item_barcode'   => $notice['item_barcode'] ?? null,
+                    'delivery_type'  => $notice['delivery_type'] ?? null,
+                    'notice_date'    => $notice['notice_date'] ?? $notice['import_date'],
+                ];
+
+                PolarisPhoneNotice::updateOrCreate(
+                    $uniqueKey,
+                    $notice
+                );
+
+                // Upsert patron profile based on this PhoneNotices row.
+                $barcode = $notice['patron_barcode'] ?? null;
+                if ($barcode) {
+                    $profile = PatronProfile::firstOrNew(['patron_barcode' => $barcode]);
+
+                    // Basic identity
+                    if (!empty($notice['patron_id'])) {
+                        $profile->patron_id = (int) $notice['patron_id'];
+                    }
+
+                    // Snapshot fields
+                    if (!empty($notice['first_name'])) {
+                        $profile->name_first = $notice['first_name'];
+                    }
+                    if (!empty($notice['last_name'])) {
+                        $profile->name_last = $notice['last_name'];
+                    }
+                    if (!empty($notice['phone_number'])) {
+                        $profile->primary_phone = $notice['phone_number'];
+                    }
+                    if (!empty($notice['email'])) {
+                        $profile->email_address = $notice['email'];
+                    }
+
+                    // Language / org context (when available)
+                    if (!empty($notice['language_code'])) {
+                        $profile->language_code = $notice['language_code'];
+                    }
+                    if (!empty($notice['language_id'])) {
+                        $profile->language_id = (int) $notice['language_id'];
+                    }
+                    if (!empty($notice['reporting_org_id'])) {
+                        $profile->reporting_org_id = (int) $notice['reporting_org_id'];
+                    }
+
+                    // Derive delivery_option_id from delivery_type (V/T → 3/8) if present.
+                    $newOption = null;
+                    if (!empty($notice['delivery_type'])) {
+                        if ($notice['delivery_type'] === 'voice') {
+                            $newOption = 3; // Phone 1 – Voice
+                        } elseif ($notice['delivery_type'] === 'text') {
+                            $newOption = 8; // TXT Messaging
+                        }
+                    }
+
+                    if ($newOption !== null && $profile->delivery_option_id !== $newOption) {
+                        $profile->former_delivery_option_id = $profile->delivery_option_id;
+                        $profile->delivery_option_id = $newOption;
+                        $profile->delivery_option_changed_at = $timestamp;
+                    }
+
+                    // Update last_seen_in_phonenotices_at if this row is newer.
+                    $seenAt = null;
+                    if (!empty($notice['notice_date'])) {
+                        try {
+                            $seenAt = Carbon::parse($notice['notice_date']);
+                        } catch (Exception $e) {
+                            $seenAt = null;
+                        }
+                    }
+                    if (!$seenAt) {
+                        $seenAt = $timestamp;
+                    }
+                    if (!$profile->last_seen_in_phonenotices_at || $seenAt->gt($profile->last_seen_in_phonenotices_at)) {
+                        $profile->last_seen_in_phonenotices_at = $seenAt;
+                    }
+
+                    $profile->save();
+                }
+
                 $imported++;
 
                 // Call progress callback if provided
@@ -208,7 +313,7 @@ class PolarisPhoneNoticeImporter
                     $progressCallback($index + 1, $total, $filename, false);
                 }
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Failed to import phone notice", [
                     'error' => $e->getMessage(),
                     'notice' => $notice,
@@ -281,7 +386,7 @@ class PolarisPhoneNoticeImporter
     public function compareWithSubmissions(Carbon $date): array
     {
         $phoneNotices = PolarisPhoneNotice::whereDate('notice_date', $date)->get();
-        $submissions = \Dcplibrary\Notices\Models\ShoutbombSubmission::whereDate('submitted_at', $date)->get();
+        $submissions = ShoutbombSubmission::whereDate('submitted_at', $date)->get();
 
         return [
             'date' => $date->format('Y-m-d'),

@@ -3,10 +3,15 @@
 namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
+use Dcplibrary\Notices\Database\Factories\NotificationLogFactory;
+use Dcplibrary\Notices\Models\Polaris\Patron;
 use Dcplibrary\Notices\Services\PolarisQueryService;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Log;
 
 class NotificationLog extends Model
 {
@@ -83,10 +88,20 @@ class NotificationLog extends Model
 
     /**
      * Get the notification type name.
+     * Transforms "Email" to "SMS" when delivery method is SMS (delivery_option_id = 8).
+     * This is because Polaris used to send SMS messages using email infrastructure,
+     * but now we want to display accurate language to users.
      */
     public function getNotificationTypeNameAttribute(): string
     {
-        return config("notices.notification_types.{$this->notification_type_id}", 'Unknown');
+        $typeName = config("notices.notification_types.{$this->notification_type_id}", 'Unknown');
+
+        // If delivery method is SMS, replace "Email" with "SMS" in the type name
+        if ($this->delivery_option_id === 8) {
+            $typeName = str_replace('Email', 'SMS', $typeName);
+        }
+
+        return $typeName;
     }
 
     /**
@@ -150,15 +165,26 @@ class NotificationLog extends Model
         if ($this->relationLoaded('deliveryMethod') && $this->deliveryMethod) {
             return $this->deliveryMethod->name;
         }
+
         return config("notices.delivery_options.{$this->delivery_option_id}", 'Unknown');
     }
 
     /**
      * Get the notification status name.
+     * Transforms "Email" to "SMS" when delivery method is SMS (delivery_option_id = 8).
+     * This is because Polaris used to send SMS messages using email infrastructure,
+     * but now we want to display accurate language to users.
      */
     public function getNotificationStatusNameAttribute(): string
     {
-        return config("notices.notification_statuses.{$this->notification_status_id}", 'Unknown');
+        $statusName = config("notices.notification_statuses.{$this->notification_status_id}", 'Unknown');
+
+        // If delivery method is SMS, replace "Email" with "SMS" in the status name
+        if ($this->delivery_option_id === 8) {
+            $statusName = str_replace('Email', 'SMS', $statusName);
+        }
+
+        return $statusName;
     }
 
     /**
@@ -207,7 +233,6 @@ class NotificationLog extends Model
     {
         return $query->where('notification_status_id', $statusId);
     }
-
 
     /**
      * Scope to get completed notifications by simplified status.
@@ -292,6 +317,7 @@ class NotificationLog extends Model
         if ($this->notification_status_id === null) {
             $this->status = 'pending';
             $this->status_description = null;
+
             return;
         }
 
@@ -314,7 +340,7 @@ class NotificationLog extends Model
      * Get patron details from Polaris.
      * Returns cached Polaris patron record with full name, email, phone, etc.
      *
-     * @return \Dcplibrary\Notices\Models\Polaris\Patron|null
+     * @return Patron|null
      */
     public function getPatronAttribute()
     {
@@ -323,6 +349,7 @@ class NotificationLog extends Model
         }
 
         $service = app(PolarisQueryService::class);
+
         return $service->getPatron($this->patron_id);
     }
 
@@ -337,7 +364,7 @@ class NotificationLog extends Model
         // First try Shoutbomb phone notices (already imported data)
         // Use a 60-minute window to account for timing differences
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -363,7 +390,7 @@ class NotificationLog extends Model
     public function getPatronFirstNameAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -383,7 +410,7 @@ class NotificationLog extends Model
     public function getPatronLastNameAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -403,7 +430,7 @@ class NotificationLog extends Model
     public function getPatronEmailAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -423,7 +450,7 @@ class NotificationLog extends Model
     public function getPatronPhoneAttribute(): ?string
     {
         if ($this->patron_barcode) {
-            $phoneNotice = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotice = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->first();
 
@@ -449,7 +476,8 @@ class NotificationLog extends Model
 
     /**
      * Get items associated with this notification from imported data.
-     * Uses Shoutbomb phone notices first, falls back to Polaris if available.
+     * Uses Shoutbomb phone notices first, enriched with Polaris data for complete details.
+     * Falls back to direct Polaris query if phone notices not available.
      *
      * @return \Illuminate\Support\Collection
      */
@@ -457,26 +485,46 @@ class NotificationLog extends Model
     {
         // First try to get items from imported Shoutbomb data
         if ($this->patron_barcode) {
-            $phoneNotices = \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+            $phoneNotices = PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
                 ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
                 ->orderBy('import_date', 'desc')
                 ->get();
 
             if ($phoneNotices->isNotEmpty()) {
-                // Convert phone notices to a collection with title and barcode
-                return $phoneNotices->map(function ($notice) {
+                $service = app(PolarisQueryService::class);
+
+                // Enrich phone notices with full Polaris item details
+                return $phoneNotices->map(function ($notice) use ($service) {
+                    // If we have item_record_id, fetch full item details from Polaris
+                    if ($notice->item_record_id) {
+                        try {
+                            $item = $service->getItem($notice->item_record_id);
+
+                            if ($item) {
+                                // Return full item record with bibliographic relationship
+                                return $item;
+                            }
+                        } catch (Exception $e) {
+                            // If Polaris query fails, fall through to basic data
+                            Log::warning("Failed to fetch item details for ItemRecordID {$notice->item_record_id}", [
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+
+                    // Fallback to basic phone notice data if Polaris unavailable
                     return (object) [
-                        'title' => $notice->browse_title,
+                        'title' => $notice->title,
                         'item_barcode' => $notice->item_barcode,
                         'bibliographic' => (object) [
-                            'Title' => $notice->browse_title,
+                            'Title' => $notice->title,
                         ],
                         'staff_link' => $notice->item_record_id
                             ? "https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{$notice->item_record_id}"
                             : null,
                         'ItemRecordID' => $notice->item_record_id,
                         'Barcode' => $notice->item_barcode,
-                        'CallNumber' => null, // Not available in phone notices CSV
+                        'CallNumber' => null,
                     ];
                 });
             }
@@ -486,12 +534,13 @@ class NotificationLog extends Model
         if ($this->patron_id && $this->notification_type_id) {
             try {
                 $service = app(PolarisQueryService::class);
+
                 return $service->getNotificationItems(
                     $this->patron_id,
                     $this->notification_type_id,
                     $this->notification_date
                 );
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Polaris not available, return empty collection
                 return collect();
             }
@@ -504,7 +553,7 @@ class NotificationLog extends Model
      * Get related Shoutbomb phone notice records.
      * Matches by patron barcode and notification date.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getPolarisPhoneNoticesAttribute()
     {
@@ -512,7 +561,7 @@ class NotificationLog extends Model
             return collect();
         }
 
-        return \Dcplibrary\Notices\Models\PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
+        return PolarisPhoneNotice::where('patron_barcode', $this->patron_barcode)
             ->whereDate('import_date', $this->notification_date->format('Y-m-d'))
             ->get();
     }
@@ -521,7 +570,7 @@ class NotificationLog extends Model
      * Alias for getPolarisPhoneNoticesAttribute().
      * Matches by patron barcode and notification date.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getShoutbombPhoneNoticesAttribute()
     {
@@ -532,7 +581,7 @@ class NotificationLog extends Model
      * Get related Shoutbomb submission records.
      * Matches by patron barcode and submitted date.
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getShoutbombSubmissionsAttribute()
     {
@@ -540,7 +589,7 @@ class NotificationLog extends Model
             return collect();
         }
 
-        return \Dcplibrary\Notices\Models\ShoutbombSubmission::where('patron_barcode', $this->patron_barcode)
+        return ShoutbombSubmission::where('patron_barcode', $this->patron_barcode)
             ->whereDate('submitted_at', $this->notification_date->format('Y-m-d'))
             ->get();
     }
@@ -549,7 +598,7 @@ class NotificationLog extends Model
      * Get related Shoutbomb delivery records.
      * Matches by patron barcode and delivery string (phone).
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     public function getShoutbombDeliveriesAttribute()
     {
@@ -560,7 +609,7 @@ class NotificationLog extends Model
         // Clean phone number for comparison
         $cleanPhone = preg_replace('/[^0-9]/', '', $this->delivery_string);
 
-        return \Dcplibrary\Notices\Models\ShoutbombDelivery::where(function ($query) use ($cleanPhone) {
+        return ShoutbombDelivery::where(function ($query) use ($cleanPhone) {
             $query->where('phone_number', 'LIKE', "%{$cleanPhone}%")
                   ->orWhere('phone_number', 'LIKE', "%{$this->delivery_string}%");
         })
@@ -573,6 +622,6 @@ class NotificationLog extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notices\Database\Factories\NotificationLogFactory::new();
+        return NotificationLogFactory::new();
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
-use Dcplibrary\Notices\Http\Controllers\Api\NotificationController;
-use Dcplibrary\Notices\Http\Controllers\Api\SummaryController;
 use Dcplibrary\Notices\Http\Controllers\Api\AnalyticsController;
+use Dcplibrary\Notices\Http\Controllers\Api\NotificationController;
 use Dcplibrary\Notices\Http\Controllers\Api\ShoutbombController;
+use Dcplibrary\Notices\Http\Controllers\Api\SummaryController;
 use Dcplibrary\Notices\Http\Controllers\Api\VerificationController;
 use Illuminate\Support\Facades\Route;
 
