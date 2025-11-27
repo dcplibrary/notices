@@ -1,3 +1,11 @@
+## [6.0.3](https://github.com/dcplibrary/notices/compare/v6.0.2...v6.0.3) (2025-11-27)
+
+
+### Bug Fixes
+
+* add livewire suppport to Sync & Import ([4908670](https://github.com/dcplibrary/notices/commit/49086706841850d2dd76187bde09a3c981a1291f))
+* resolve radio button and loading state issues in sync-and-import view ([ebfe844](https://github.com/dcplibrary/notices/commit/ebfe8444e3e5b1806964872e0a8b9e26853b08f1))
+
 ## [6.0.2](https://github.com/dcplibrary/notices/compare/v6.0.1...v6.0.2) (2025-11-27)
 
 
