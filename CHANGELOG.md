@@ -1,3 +1,10 @@
+## [6.0.2](https://github.com/dcplibrary/notices/compare/v6.0.1...v6.0.2) (2025-11-27)
+
+
+### Bug Fixes
+
+* add import-ftp-files ([cfaffbf](https://github.com/dcplibrary/notices/commit/cfaffbf3e430354fbbef3c59a372d2e8b7297f39))
+
 ## [6.0.1](https://github.com/dcplibrary/notices/compare/v6.0.0...v6.0.1) (2025-11-26)
 
 
