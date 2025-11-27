@@ -4,13 +4,12 @@ namespace Dcplibrary\Notices;
 
 use Dcplibrary\Notices\Commands\BackfillNotificationStatus;
 use Dcplibrary\Notices\Commands\CheckShoutbombReportsCommand;
-use Dcplibrary\Notices\Commands\ImportCommand;
-use Dcplibrary\Notices\Commands\ImportShoutbombReports;
 use Dcplibrary\Notices\Commands\InstallCommand;
 use Dcplibrary\Notices\Commands\SeedDemoDataCommand;
 use Dcplibrary\Notices\Commands\SyncAllCommand;
 use Dcplibrary\Notices\Commands\TestConnections;
 use Dcplibrary\Notices\Console\Commands\AggregateNotificationsCommand;
+use Dcplibrary\Notices\Console\Commands\ImportFTPFiles;
 use Dcplibrary\Notices\Console\Commands\ImportPolarisCommand;
 use Dcplibrary\Notices\Console\Commands\SyncNotificationsFromLogs;
 use Dcplibrary\Notices\Database\Seeders\NoticesReferenceSeeder;
@@ -126,19 +125,15 @@ class NoticesServiceProvider extends ServiceProvider
         $this->commands([
             InstallCommand::class,
             SyncAllCommand::class,
-            ImportCommand::class, // Simplified unified import command
-            ImportShoutbombReports::class,
             TestConnections::class,
             SeedDemoDataCommand::class,
             BackfillNotificationStatus::class,
             CheckShoutbombReportsCommand::class,
-            Commands\ImportShoutbombSubmissions::class,
-            Commands\ImportPolarisPhoneNotices::class,
-            Commands\ListShoutbombFiles::class,
             Commands\InspectDeliveryMethods::class,
             Commands\DiagnoseDataIssues::class,
             Commands\DiagnoseDashboardData::class,
             AggregateNotificationsCommand::class,
+            ImportFTPFiles::class,
             ImportPolarisCommand::class,
             SyncNotificationsFromLogs::class,
         ]);
