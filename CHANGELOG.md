@@ -1,3 +1,11 @@
+## [6.0.4](https://github.com/dcplibrary/notices/compare/v6.0.3...v6.0.4) (2025-11-27)
+
+
+### Bug Fixes
+
+* resolve markdown rendering blade syntax error in help view ([e15e7ae](https://github.com/dcplibrary/notices/commit/e15e7ae04ffc8e18fd431b721d0d6d0bebd04e8b))
+* resolve markdown rendering blade syntax error in help view ([e8afdf8](https://github.com/dcplibrary/notices/commit/e8afdf8e1bb97e01c06148a84f5594804f302c0b))
+
 ## [6.0.3](https://github.com/dcplibrary/notices/compare/v6.0.2...v6.0.3) (2025-11-27)
 
 
