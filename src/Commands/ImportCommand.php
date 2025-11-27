@@ -2,9 +2,10 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Services\NotificationImportService;
-use Dcplibrary\Notices\Services\NotificationAggregatorService;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\NotificationAggregatorService;
+use Dcplibrary\Notices\Services\NotificationImportService;
+use Exception;
 use Illuminate\Console\Command;
 
 /**
@@ -38,6 +39,7 @@ class ImportCommand extends Command
     protected $description = 'Import notification data from FTP exports, enrich, and aggregate';
 
     protected NotificationImportService $importService;
+
     protected NotificationAggregatorService $aggregatorService;
 
     public function __construct(
@@ -134,15 +136,18 @@ class ImportCommand extends Command
             $range = $this->importService->getAvailableDateRange();
             if (!$range) {
                 $this->error('Could not determine date range from FTP files');
+
                 return null;
             }
             $this->info("Found data from {$range['start']->format('Y-m-d')} to {$range['end']->format('Y-m-d')}");
+
             return [$range['start'], $range['end']];
         }
 
         // --date flag: specific single date
         if ($date = $this->option('date')) {
             $targetDate = Carbon::parse($date);
+
             return [$targetDate, $targetDate];
         }
 
@@ -150,6 +155,7 @@ class ImportCommand extends Command
         if ($this->option('start') || $this->option('end')) {
             $startDate = $this->option('start') ? Carbon::parse($this->option('start')) : now()->subDays(30);
             $endDate = $this->option('end') ? Carbon::parse($this->option('end')) : now();
+
             return [$startDate, $endDate];
         }
 
@@ -157,6 +163,7 @@ class ImportCommand extends Command
         $days = (int) $this->option('days');
         $endDate = now();
         $startDate = now()->subDays($days - 1);
+
         return [$startDate, $endDate];
     }
 
@@ -169,6 +176,7 @@ class ImportCommand extends Command
             if ($isDryRun) {
                 $files = $this->importService->listPatronListFiles($startDate, $endDate);
                 $this->line("  Would import {$files['voice_count']} voice files, {$files['text_count']} text files");
+
                 return;
             }
 
@@ -176,7 +184,7 @@ class ImportCommand extends Command
             $results['patron_lists'] = $imported;
             $this->info("  ✓ Imported {$imported['voice']} voice patrons, {$imported['text']} text patrons");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Failed: {$e->getMessage()}");
             $results['errors'][] = "Patron lists: {$e->getMessage()}";
         }
@@ -192,6 +200,7 @@ class ImportCommand extends Command
             if ($isDryRun) {
                 $files = $this->importService->listPhoneNoticeFiles($startDate, $endDate);
                 $this->line("  Would import {$files['count']} PhoneNotices files");
+
                 return;
             }
 
@@ -199,7 +208,7 @@ class ImportCommand extends Command
             $results['phone_notices'] = $imported;
             $this->info("  ✓ Imported {$imported} phone notice records");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Failed: {$e->getMessage()}");
             $results['errors'][] = "PhoneNotices: {$e->getMessage()}";
         }
@@ -230,7 +239,7 @@ class ImportCommand extends Command
                 $results[$type] = $imported;
                 $this->info("  ✓ {$type}: Imported {$imported} records");
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ✗ {$type}: {$e->getMessage()}");
                 $results['errors'][] = "{$type}: {$e->getMessage()}";
             }
@@ -246,6 +255,7 @@ class ImportCommand extends Command
         try {
             if ($isDryRun) {
                 $this->line('  Would import failure reports from email');
+
                 return;
             }
 
@@ -253,7 +263,7 @@ class ImportCommand extends Command
             $results['failures'] = $imported;
             $this->info("  ✓ Imported {$imported} failure reports");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Failed: {$e->getMessage()}");
             $results['errors'][] = "Failures: {$e->getMessage()}";
         }
@@ -273,7 +283,7 @@ class ImportCommand extends Command
             $results['enriched'] = $enriched;
             $this->info("  ✓ Enriched {$enriched['notifications']} notifications, {$enriched['failures']} failures");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Enrichment failed: {$e->getMessage()}");
             $results['errors'][] = "Enrichment: {$e->getMessage()}";
         }
@@ -291,7 +301,7 @@ class ImportCommand extends Command
             $results['aggregated'] = $aggregated['combinations_aggregated'] ?? 0;
             $this->info("  ✓ Aggregated {$results['aggregated']} daily summaries");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("  ✗ Aggregation failed: {$e->getMessage()}");
             $results['errors'][] = "Aggregation: {$e->getMessage()}";
         }

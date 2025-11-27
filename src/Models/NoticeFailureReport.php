@@ -3,9 +3,9 @@
 namespace Dcplibrary\Notices\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Config;
 
 /**
@@ -95,7 +95,6 @@ class NoticeFailureReport extends Model
         return $query->where('failure_type', 'invalid');
     }
 
-
     public function scopeVoiceNotDelivered($query)
     {
         return $query->where('failure_type', 'voice-not-delivered');
@@ -156,6 +155,7 @@ class NoticeFailureReport extends Model
     public function scopeForPhone(Builder $query, string $phone): Builder
     {
         $digits = preg_replace('/[^0-9]/', '', $phone);
+
         return $query->where('patron_phone', substr($digits, -10));
     }
 
@@ -229,6 +229,7 @@ class NoticeFailureReport extends Model
     public function markAsProcessed(): bool
     {
         $this->processed_at = now();
+
         return $this->save();
     }
 

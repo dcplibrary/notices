@@ -77,7 +77,7 @@ abstract class TestCase extends Orchestra
         $app['config']->set('notices', require __DIR__ . '/../config/notices.php');
 
         // Provide an application key for encryption-dependent features
-        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
+        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
 
         // Relax middleware for tests: disable Sanctum/auth requirements on package routes
         $app['config']->set('notices.api.middleware', ['api']);

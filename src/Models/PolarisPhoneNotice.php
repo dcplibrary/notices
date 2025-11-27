@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * PolarisPhoneNotice Model
+ * PolarisPhoneNotice Model.
  *
  * Represents a row from PhoneNotices.csv (Polaris export).
  *
@@ -47,15 +47,25 @@ class PolarisPhoneNotice extends Model
         'patron_id',
         'item_record_id',
         'bib_record_id',
+        'notification_type_id',
+        'delivery_option_id',
+        'sys_hold_request_id',
+        'account_balance',
         'source_file',
+        'import_date',
         'imported_at',
     ];
 
     protected $casts = [
         'notice_date' => 'date',
+        'import_date' => 'date',
         'patron_id' => 'integer',
         'item_record_id' => 'integer',
         'bib_record_id' => 'integer',
+        'notification_type_id' => 'integer',
+        'delivery_option_id' => 'integer',
+        'sys_hold_request_id' => 'integer',
+        'account_balance' => 'float',
         'imported_at' => 'datetime',
     ];
 

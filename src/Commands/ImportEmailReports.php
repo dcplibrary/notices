@@ -1,20 +1,11 @@
-<?php
-
-namespace Dcplibrary\Notices\Commands;
-
-use Dcplibrary\Notices\Services\EmailReportService;
-use Dcplibrary\Notices\Services\ShoutbombEmailParser;
-use Illuminate\Console\Command;
-
-class ImportEmailReports extends Command
-{
     /**
      * The name and signature of the console command.
      */
     protected $signature = 'notices:import-email-reports
                             {--mark-read : Mark imported emails as read}
                             {--move-to= : Move imported emails to specified folder}
-                            {--limit=50 : Maximum number of emails to process per run}';
+                            {--limit=50 : Maximum number of emails to process per run}
+                            {--all : Process all matching emails (legacy command; prefer Graph-based importer)}';
 
     /**
      * The console command description.
@@ -28,6 +19,7 @@ class ImportEmailReports extends Command
     {
         if (!config('notices.email_reports.enabled')) {
             $this->warn('⚠️  Email report import is disabled in configuration.');
+
             return Command::SUCCESS;
         }
 
@@ -39,6 +31,7 @@ class ImportEmailReports extends Command
             $this->line('→ Connecting to email server...');
             if (!$emailService->connect()) {
                 $this->error('❌ Failed to connect to email server');
+
                 return Command::FAILURE;
             }
 
@@ -61,6 +54,7 @@ class ImportEmailReports extends Command
             if (empty($reports)) {
                 $this->info('✓ No new Shoutbomb reports found');
                 $emailService->disconnect();
+
                 return Command::SUCCESS;
             }
 
@@ -127,17 +121,18 @@ class ImportEmailReports extends Command
             $this->info('✓ Email import completed successfully');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('❌ Error during email import: ' . $e->getMessage());
             if (isset($emailService)) {
                 $emailService->disconnect();
             }
+
             return Command::FAILURE;
         }
     }
 
     /**
-     * Display import summary
+     * Display import summary.
      */
     protected function displaySummary(array $stats, int $processed): void
     {

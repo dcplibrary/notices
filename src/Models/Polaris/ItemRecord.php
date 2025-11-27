@@ -5,7 +5,7 @@ namespace Dcplibrary\Notices\Models\Polaris;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Polaris Item Record Model
+ * Polaris Item Record Model.
  *
  * Queries item/bibliographic data from Polaris ILS database.
  * Read-only model for displaying item information in notification details.
@@ -13,8 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 class ItemRecord extends Model
 {
     protected $connection = 'polaris';
+
     protected $table = 'Polaris.Polaris.CircItemRecords';
+
     protected $primaryKey = 'ItemRecordID';
+
     public $timestamps = false;
 
     protected $casts = [

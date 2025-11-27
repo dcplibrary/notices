@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Services\NoticeVerificationService;
 use Dcplibrary\Notices\Tests\TestCase;
-use Carbon\Carbon;
 
 /**
  * Tests for troubleshooting methods in NoticeVerificationService.

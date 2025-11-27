@@ -2,12 +2,12 @@
 
 namespace Dcplibrary\Notices\Http\Controllers\Api;
 
-use Dcplibrary\Notices\Models\NotificationLog;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AnalyticsController extends Controller
 {
@@ -43,7 +43,7 @@ class AnalyticsController extends Controller
             ->groupBy('summary_date')
             ->orderBy('summary_date')
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'date' => $item->summary_date->format('Y-m-d'),
                 'sent' => $item->total_sent,
                 'success' => $item->total_success,

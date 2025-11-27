@@ -2,9 +2,10 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\LaravelUpgrade;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\DailyNotificationSummary;
 use Dcplibrary\Notices\Tests\TestCase;
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -153,7 +154,7 @@ class DatabaseInteractionsTest extends TestCase
             ]);
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -174,10 +175,10 @@ class DatabaseInteractionsTest extends TestCase
             ]);
 
             // Simulate an error
-            throw new \Exception('Test error');
+            throw new Exception('Test error');
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
         }
 
@@ -285,7 +286,7 @@ class DatabaseInteractionsTest extends TestCase
             'reported' => 1,
         ]);
 
-        $this->assertInstanceOf(\Carbon\Carbon::class, $notification->notification_date);
+        $this->assertInstanceOf(Carbon::class, $notification->notification_date);
         $this->assertIsBool($notification->reported);
     }
 

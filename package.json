@@ -24,6 +24,34 @@
     "@semantic-release/release-notes-generator": "^14.0.1",
     "semantic-release": "^24.2.9"
   },
+  "release": {
+    "branches": ["main"],
+    "tagFormat": "v${version}",
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "angular",
+          "releaseRules": [
+            { "type": "feat", "release": "major" }
+          ]
+        }
+      ],
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      [
+        "@semantic-release/github",
+        { "assets": [] }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": ["CHANGELOG.md"],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
+  },
   "dependencies": {
     "marked": "^16.4.0",
     "npm": "^11.6.0"

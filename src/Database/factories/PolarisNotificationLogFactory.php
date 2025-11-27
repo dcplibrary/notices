@@ -94,7 +94,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for holds.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function holds()
     {
@@ -110,7 +110,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for overdues.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function overdues()
     {
@@ -126,7 +126,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for almost overdue items.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function almostOverdue()
     {
@@ -142,7 +142,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via email.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function email()
     {
@@ -158,7 +158,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via SMS.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function sms()
     {
@@ -174,7 +174,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via voice call.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function voice()
     {
@@ -190,7 +190,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via mail.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function mail()
     {
@@ -206,7 +206,7 @@ class PolarisNotificationLogFactory extends Factory
     /**
      * Indicate that the notification is unreported.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function unreported()
     {

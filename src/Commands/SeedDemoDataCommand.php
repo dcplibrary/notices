@@ -2,13 +2,13 @@
 
 namespace Dcplibrary\Notices\Commands;
 
-use Dcplibrary\Notices\Models\NotificationLog;
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
 use Dcplibrary\Notices\Models\ShoutbombKeywordUsage;
 use Dcplibrary\Notices\Models\ShoutbombRegistration;
 use Illuminate\Console\Command;
-use Carbon\Carbon;
 
 class SeedDemoDataCommand extends Command
 {
@@ -32,6 +32,7 @@ class SeedDemoDataCommand extends Command
         if ($this->option('fresh')) {
             if (!$this->confirm('This will delete all existing notification data. Are you sure?')) {
                 $this->info('Demo seeding cancelled.');
+
                 return 0;
             }
 

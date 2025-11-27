@@ -2,8 +2,8 @@
 
 namespace Dcplibrary\Notices\Tests\Feature;
 
-use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Models\DailyNotificationSummary;
+use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
@@ -87,7 +87,7 @@ class ApiRoutesTest extends TestCase
                     'id',
                     'patron_id',
                     'notification_date',
-                ]
+                ],
             ]);
     }
 
@@ -166,7 +166,7 @@ class ApiRoutesTest extends TestCase
     public function verification_search_route_is_accessible()
     {
         $response = $this->getJson(route('notices.api.verification.search', [
-            'patron_barcode' => 'TEST123'
+            'patron_barcode' => 'TEST123',
         ]));
 
         $response->assertStatus(200)
@@ -179,7 +179,7 @@ class ApiRoutesTest extends TestCase
     public function verification_patron_route_is_accessible()
     {
         $response = $this->getJson(route('notices.api.verification.patron', [
-            'barcode' => 'TEST123'
+            'barcode' => 'TEST123',
         ]));
 
         $response->assertStatus(200)
@@ -269,12 +269,12 @@ class ApiRoutesTest extends TestCase
     public function api_routes_accept_query_parameters()
     {
         NotificationLog::factory()->count(5)->create([
-            'notification_type_id' => 4
+            'notification_type_id' => 4,
         ]);
 
         // Test filtering by type
         $response = $this->getJson(route('notices.api.logs.index', [
-            'type_id' => 4
+            'type_id' => 4,
         ]));
         $response->assertStatus(200);
 
@@ -287,7 +287,7 @@ class ApiRoutesTest extends TestCase
 
         // Test pagination
         $response = $this->getJson(route('notices.api.logs.index', [
-            'per_page' => 10
+            'per_page' => 10,
         ]));
         $response->assertStatus(200);
     }
@@ -298,7 +298,7 @@ class ApiRoutesTest extends TestCase
         $notification = NotificationLog::factory()->create();
 
         $response = $this->getJson(route('notices.api.verification.timeline', [
-            'id' => $notification->id
+            'id' => $notification->id,
         ]));
 
         $response->assertStatus(200)

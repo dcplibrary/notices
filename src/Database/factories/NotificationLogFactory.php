@@ -109,7 +109,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for holds.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function holds()
     {
@@ -128,7 +128,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for overdues.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function overdues()
     {
@@ -147,7 +147,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is for almost overdue items.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function almostOverdue()
     {
@@ -166,7 +166,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via email.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function email()
     {
@@ -182,7 +182,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via SMS.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function sms()
     {
@@ -198,7 +198,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via voice call.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function voice()
     {
@@ -214,7 +214,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification was sent via mail.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function mail()
     {
@@ -230,7 +230,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is successful.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function successful()
     {
@@ -244,7 +244,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification failed.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function failed()
     {
@@ -258,7 +258,7 @@ class NotificationLogFactory extends Factory
     /**
      * Indicate that the notification is unreported.
      *
-     * @return \\Illuminate\\Database\\Eloquent\\Factories\\Factory
+     * @return \Illuminate\\Database\\Eloquent\\Factories\\Factory
      */
     public function unreported()
     {

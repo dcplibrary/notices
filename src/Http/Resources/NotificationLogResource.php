@@ -68,7 +68,7 @@ class NotificationLogResource extends JsonResource
     /**
      * Get detailed item information.
      * Returns full item details from imported Shoutbomb data or Polaris if available.
-     * 
+     *
      * @param Request $request
      * @return array
      */

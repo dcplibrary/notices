@@ -2,11 +2,11 @@
 
 namespace Dcplibrary\Notices\Contracts;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Dcplibrary\Notices\Services\VerificationResult;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
-use Carbon\Carbon;
 
 /**
  * Interface for notification channel plugins.

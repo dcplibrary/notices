@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class ShoutbombSubmission extends Model
 {

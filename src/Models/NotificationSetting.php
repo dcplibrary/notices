@@ -2,14 +2,17 @@
 
 namespace Dcplibrary\Notices\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Dcplibrary\Notices\Database\Factories\NotificationSettingFactory;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
 class NotificationSetting extends Model
 {
     use HasFactory;
+
     protected $table = 'notification_settings';
 
     protected $fillable = [
@@ -47,7 +50,7 @@ class NotificationSetting extends Model
         if ($this->is_sensitive && $this->type === 'encrypted') {
             try {
                 $value = Crypt::decryptString($value);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return null;
             }
         }
@@ -73,12 +76,14 @@ class NotificationSetting extends Model
         // Handle encryption for sensitive values
         if ($this->is_sensitive && $this->type === 'encrypted') {
             $this->value = Crypt::encryptString($value);
+
             return;
         }
 
         // Handle JSON encoding
         if ($this->type === 'json' || $this->type === 'array') {
             $this->value = json_encode($value);
+
             return;
         }
 
@@ -190,6 +195,6 @@ class NotificationSetting extends Model
      */
     protected static function newFactory()
     {
-        return \Dcplibrary\Notices\Database\Factories\NotificationSettingFactory::new();
+        return NotificationSettingFactory::new();
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Dcplibrary\Notices\Tests\Unit\Services;
 
-use Dcplibrary\Notices\Services\VerificationResult;
 use Carbon\Carbon;
+use Dcplibrary\Notices\Services\VerificationResult;
 use PHPUnit\Framework\TestCase;
 
 class VerificationResultTest extends TestCase

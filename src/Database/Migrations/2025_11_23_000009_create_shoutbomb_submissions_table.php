@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -24,13 +23,13 @@ return new class extends Migration
 
             // Item details (common)
             $table->string('title')->nullable();
-            
+
             // Hold-specific fields
             $table->string('item_id', 50)->nullable()->comment('SysHoldRequestID for holds, ItemBarcode for overdue/renew');
             $table->integer('branch_id')->nullable()->comment('PickupOrganizationID for holds');
             $table->date('pickup_date')->nullable()->comment('CreationDate for holds');
             $table->date('expiration_date')->nullable()->comment('HoldTillDate for holds, DueDate for overdue/renew');
-            
+
             // Overdue/Renew-specific fields
             $table->integer('item_record_id')->nullable()->comment('ItemRecordID for overdue/renew');
             $table->integer('renewals')->nullable()->comment('Renewal count for overdue/renew');

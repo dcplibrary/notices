@@ -1,3 +1,133 @@
+## [6.0.2](https://github.com/dcplibrary/notices/compare/v6.0.1...v6.0.2) (2025-11-27)
+
+
+### Bug Fixes
+
+* add import-ftp-files ([cfaffbf](https://github.com/dcplibrary/notices/commit/cfaffbf3e430354fbbef3c59a372d2e8b7297f39))
+
+## [6.0.1](https://github.com/dcplibrary/notices/compare/v6.0.0...v6.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* update NoticesServiceProvider ([695597a](https://github.com/dcplibrary/notices/commit/695597aa44940d10982b863fb5e1481804c89702))
+
+# [6.0.0](https://github.com/dcplibrary/notices/compare/v5.0.0...v6.0.0) (2025-11-26)
+
+
+### Features
+
+* create combined sync command ([4e765cd](https://github.com/dcplibrary/notices/commit/4e765cd551344e876dba7a37013a93ba54ce8f7e))
+
+# [5.0.0](https://github.com/dcplibrary/notices/compare/v4.0.6...v5.0.0) (2025-11-26)
+
+
+### Features
+
+* add microsoft graph api email ingestion ([1d0cbaa](https://github.com/dcplibrary/notices/commit/1d0cbaa42a7841a35e4ca463f76056bcbd96eca8))
+
+## [4.0.6](https://github.com/dcplibrary/notices/compare/v4.0.5...v4.0.6) (2025-11-26)
+
+
+### Bug Fixes
+
+* update notification list view item counts and SMS language transformation ([45fb673](https://github.com/dcplibrary/notices/commit/45fb673b69094369703130310f2ffe0359a6b5c9))
+* update notification list view item counts and SMS language transformation ([afb7248](https://github.com/dcplibrary/notices/commit/afb7248f93554d916798fccecc2166c2fd725238))
+
+## [4.0.5](https://github.com/dcplibrary/notices/compare/v4.0.4...v4.0.5) (2025-11-26)
+
+
+### Bug Fixes
+
+* only use AD attributes when both givenName and surname exist ([72ca4fa](https://github.com/dcplibrary/notices/commit/72ca4fa38f61f45827ed727608192f5f5657649c))
+
+## [4.0.4](https://github.com/dcplibrary/notices/compare/v4.0.3...v4.0.4) (2025-11-26)
+
+
+### Bug Fixes
+
+* only use AD attributes when both givenName and surname exist ([b73d6e3](https://github.com/dcplibrary/notices/commit/b73d6e381bb296781cfd916a8943d53816387202))
+* only use AD attributes when both givenName and surname exist ([fc1fd0b](https://github.com/dcplibrary/notices/commit/fc1fd0b75a2408e489bfb618fe6ed21f28cf622c))
+
+## [4.0.3](https://github.com/dcplibrary/notices/compare/v4.0.2...v4.0.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* clean up Notification Details view ([c5a6477](https://github.com/dcplibrary/notices/commit/c5a6477625c5f9e94ccf1c047b24728822a1fda1))
+
+## [4.0.2](https://github.com/dcplibrary/notices/compare/v4.0.1...v4.0.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* change header icon and avatar ([564975e](https://github.com/dcplibrary/notices/commit/564975ecfc624c5f3d079e50c6aea582c9b9f7c1))
+
+## [4.0.1](https://github.com/dcplibrary/notices/compare/v4.0.0...v4.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* configure semantic-release to properly handle version bumps ([d8096bc](https://github.com/dcplibrary/notices/commit/d8096bc0e0bdf5243698fda5a8f0d01999c031d7))
+* configure semantic-release to properly handle version bumps ([ab3072f](https://github.com/dcplibrary/notices/commit/ab3072f94630eda0ab09668bb18fd281215c9daf))
+
+# [4.0.0](https://github.com/dcplibrary/notices/compare/v3.0.3...v4.0.0) (2025-11-26)
+
+
+### Features
+
+* add help and profile menu to menu bar ([d072687](https://github.com/dcplibrary/notices/commit/d07268714302fd9cea82deb72970dc2791578d7e))
+* add user profile component and help icon to header ([665b3a4](https://github.com/dcplibrary/notices/commit/665b3a48e7daba374322c2803b81214e13148351))
+
+## [3.0.3](https://github.com/dcplibrary/notices/compare/v3.0.2...v3.0.3) (2025-11-26)
+
+
+### Bug Fixes
+
+* update settings/index ([7f1dedb](https://github.com/dcplibrary/notices/commit/7f1dedbba4ae548182d38fba0f97d2ff5bf83f38))
+
+## [3.0.2](https://github.com/dcplibrary/notices/compare/v3.0.1...v3.0.2) (2025-11-26)
+
+
+### Bug Fixes
+
+* run php-cs-fixer ([75f7fd8](https://github.com/dcplibrary/notices/commit/75f7fd861695de4f474d327b23f89d98b99a0b70))
+
+## [3.0.1](https://github.com/dcplibrary/notices/compare/v3.0.0...v3.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* fix extra backslash in notificationimportservice ([5ef9223](https://github.com/dcplibrary/notices/commit/5ef9223bb6e94bc9f9131d97377afc734dff36a8))
+
+# [3.0.0](https://github.com/dcplibrary/notices/compare/v2.0.2...v3.0.0) (2025-11-26)
+
+
+### Features
+
+* add enrichment data to notifications ([d71d50d](https://github.com/dcplibrary/notices/commit/d71d50d2e009e72ee92fefdd2952164fbd7634da))
+
+## [2.0.2](https://github.com/dcplibrary/notices/compare/v2.0.1...v2.0.2) (2025-11-25)
+
+
+### Bug Fixes
+
+* notification table field ([a181488](https://github.com/dcplibrary/notices/commit/a181488a51152af5c4f373e3ca17017dd1510265))
+
+## [2.0.1](https://github.com/dcplibrary/notices/compare/v2.0.0...v2.0.1) (2025-11-25)
+
+
+### Bug Fixes
+
+* remove extra slash from noticesserviceprovider ([c89f3ce](https://github.com/dcplibrary/notices/commit/c89f3ceddae423802aa035ef3e65071fad60c5c9))
+
+# [2.0.0](https://github.com/dcplibrary/notices/compare/v1.26.2...v2.0.0) (2025-11-25)
+
+
+### Features
+
+* force semantic-release ([d9caafc](https://github.com/dcplibrary/notices/commit/d9caafc9c4c821d6ba9fa782a24b061c3f767be5))
+
 # Changelog
 
 All notable changes to the Polaris Notices Package will be documented in this file.

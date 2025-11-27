@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Console\Commands;
 
 use Carbon\Carbon;
 use Dcplibrary\Notices\Services\ShoutbombSubmissionImporter;
+use Exception;
 use Illuminate\Console\Command;
 
 class ImportShoutbombSubmissions extends Command
@@ -14,10 +15,14 @@ class ImportShoutbombSubmissions extends Command
      * @var string
      */
     protected $signature = 'notices:import-shoutbomb-submissions
-                            {--from= : Start date (YYYY-MM-DD)}
-                            {--to= : End date (YYYY-MM-DD)}
+                            {--date= : Import submissions for a specific date (Y-m-d)}
+                            {--start= : Start date (Y-m-d)}
+                            {--end= : End date (Y-m-d)}
+                            {--days= : Number of days back to include}
                             {--all : Import all available submissions}
-                            {--type= : Import specific type only (holds, overdues, renewals)}';
+                            {--type= : Import specific type only (holds, overdues, renewals)}
+                            {--from= : [deprecated] Alias for --start (Y-m-d)}
+                            {--to= : [deprecated] Alias for --end (Y-m-d)}';
 
     /**
      * The console command description.
@@ -57,7 +62,7 @@ class ImportShoutbombSubmissions extends Command
         foreach ($types as $submissionType) {
             try {
                 $this->info("📨 Importing {$submissionType}...");
-                
+
                 $result = $this->importer->importSubmissionType(
                     $submissionType,
                     $fromDate,
@@ -74,7 +79,7 @@ class ImportShoutbombSubmissions extends Command
                 $this->info("  ✅ {$submissionType}: {$result['records']} records from {$result['files']} files");
                 $totalRecords += $result['records'];
                 $totalFiles += $result['files'];
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error("  ❌ {$submissionType} import failed: {$e->getMessage()}");
             }
 
@@ -88,7 +93,7 @@ class ImportShoutbombSubmissions extends Command
     }
 
     /**
-     * Determine the date range for import
+     * Determine the date range for import.
      */
     protected function determineDateRange(): array
     {
@@ -100,13 +105,28 @@ class ImportShoutbombSubmissions extends Command
             ];
         }
 
-        $from = $this->option('from');
-        $to = $this->option('to');
+        if ($date = $this->option('date')) {
+            $target = Carbon::parse($date);
 
-        if ($from && $to) {
+            return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+        }
+
+        $start = $this->option('start') ?: $this->option('from');
+        $end = $this->option('end') ?: $this->option('to');
+
+        if ($start || $end) {
             return [
-                Carbon::parse($from)->startOfDay(),
-                Carbon::parse($to)->endOfDay(),
+                $start ? Carbon::parse($start)->startOfDay() : Carbon::today()->startOfDay(),
+                $end ? Carbon::parse($end)->endOfDay() : Carbon::today()->endOfDay(),
+            ];
+        }
+
+        if ($this->option('days')) {
+            $days = (int) $this->option('days');
+
+            return [
+                Carbon::now()->subDays(max($days, 1) - 1)->startOfDay(),
+                Carbon::now()->endOfDay(),
             ];
         }
 

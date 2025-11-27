@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header with Back Button -->
     <div class="mb-6">
-        <a href="{{ route('notices.list') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
+        <a href="/notices/list" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
@@ -117,13 +117,6 @@
                     </div>
                     @endif
 
-                    @if($notification->delivery_string && in_array($notification->delivery_option_id, [2, 3, 8]))
-                    <div>
-                        <dt class="text-sm font-medium text-gray-500">Delivery Address</dt>
-                        <dd class="mt-1 text-sm text-gray-900 font-mono">{{ $notification->delivery_string }}</dd>
-                    </div>
-                    @endif
-
                     @if($notification->patron && $notification->patron->ExpirationDate)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Card Expires</dt>
@@ -207,6 +200,95 @@
                         </dd>
                     </div>
 
+                    @php
+                        // Collect all unique source files from related data
+                        $sourceFiles = collect();
+
+                        // From PhoneNotices
+                        foreach($notification->polaris_phone_notices as $notice) {
+                            if ($notice->source_file && $notice->imported_at) {
+                                $sourceFiles->push([
+                                    'file' => $notice->source_file,
+                                    'imported_at' => $notice->imported_at,
+                                    'type' => 'phonenotice'
+                                ]);
+                            }
+                        }
+
+                        // From Shoutbomb submissions (holds, overdue, renew)
+                        foreach($notification->shoutbomb_submissions as $submission) {
+                            if ($submission->source_file && $submission->submitted_at) {
+                                $sourceFiles->push([
+                                    'file' => $submission->source_file,
+                                    'imported_at' => $submission->submitted_at,
+                                    'type' => 'submission'
+                                ]);
+                            }
+                        }
+
+                        // From Shoutbomb deliveries
+                        foreach($notification->shoutbomb_deliveries as $delivery) {
+                            if ($delivery->source_file && $delivery->sent_date) {
+                                $sourceFiles->push([
+                                    'file' => $delivery->source_file,
+                                    'imported_at' => $delivery->sent_date,
+                                    'type' => 'delivery'
+                                ]);
+                            }
+                        }
+
+                        // Deduplicate by filename, keeping earliest import time
+                        $uniqueSourceFiles = $sourceFiles->groupBy('file')->map(function($group) {
+                            $earliest = $group->sortBy('imported_at')->first();
+                            $file = $earliest['file'];
+                            $importedAt = $earliest['imported_at'];
+
+                            // Special handling for PhoneNotices.csv - determine export date from import time
+                            if (str_starts_with($file, 'PhoneNotices')) {
+                                // PhoneNotices exports daily at ~8:04-8:05 AM
+                                // If imported between 8:00-9:00 AM, it's that day's export
+                                // If imported before 8:00 AM, it's previous day's export
+                                $exportDate = $importedAt->copy();
+                                if ($importedAt->hour < 8) {
+                                    $exportDate->subDay();
+                                }
+                                return [
+                                    'display_name' => 'PhoneNotices.csv',
+                                    'export_date' => $exportDate->format('M d, Y'),
+                                    'imported_at' => $importedAt,
+                                ];
+                            }
+
+                            return [
+                                'display_name' => $file,
+                                'export_date' => null,
+                                'imported_at' => $importedAt,
+                            ];
+                        })->sortBy('imported_at')->values();
+                    @endphp
+
+                    @if($uniqueSourceFiles->count() > 0)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Data Sources</dt>
+                        <dd class="mt-1">
+                            <ul class="space-y-1">
+                                @foreach($uniqueSourceFiles as $source)
+                                    <li class="text-xs">
+                                        <span class="font-mono text-gray-900">{{ $source['display_name'] }}</span>
+                                        <span class="text-gray-500">
+                                            @if($source['export_date'])
+                                                ({{ $source['export_date'] }} export, imported {{ $source['imported_at']->format('g:i A') }})
+                                            @else
+                                                (imported {{ $source['imported_at']->format('M d, Y g:i A') }})
+                                            @endif
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </dd>
+                    </div>
+                    @endif
+
                     @if($notification->carrier_name)
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Carrier</dt>
@@ -225,227 +307,155 @@
         </div>
     </div>
 
-    <!-- Item Counts -->
-    <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Item Summary
-            </h2>
-        </div>
-        <div class="px-6 py-4">
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-                @if($notification->holds_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600">{{ $notification->holds_count }}</div>
-                    <div class="text-xs text-gray-500">Holds</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-orange-600">{{ $notification->overdues_count }}</div>
-                    <div class="text-xs text-gray-500">1st Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_2nd_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-600">{{ $notification->overdues_2nd_count }}</div>
-                    <div class="text-xs text-gray-500">2nd Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->overdues_3rd_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-800">{{ $notification->overdues_3rd_count }}</div>
-                    <div class="text-xs text-gray-500">3rd Overdue</div>
-                </div>
-                @endif
-
-                @if($notification->cancels_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-gray-600">{{ $notification->cancels_count }}</div>
-                    <div class="text-xs text-gray-500">Cancels</div>
-                </div>
-                @endif
-
-                @if($notification->bills_count > 0)
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-purple-600">{{ $notification->bills_count }}</div>
-                    <div class="text-xs text-gray-500">Bills</div>
-                </div>
-                @endif
-            </div>
-
-            @if($notification->total_items == 0)
-                <p class="text-sm text-gray-500 text-center py-4">No items recorded for this notification</p>
-            @else
-                <div class="mt-4 text-center">
-                    <span class="text-sm font-medium text-gray-700">Total Items: {{ $notification->total_items }}</span>
-                </div>
-            @endif
-        </div>
-    </div>
-
     <!-- Items Associated with this Notification -->
     @php
+        // Get unique phone notices by item_record_id to avoid duplicates
+        $phoneNotices = $notification->polaris_phone_notices->unique('item_record_id');
         $items = $notification->items;
     @endphp
-    @if($items->count() > 0)
+    @if($phoneNotices->count() > 0 || $items->count() > 0)
     <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h2 class="text-lg font-semibold text-gray-900 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                 </svg>
-                Items ({{ $items->count() }})
+                Items ({{ $phoneNotices->count() > 0 ? $phoneNotices->count() : $items->count() }})
             </h2>
         </div>
         <div class="px-6 py-4">
             <div class="space-y-4">
-                @foreach($items as $index => $item)
-                <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
-                    @if(isset($item->bibliographic) && isset($item->bibliographic->Title))
-                        <div class="font-medium text-gray-900">
-                            {{ $item->bibliographic->Title }}
-                        </div>
-                        @if(isset($item->bibliographic->Author) && $item->bibliographic->Author)
-                        <div class="text-sm text-gray-600 mt-1">by {{ $item->bibliographic->Author }}</div>
-                        @endif
-                    @elseif(isset($item->title))
-                        <div class="font-medium text-gray-900">
-                            {{ $item->title }}
-                        </div>
-                    @else
-                        <div class="font-medium text-gray-500 italic">
-                            Unknown Title
-                        </div>
-                    @endif
-
-                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        @if(isset($item->Barcode) || isset($item->item_barcode))
-                        <div>
-                            <span class="text-gray-500">Item Barcode:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->Barcode ?? $item->item_barcode }}</span>
-                        </div>
+                @if($phoneNotices->count() > 0)
+                    @foreach($phoneNotices as $index => $notice)
+                    <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
+                        @if($notice->title)
+                            <div class="font-medium text-lg">
+                                @if($notice->item_record_id)
+                                    <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $notice->item_record_id }}"
+                                       target="_blank"
+                                       class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ $notice->title }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-900">{{ $notice->title }}</span>
+                                @endif
+                            </div>
+                        @else
+                            <div class="font-medium text-lg text-gray-500 italic">
+                                Unknown Title
+                            </div>
                         @endif
 
-                        @if(isset($item->CallNumber) && $item->CallNumber)
-                        <div>
-                            <span class="text-gray-500">Call Number:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->CallNumber }}</span>
-                        </div>
-                        @endif
-
-                        @if(isset($item->ItemRecordID) && $item->ItemRecordID)
-                        <div>
-                            <span class="text-gray-500">Item ID:</span>
-                            <span class="font-mono text-gray-900 ml-1">{{ $item->ItemRecordID }}</span>
-                        </div>
-                        @endif
-                    </div>
-
-                    @if(isset($item->staff_link) && $item->staff_link)
-                    <div class="mt-2">
-                        <a href="{{ $item->staff_link }}"
-                           target="_blank"
-                           class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
-                            View in Polaris
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                            </svg>
-                        </a>
-                    </div>
-                    @endif
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Related Shoutbomb Records -->
-    @if($notification->shoutbomb_phone_notices->count() > 0 || $notification->shoutbomb_submissions->count() > 0 || $notification->shoutbomb_deliveries->count() > 0)
-    <div class="mt-6 bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-                </svg>
-                Related Shoutbomb Records
-            </h2>
-        </div>
-        <div class="px-6 py-4 space-y-6">
-            <!-- Phone Notices -->
-            @if($notification->shoutbomb_phone_notices->count() > 0)
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">PhoneNotices.csv Records ({{ $notification->shoutbomb_phone_notices->count() }})</h3>
-                <div class="space-y-2">
-                    @foreach($notification->shoutbomb_phone_notices as $phoneNotice)
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($phoneNotice->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Date:</span> {{ $phoneNotice->notice_date->format('M d, Y') }}</div>
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $phoneNotice->phone_number }}</span></div>
-                            <div><span class="font-medium text-gray-600">Library:</span> {{ $phoneNotice->library_name }}</div>
-                            @if($phoneNotice->title)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Title:</span> {{ Str::limit($phoneNotice->title, 80) }}</div>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            @if($notice->item_barcode)
+                            <div>
+                                <span class="text-gray-500">Item Barcode:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $notice->item_barcode }}</span>
+                            </div>
                             @endif
-                            @if($phoneNotice->source_file)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Source:</span> <span class="font-mono">{{ $phoneNotice->source_file }}</span></div>
+
+                            @if($notice->library_name)
+                            <div>
+                                <span class="text-gray-500">Library:</span>
+                                <span class="text-gray-900 ml-1">{{ $notice->library_name }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->notice_date)
+                            <div>
+                                <span class="text-gray-500">Notice Date:</span>
+                                <span class="text-gray-900 ml-1">{{ $notice->notice_date->format('M d, Y') }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->item_record_id)
+                            <div>
+                                <span class="text-gray-500">Item ID:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $notice->item_record_id }}</span>
+                            </div>
+                            @endif
+
+                            @if($notice->delivery_type)
+                            <div>
+                                <span class="text-gray-500">Delivery Type:</span>
+                                <span class="text-gray-900 ml-1">{{ ucfirst($notice->delivery_type) }}</span>
+                            </div>
                             @endif
                         </div>
+
+                        @if($notice->item_record_id)
+                        <div class="mt-2">
+                            <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $notice->item_record_id }}"
+                               target="_blank"
+                               class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
+                                View in Polaris
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
+                        </div>
+                        @endif
                     </div>
                     @endforeach
-                </div>
-            </div>
-            @endif
+                @elseif($items->count() > 0)
+                    @foreach($items as $index => $item)
+                    <div class="border-l-4 border-blue-200 pl-4 py-3 {{ $index > 0 ? 'border-t border-gray-100 pt-4' : '' }}">
+                        @if(isset($item->bibliographic) && isset($item->bibliographic->Title))
+                            <div class="font-medium text-lg text-gray-900">
+                                {{ $item->bibliographic->Title }}
+                            </div>
+                            @if(isset($item->bibliographic->Author) && $item->bibliographic->Author)
+                            <div class="text-sm text-gray-600 mt-1">by {{ $item->bibliographic->Author }}</div>
+                            @endif
+                        @elseif(isset($item->title))
+                            <div class="font-medium text-lg text-gray-900">
+                                {{ $item->title }}
+                            </div>
+                        @else
+                            <div class="font-medium text-lg text-gray-500 italic">
+                                Unknown Title
+                            </div>
+                        @endif
 
-            <!-- Submissions -->
-            @if($notification->shoutbomb_submissions->count() > 0)
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Submission Records ({{ $notification->shoutbomb_submissions->count() }})</h3>
-                <div class="space-y-2">
-                    @foreach($notification->shoutbomb_submissions as $submission)
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($submission->notification_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Delivery:</span> {{ ucfirst($submission->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Submitted:</span> {{ $submission->submitted_at->format('M d, Y g:i A') }}</div>
-                            @if($submission->phone)
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $submission->phone }}</span></div>
+                        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+                            @if(isset($item->Barcode) || isset($item->item_barcode))
+                            <div>
+                                <span class="text-gray-500">Item Barcode:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->Barcode ?? $item->item_barcode }}</span>
+                            </div>
+                            @endif
+
+                            @if(isset($item->CallNumber) && $item->CallNumber)
+                            <div>
+                                <span class="text-gray-500">Call Number:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->CallNumber }}</span>
+                            </div>
+                            @endif
+
+                            @if(isset($item->ItemRecordID) && $item->ItemRecordID)
+                            <div>
+                                <span class="text-gray-500">Item ID:</span>
+                                <span class="font-mono text-gray-900 ml-1">{{ $item->ItemRecordID }}</span>
+                            </div>
                             @endif
                         </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
 
-            <!-- Deliveries -->
-            @if($notification->shoutbomb_deliveries->count() > 0)
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Delivery Reports ({{ $notification->shoutbomb_deliveries->count() }})</h3>
-                <div class="space-y-2">
-                    @foreach($notification->shoutbomb_deliveries as $delivery)
-                    <div class="bg-gray-50 rounded p-3 text-xs">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Type:</span> {{ ucfirst($delivery->delivery_type) }}</div>
-                            <div><span class="font-medium text-gray-600">Status:</span> <span class="@if($delivery->status === 'Delivered') text-green-700 @else text-red-700 @endif font-medium">{{ $delivery->status }}</span></div>
-                            <div><span class="font-medium text-gray-600">Sent:</span> {{ $delivery->sent_date?->format('M d, Y g:i A') ?? 'N/A' }}</div>
-                            <div><span class="font-medium text-gray-600">Phone:</span> <span class="font-mono">{{ $delivery->phone_number }}</span></div>
-                            @if($delivery->message)
-                            <div class="col-span-2"><span class="font-medium text-gray-600">Message:</span> {{ $delivery->message }}</div>
-                            @endif
+                        @if(isset($item->staff_link) && $item->staff_link)
+                        <div class="mt-2">
+                            <a href="{{ $item->staff_link }}"
+                               target="_blank"
+                               class="text-blue-600 hover:text-blue-800 inline-flex items-center text-xs">
+                                View in Polaris
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
                         </div>
+                        @endif
                     </div>
                     @endforeach
-                </div>
+                @endif
             </div>
-            @endif
         </div>
     </div>
     @endif

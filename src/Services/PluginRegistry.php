@@ -67,7 +67,7 @@ class PluginRegistry
      */
     public function enabled(): array
     {
-        return array_filter($this->all(), fn($plugin) => $plugin->isEnabled());
+        return array_filter($this->all(), fn ($plugin) => $plugin->isEnabled());
     }
 
     /**

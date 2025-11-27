@@ -2,31 +2,40 @@
 
 namespace Dcplibrary\Notices\Commands;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\ShoutbombMonthlyStat;
 use Dcplibrary\Notices\Services\ShoutbombFailureReportParser;
 use Dcplibrary\Notices\Services\ShoutbombGraphApiService;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CheckShoutbombReportsCommand extends Command
 {
-    protected $signature = 'notices:import-shoutbomb-email
+    protected $signature = 'notices:import-email-reports
                             {--dry-run : Display what would be processed without saving}
                             {--limit= : Maximum number of emails to process}
-                            {--mark-read : Mark processed emails as read}';
+                            {--mark-read : Mark processed emails as read}
+                            {--move-to= : Move processed emails to specified folder}
+                            {--date= : Process emails received on a specific date (Y-m-d)}
+                            {--start= : Start date for email received range (Y-m-d)}
+                            {--end= : End date for email received range (Y-m-d)}
+                            {--days=1 : Number of days back to include (default: 1)}
+                            {--all : Process all matching emails regardless of date}';
 
-    protected $description = 'Check Outlook for Shoutbomb report emails and process them';
+    protected $description = 'Import Shoutbomb-related notification reports from Microsoft Graph (email)';
 
     protected ShoutbombGraphApiService $graphApi;
+
     protected ShoutbombFailureReportParser $parser;
 
     public function __construct(ShoutbombGraphApiService $graphApi, ShoutbombFailureReportParser $parser)
     {
         parent::__construct();
         $this->graphApi = $graphApi;
-        $this->parser   = $parser;
+        $this->parser = $parser;
     }
 
     public function handle(): int
@@ -36,12 +45,22 @@ class CheckShoutbombReportsCommand extends Command
         // Validate Graph configuration (injected service already uses this config)
         $graphConfig = config('notices.integrations.shoutbomb_reports.graph');
         if (empty($graphConfig['tenant_id']) || empty($graphConfig['client_id']) || empty($graphConfig['client_secret']) || empty($graphConfig['user_email'])) {
-            $this->error('Microsoft Graph API not configured. Set SHOUTBOMB_TENANT_ID, SHOUTBOMB_CLIENT_ID, SHOUTBOMB_CLIENT_SECRET, SHOUTBOMB_USER_EMAIL, etc. in .env');
+            $this->error('Microsoft Graph API not configured. Set EMAIL_TENANT_ID, EMAIL_CLIENT_ID, EMAIL_CLIENT_SECRET, EMAIL_USER (and related EMAIL_* filters) in .env');
+
             return self::FAILURE;
         }
 
         try {
             $filters = config('notices.integrations.shoutbomb_reports.filters') ?? [];
+
+            // Date range handling (unless --all is specified)
+            if (!$this->option('all')) {
+                [$startDate, $endDate] = $this->determineDateRange();
+                if ($startDate && $endDate) {
+                    $filters['received_after'] = $startDate->toIso8601String();
+                    $filters['received_before'] = $endDate->toIso8601String();
+                }
+            }
 
             if ($limit = $this->option('limit')) {
                 $filters['max_emails'] = (int) $limit;
@@ -51,11 +70,16 @@ class CheckShoutbombReportsCommand extends Command
                 $filters['mark_as_read'] = true;
             }
 
+            if ($moveTo = $this->option('move-to')) {
+                $filters['move_to_folder'] = $moveTo;
+            }
+
             $this->info("Fetching messages from Outlook...");
             $messages = $this->graphApi->getMessages($filters);
 
             if (empty($messages)) {
                 $this->info('No matching emails found.');
+
                 return self::SUCCESS;
             }
 
@@ -84,7 +108,7 @@ class CheckShoutbombReportsCommand extends Command
                     } else {
                         $skippedCount++;
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $skippedCount++;
                     Log::error('Failed to process Shoutbomb report', [
                         'message_id' => $message['id'] ?? 'unknown',
@@ -111,14 +135,44 @@ class CheckShoutbombReportsCommand extends Command
             );
 
             return self::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Failed to check Shoutbomb reports: {$e->getMessage()}");
             Log::error('Shoutbomb report check failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return self::FAILURE;
         }
+    }
+
+    protected function determineDateRange(): array
+    {
+        // --date flag: specific single date
+        if ($date = $this->option('date')) {
+            $target = Carbon::parse($date);
+
+            return [$target->copy()->startOfDay(), $target->copy()->endOfDay()];
+        }
+
+        // --start/--end flags: explicit range
+        if ($this->option('start') || $this->option('end')) {
+            $start = $this->option('start')
+                ? Carbon::parse($this->option('start'))->startOfDay()
+                : now()->subDays(30)->startOfDay();
+            $end = $this->option('end')
+                ? Carbon::parse($this->option('end'))->endOfDay()
+                : now()->endOfDay();
+
+            return [$start, $end];
+        }
+
+        // --days flag: relative window ending today
+        $days = (int) $this->option('days');
+        $end = now()->endOfDay();
+        $start = now()->subDays(max($days, 1) - 1)->startOfDay();
+
+        return [$start, $end];
     }
 
     protected function processMessage(array $message, ?array $filters = []): int
@@ -138,6 +192,7 @@ class CheckShoutbombReportsCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->displayParsedRecords($records);
+
             return count($records);
         }
 
@@ -175,7 +230,7 @@ class CheckShoutbombReportsCommand extends Command
             ]);
 
             return $saved;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -214,7 +269,7 @@ class CheckShoutbombReportsCommand extends Command
                 'report_month' => $stats['report_month'] ?? 'unknown',
                 'branch' => $stats['branch_name'] ?? 'unknown',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Failed to save monthly statistics', [
                 'message_id' => $message['id'] ?? 'unknown',
                 'error' => $e->getMessage(),

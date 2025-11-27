@@ -2,15 +2,17 @@
 
 namespace Dcplibrary\Notices\Plugins;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Contracts\NotificationPlugin;
+use Dcplibrary\Notices\Models\NoticeFailureReport;
 use Dcplibrary\Notices\Models\NotificationLog;
-use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Models\PolarisPhoneNotice;
 use Dcplibrary\Notices\Models\ShoutbombDelivery;
+use Dcplibrary\Notices\Models\ShoutbombSubmission;
 use Dcplibrary\Notices\Services\VerificationResult;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
-use Carbon\Carbon;
+use Throwable;
 
 /**
  * Plugin for Shoutbomb voice and text notifications.
@@ -191,8 +193,8 @@ class ShoutbombPlugin implements NotificationPlugin
 
         // Query failures matching phone/type around the notice date
         try {
-            /** @var \Dcplibrary\Notices\Models\NoticeFailureReport $failure */
-            $failure = \Dcplibrary\Notices\Models\NoticeFailureReport::query()
+            /** @var NoticeFailureReport $failure */
+            $failure = NoticeFailureReport::query()
                 ->ofType($type)
                 ->forPhone($log->phone)
                 ->around($noticeDate, $hours)
@@ -216,6 +218,7 @@ class ShoutbombPlugin implements NotificationPlugin
                         'reason' => $failure->failure_reason ?? null,
                     ]
                 );
+
                 return;
             }
 
@@ -235,7 +238,7 @@ class ShoutbombPlugin implements NotificationPlugin
                     ]
                 );
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Swallow errors to avoid hard dependency if the table doesn't exist
             // (e.g., integration not yet set up). Leave delivery status unset.
         }

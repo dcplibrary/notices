@@ -2,9 +2,9 @@
 
 namespace Dcplibrary\Notices\Services;
 
+use Carbon\Carbon;
 use Dcplibrary\Notices\Models\NotificationLog;
 use Illuminate\Support\Collection;
-use Carbon\Carbon;
 
 /**
  * Service for exporting notice data to various formats.
@@ -190,6 +190,7 @@ class NoticeExportService
     protected function getNoticeTypeName(int $id): string
     {
         $types = config('notices.notification_types', []);
+
         return $types[$id] ?? "Unknown ($id)";
     }
 
@@ -199,6 +200,7 @@ class NoticeExportService
     protected function getDeliveryMethodName(int $id): string
     {
         $methods = config('notices.delivery_options', []);
+
         return $methods[$id] ?? "Unknown ($id)";
     }
 

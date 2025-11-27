@@ -22,12 +22,15 @@ This document provides a complete index of all documentation for the DC Public L
 
 ## Architecture & Design
 
+- [**🆕 November 2025 Architecture Update**](NOVEMBER_2025_ARCHITECTURE_UPDATE.md) - **START HERE for AI assistants** - Comprehensive summary of major architectural changes, smart accessor pattern, field precedence logic, and critical development patterns
 - [**Architecture Overview**](ARCHITECTURE.md) - Comprehensive system architecture, design patterns, and component relationships
+- [**Master Notifications Data Model**](MASTER_NOTIFICATIONS.md) - Channel-agnostic master view of all notifications with projection pattern and lifecycle tracking
 - [**Data Source Field Mapping Matrix**](DATA_SOURCE_FIELD_MAPPING_MATRIX.md) - Complete mapping of data fields from Polaris ILS and Shoutbomb to the notices database
 
 ## Development Documentation
 
 ### Package Development
+- [**DEVELOPMENT ROADMAP**](DEVELOPMENT_ROADMAP.md) - High-level roadmap, recent changes, and recommended next steps
 - [**Package Merge Guide**](PACKAGE_MERGE.md) - Guide for merging this package into another Laravel application
 - [**Doctrine Annotations**](DOCTRINE_ANNOTATIONS.md) - Documentation on Doctrine annotations used in the codebase
 - [**Semantic Release Configuration**](../.releaserc.json) - Automated versioning and changelog generation
@@ -89,6 +92,8 @@ docs/
 ├── DATA_SOURCE_FIELD_MAPPING_MATRIX.md
 ├── DOCTRINE_ANNOTATIONS.md
 ├── IMPORT_SCHEDULE.md
+├── MASTER_NOTIFICATIONS.md
+├── NOVEMBER_2025_ARCHITECTURE_UPDATE.md ← 🆕 AI assistant context
 ├── PACKAGE_MERGE.md
 ├── help/
 │   ├── USER_GUIDE.md
