@@ -13,6 +13,11 @@ use Symfony\Component\Process\Process;
  */
 class SyncAndImport extends Component
 {
+    // Legacy date range selector (kept for backwards-compatible Blade template)
+    public $dateRange = 'today'; // today, yesterday, last7days, custom
+    public $startDate;
+    public $endDate;
+
     // Shared date / range options for all imports
     public $rangeMode = 'days'; // 'days', 'date', 'range'
 
@@ -54,6 +59,11 @@ class SyncAndImport extends Component
     {
         $today = now()->format('Y-m-d');
 
+        // Initialize legacy date range fields used by the Blade view
+        $this->startDate = $today;
+        $this->endDate = $today;
+
+        // Initialize shared range fields
         $this->rangeDate = $today;
         $this->rangeStart = $today;
         $this->rangeEnd = $today;
