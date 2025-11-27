@@ -15,6 +15,10 @@ This document provides a complete index of all documentation for the DC Public L
   - Understanding dashboard pages
   - Common tasks and scenarios
   - Quick reference guide
+- [**Help Icon Integration**](help/HEADER_INTEGRATION.md) - Adding help icon to dashboard header
+  - Implementation guide
+  - Icon options and styling
+  - Help route and view setup
 
 ## Architecture & Design
 
@@ -29,6 +33,10 @@ This document provides a complete index of all documentation for the DC Public L
 - [**DEVELOPMENT ROADMAP**](DEVELOPMENT_ROADMAP.md) - High-level roadmap, recent changes, and recommended next steps
 - [**Package Merge Guide**](PACKAGE_MERGE.md) - Guide for merging this package into another Laravel application
 - [**Doctrine Annotations**](DOCTRINE_ANNOTATIONS.md) - Documentation on Doctrine annotations used in the codebase
+- [**Semantic Release Configuration**](../.releaserc.json) - Automated versioning and changelog generation
+  - Conventional commits configuration
+  - Major/minor/patch release rules
+  - Prevents incorrect version bumps
 
 ### Scheduled Tasks
 - [**Import Schedule**](IMPORT_SCHEDULE.md) - Comprehensive automated import schedule based on Polaris/Shoutbomb export times
@@ -88,7 +96,8 @@ docs/
 ├── NOVEMBER_2025_ARCHITECTURE_UPDATE.md ← 🆕 AI assistant context
 ├── PACKAGE_MERGE.md
 ├── help/
-│   └── USER_GUIDE.md
+│   ├── USER_GUIDE.md
+│   └── HEADER_INTEGRATION.md
 ├── deployment/
 │   ├── PROXY_CONFIGURATION.md
 │   ├── PROXY_DIAGNOSTICS.md
