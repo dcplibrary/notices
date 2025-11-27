@@ -1,5 +1,16 @@
 <div class="max-w-4xl mx-auto p-6">
-    <div class="bg-white rounded-lg shadow-lg p-6">
+    <div class="bg-white rounded-lg shadow-lg p-6 relative">
+        <!-- Loading Overlay -->
+        <div wire:loading class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+            <div class="text-center">
+                <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">Processing...</p>
+            </div>
+        </div>
+
         <h2 class="text-2xl font-bold mb-6">Sync & Import FTP Files</h2>
 
         <!-- Date Range Selection -->
@@ -7,19 +18,19 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
             <div class="flex gap-4">
                 <label class="inline-flex items-center">
-                    <input type="radio" wire:model="dateRange" value="today" class="form-radio">
+                    <input type="radio" wire:model.live="dateRange" name="dateRange" value="today" class="form-radio" wire:loading.attr="disabled">
                     <span class="ml-2">Today</span>
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" wire:model="dateRange" value="yesterday" class="form-radio">
+                    <input type="radio" wire:model.live="dateRange" name="dateRange" value="yesterday" class="form-radio" wire:loading.attr="disabled">
                     <span class="ml-2">Yesterday</span>
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" wire:model="dateRange" value="last7days" class="form-radio">
+                    <input type="radio" wire:model.live="dateRange" name="dateRange" value="last7days" class="form-radio" wire:loading.attr="disabled">
                     <span class="ml-2">Last 7 Days</span>
                 </label>
                 <label class="inline-flex items-center">
-                    <input type="radio" wire:model="dateRange" value="custom" class="form-radio">
+                    <input type="radio" wire:model.live="dateRange" name="dateRange" value="custom" class="form-radio" wire:loading.attr="disabled">
                     <span class="ml-2">Custom Range</span>
                 </label>
             </div>
@@ -30,12 +41,12 @@
         <div class="mb-6 grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input type="date" wire:model="startDate" class="form-input w-full rounded-md border-gray-300">
+                <input type="date" wire:model.live="startDate" class="form-input w-full rounded-md border-gray-300" wire:loading.attr="disabled">
                 @error('startDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                <input type="date" wire:model="endDate" class="form-input w-full rounded-md border-gray-300">
+                <input type="date" wire:model.live="endDate" class="form-input w-full rounded-md border-gray-300" wire:loading.attr="disabled">
                 @error('endDate') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
         </div>
@@ -49,7 +60,7 @@
             <div class="flex items-center justify-between mb-2">
                 <div>
                     <label class="flex items-center cursor-pointer">
-                        <input type="checkbox" wire:model="importPatrons" class="form-checkbox h-5 w-5 text-blue-600">
+                        <input type="checkbox" wire:model.live="importPatrons" class="form-checkbox h-5 w-5 text-blue-600" wire:loading.attr="disabled">
                         <span class="ml-3 text-sm font-medium text-gray-700">Import Patron Delivery Preferences</span>
                     </label>
                     <p class="ml-8 text-xs text-gray-500 mt-1">
@@ -79,12 +90,18 @@
         <!-- Import Button -->
         <div class="mb-6">
             @if($isImporting)
-            <button wire:click="cancelImport" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                Cancel Import
+            <button wire:click="cancelImport"
+                    wire:loading.attr="disabled"
+                    class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <span wire:loading.remove>Cancel Import</span>
+                <span wire:loading>Cancelling...</span>
             </button>
             @else
-            <button wire:click="startImport" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-150">
-                Start Import
+            <button wire:click="startImport"
+                    wire:loading.attr="disabled"
+                    class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-150">
+                <span wire:loading.remove>Start Import</span>
+                <span wire:loading>Starting...</span>
             </button>
             @endif
         </div>
