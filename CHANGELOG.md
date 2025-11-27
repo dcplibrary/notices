@@ -1,3 +1,10 @@
+## [6.0.5](https://github.com/dcplibrary/notices/compare/v6.0.4...v6.0.5) (2025-11-27)
+
+
+### Bug Fixes
+
+* syntax error in sync view ([2d770f3](https://github.com/dcplibrary/notices/commit/2d770f3f4b1a02f4b77f15026d5335d9df1dccc6))
+
 ## [6.0.4](https://github.com/dcplibrary/notices/compare/v6.0.3...v6.0.4) (2025-11-27)
 
 
