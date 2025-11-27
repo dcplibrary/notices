@@ -1,3 +1,10 @@
+## [6.0.6](https://github.com/dcplibrary/notices/compare/v6.0.5...v6.0.6) (2025-11-27)
+
+
+### Bug Fixes
+
+* fixed undefined variable in livewire syncandimport component ([684fa0e](https://github.com/dcplibrary/notices/commit/684fa0e733a2be9c8d01f7a3a2edc6b569ec7af3))
+
 ## [6.0.5](https://github.com/dcplibrary/notices/compare/v6.0.4...v6.0.5) (2025-11-27)
 
 
