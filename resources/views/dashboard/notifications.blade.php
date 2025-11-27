@@ -398,26 +398,20 @@
                         <td class="px-6 py-4">
                             @php
                                 $items = $notification->items;
-                                $itemCount = $items->count();
-                                $firstItem = $items->first();
+                                $itemCount = $items ? $items->count() : 0;
+                                $firstItem = $items ? $items->first() : null;
                             @endphp
-                            @if($firstItem)
+                            @if($firstItem && $firstItem->browse_title)
                                 <div class="text-sm text-gray-900">
-                                    @if(isset($firstItem->bibliographic) && isset($firstItem->bibliographic->Title))
-                                        {{ Str::limit($firstItem->bibliographic->Title, 60) }}
-                                    @elseif(isset($firstItem->title))
-                                        {{ Str::limit($firstItem->title, 60) }}
-                                    @else
-                                        Unknown Title
-                                    @endif
+                                    {{ Str::limit($firstItem->browse_title, 60) }}
                                 </div>
                                 @if($itemCount > 1)
                                     <div class="text-xs text-gray-500 mt-1">
-                                        {{ $itemCount - 1 }} more
+                                        +{{ $itemCount - 1 }} more
                                     </div>
                                 @endif
                             @else
-                                <div class="text-sm text-gray-500">No item details</div>
+                                <div class="text-sm text-gray-500 italic">No item data</div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

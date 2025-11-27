@@ -98,6 +98,50 @@ class NotificationLog extends Model
     }
 
     /**
+     * Relationship: Get hold items for this notification.
+     */
+    public function holds()
+    {
+        return $this->hasMany(NotificationHold::class, 'patron_barcode', 'patron_barcode')
+            ->whereDate('export_timestamp', $this->notification_date);
+    }
+
+    /**
+     * Relationship: Get overdue items for this notification.
+     */
+    public function overdues()
+    {
+        return $this->hasMany(NotificationOverdue::class, 'patron_barcode', 'patron_barcode')
+            ->whereDate('export_timestamp', $this->notification_date);
+    }
+
+    /**
+     * Relationship: Get renewal items for this notification.
+     */
+    public function renewals()
+    {
+        return $this->hasMany(NotificationRenewal::class, 'patron_barcode', 'patron_barcode')
+            ->whereDate('export_timestamp', $this->notification_date);
+    }
+
+    /**
+     * Get all items for this notification based on notification type.
+     */
+    public function getItemsAttribute()
+    {
+        switch ($this->notification_type_id) {
+            case 2: // Hold
+                return $this->holds;
+            case 3: // Overdue
+                return $this->overdues;
+            case 5: // Renewal
+                return $this->renewals;
+            default:
+                return collect();
+        }
+    }
+
+    /**
      * Get the delivery method name.
      * Falls back to config if deliveryMethod relationship is not loaded.
      */

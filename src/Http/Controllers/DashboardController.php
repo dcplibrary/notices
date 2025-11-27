@@ -285,6 +285,9 @@ class DashboardController extends Controller
             $query->orderBy('notification_date', 'desc');
         }
 
+        // Eager load items based on notification type
+        $query->with(['holds', 'overdues', 'renewals']);
+
         $notifications = $query->paginate(50)->withQueryString();
 
         // Get filter options - only enabled items
