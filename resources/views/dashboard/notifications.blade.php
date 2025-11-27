@@ -394,137 +394,108 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($notifications as $notification)
-                        <tr class="hover:bg-gray-50 cursor-pointer"
-                            onclick="window.location='{{ '/notices/list/' . $notification->id }}'">
-                            <td class="px-3 py-4 whitespace-nowrap">
-                                @php
-                                    // Status dot colors
-                                    $statusDotColors = [
-                                        1 => 'bg-green-500',   // Voice completed
-                                        2 => 'bg-green-500',   // Answering machine
-                                        12 => 'bg-green-500',  // Email completed
-                                        15 => 'bg-green-500',  // Mail printed
-                                        16 => 'bg-green-500',  // Sent
-                                        3 => 'bg-yellow-500',  // Hang up
-                                        4 => 'bg-yellow-500',  // Busy
-                                        5 => 'bg-yellow-500',  // No answer
-                                        6 => 'bg-yellow-500',  // No ring
-                                        7 => 'bg-red-500',     // No dial tone
-                                        8 => 'bg-red-500',     // Intercept
-                                        9 => 'bg-red-500',     // Bad number
-                                        10 => 'bg-red-500',    // Max retries
-                                        11 => 'bg-red-500',    // Error
-                                        13 => 'bg-red-500',    // Email failed invalid
-                                        14 => 'bg-red-500',    // Email failed
-                                    ];
-                                    $dotColor = $statusDotColors[$notification->notification_status_id] ?? 'bg-gray-400';
-                                @endphp
-                                <span class="inline-block w-2.5 h-2.5 rounded-full {{ $dotColor }}"
-                                      title="{{ $notification->notification_status_name }}"></span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <div>{{ $notification->notification_date->format('M d, Y') }}</div>
-                                <div class="text-xs text-gray-500">{{ $notification->notification_date->format('g:i A') }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                @php
-                                    $firstName = $notification->patron_first_name ?? '';
-                                    $lastName = $notification->patron_last_name ?? '';
-                                    $displayName = trim($lastName . ', ' . $firstName);
-                                    if ($displayName === ',') {
-                                        $displayName = $notification->patron_name;
-                                    }
-                                @endphp
-                                <div class="text-sm font-medium text-gray-900">
-                                    {{ $displayName }}
-                                </div>
-                                <div class="text-xs text-gray-500 font-mono">
-                                    {{ $notification->patron_barcode ?? 'ID: ' . $notification->patron_id }}
-                                </div>
-                                @if($notification->delivery_string)
-                                    <div class="text-xs text-gray-500 mt-0.5">
-                                        {{ $notification->delivery_string }}
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
-                                @php
-                                    // Get items from phone notices for performance
-                                    // Use unique to match detail view's accurate count
-                                    $allPhoneNotices = $notification->polaris_phone_notices;
-                                    $phoneNotices = $allPhoneNotices->unique('item_record_id');
-                                    $itemCount = $phoneNotices->count();
-                                    $firstNotice = $allPhoneNotices->first();
-                                @endphp
-                                @if($firstNotice && $firstNotice->title)
-                                    <div class="text-sm">
-                                        @if($firstNotice->item_record_id)
-                                            <a href="https://catalog.dcplibrary.org/leapwebapp/staff/default#itemrecords/{{ $firstNotice->item_record_id }}"
-                                               target="_blank"
-                                               class="text-blue-600 hover:text-blue-800 hover:underline"
-                                               onclick="event.stopPropagation();">
-                                                {{ Str::limit($firstNotice->title, 60) }}
-                                            </a>
-                                        @else
-                                            <span class="text-gray-900">{{ Str::limit($firstNotice->title, 60) }}</span>
-                                        @endif
-                                    </div>
-                                    @if($firstNotice->item_barcode)
-                                        <div class="text-xs text-gray-500 font-mono mt-0.5">
-                                            {{ $firstNotice->item_barcode }}
-                                        </div>
-                                    @endif
-                                    @if($itemCount > 1)
-                                        <div class="text-xs text-gray-500 mt-1">
-                                            +{{ $itemCount - 1 }} more
-                                        </div>
-                                    @endif
-                                @else
-                                    <div class="text-sm text-gray-500">No item details</div>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-xs font-medium text-gray-900">
-                                    {{ $notification->notification_type_name }}
+                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('notices.notification.detail', $notification->id) }}'">
+                        <td class="px-3 py-4 whitespace-nowrap">
+                            @php
+                                // Status dot colors
+                                $statusDotColors = [
+                                    1 => 'bg-green-500',   // Voice completed
+                                    2 => 'bg-green-500',   // Answering machine
+                                    12 => 'bg-green-500',  // Email completed
+                                    15 => 'bg-green-500',  // Mail printed
+                                    16 => 'bg-green-500',  // Sent
+                                    3 => 'bg-yellow-500',  // Hang up
+                                    4 => 'bg-yellow-500',  // Busy
+                                    5 => 'bg-yellow-500',  // No answer
+                                    6 => 'bg-yellow-500',  // No ring
+                                    7 => 'bg-red-500',     // No dial tone
+                                    8 => 'bg-red-500',     // Intercept
+                                    9 => 'bg-red-500',     // Bad number
+                                    10 => 'bg-red-500',    // Max retries
+                                    11 => 'bg-red-500',    // Error
+                                    13 => 'bg-red-500',    // Email failed invalid
+                                    14 => 'bg-red-500',    // Email failed
+                                ];
+                                $dotColor = $statusDotColors[$notification->notification_status_id] ?? 'bg-gray-400';
+                            @endphp
+                            <span class="inline-block w-2.5 h-2.5 rounded-full {{ $dotColor }}" title="{{ $notification->notification_status_name }}"></span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div>{{ $notification->notification_date->format('M d, Y') }}</div>
+                            <div class="text-xs text-gray-500">{{ $notification->notification_date->format('g:i A') }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            @php
+                                $firstName = $notification->patron_first_name ?? '';
+                                $lastName = $notification->patron_last_name ?? '';
+                                $displayName = trim($lastName . ', ' . $firstName);
+                                if ($displayName === ',') {
+                                    $displayName = $notification->patron_name;
+                                }
+                            @endphp
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ $displayName }}
+                            </div>
+                            <div class="text-xs text-gray-500 font-mono">
+                                {{ $notification->patron_barcode ?? 'ID: ' . $notification->patron_id }}
+                            </div>
+                            @if($notification->delivery_string)
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                {{ $notification->delivery_string }}
+                            </div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            @php
+                                $items = $notification->items;
+                                $itemCount = $items ? $items->count() : 0;
+                                $firstItem = $items ? $items->first() : null;
+                            @endphp
+                            @if($firstItem && $firstItem->browse_title)
+                                <div class="text-sm text-gray-900">
+                                    {{ Str::limit($firstItem->browse_title, 60) }}
                                 </div>
                                 @if($notification->total_items > 0)
                                     <div class="text-xs text-gray-500 mt-1">
-                                        {{ $notification->total_items }}
-                                        item{{ $notification->total_items != 1 ? 's' : '' }}
+                                        +{{ $itemCount - 1 }} more
                                     </div>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center space-x-1.5">
-                                    @if(in_array($notification->delivery_option_id, [1]))
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z"/>
-                                        </svg>
-                                    @elseif(in_array($notification->delivery_option_id, [2]))
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
-                                        </svg>
-                                    @elseif(in_array($notification->delivery_option_id, [3, 4, 5]))
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
-                                        </svg>
-                                    @elseif(in_array($notification->delivery_option_id, [8]))
-                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                  d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
-                                        </svg>
-                                    @endif
-                                    <div class="text-xs">
-                                        <div class="text-gray-900">{{ explode(' ', $notification->delivery_method_name)[0] }}</div>
-                                        <div class="text-gray-500 text-[10px]">{{ $notification->notification_status_name }}</div>
-                                    </div>
+                            @else
+                                <div class="text-sm text-gray-500 italic">No item data</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-xs font-medium text-gray-900">
+                                {{ $notification->notification_type_name }}
+                            </div>
+                            @if($notification->total_items > 0)
+                            <div class="text-xs text-gray-500 mt-1">
+                                {{ $notification->total_items }} item{{ $notification->total_items != 1 ? 's' : '' }}
+                            </div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-1.5">
+                                @if(in_array($notification->delivery_option_id, [1]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [2]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [3, 4, 5]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                                    </svg>
+                                @elseif(in_array($notification->delivery_option_id, [8]))
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                                    </svg>
+                                @endif
+                                <div class="text-xs">
+                                    <div class="text-gray-900">{{ explode(' ', $notification->delivery_method_name)[0] }}</div>
+                                    <div class="text-gray-500 text-[10px]">{{ $notification->notification_status_name }}</div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
