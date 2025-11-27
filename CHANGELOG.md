@@ -1,3 +1,15 @@
+# [7.0.0](https://github.com/dcplibrary/notices/compare/v6.0.6...v7.0.0) (2025-11-27)
+
+
+### Bug Fixes
+
+* add item details display to notifications list page ([e6267a2](https://github.com/dcplibrary/notices/commit/e6267a28b7148d9bd814328bc995f659595e8169))
+
+
+### Features
+
+* add item details display to notifications list page ([104b5af](https://github.com/dcplibrary/notices/commit/104b5af1b9cb270ef663bc866d7886bf0d58500f))
+
 ## [6.0.6](https://github.com/dcplibrary/notices/compare/v6.0.5...v6.0.6) (2025-11-27)
 
 
