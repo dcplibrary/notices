@@ -75,7 +75,7 @@ At minimum:
 - `QUEUE_CONNECTION=redis`
 - `REDIS_HOST`, `REDIS_PORT`
 
-For package functionality, also provide your notices-related values (`POLARIS_FTP_*`, `MICROSOFT_GRAPH_*`, etc.).
+For package functionality, also provide your notices-related values (`POLARIS_FTP_*`, `MICROSOFT_*`, etc.).
 
 ## Using nginx-proxy + Let's Encrypt
 

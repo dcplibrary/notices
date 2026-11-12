@@ -146,7 +146,7 @@ class FtpImportService
             'port'     => config('notices.polaris.ftp.port', 21),
             'username' => config('notices.polaris.ftp.username'),
             'password' => config('notices.polaris.ftp.password'),
-            'root'     => config('notices.polaris.ftp.root', '/'),
+            'root'     => config('notices.polaris.ftp.path', '/'),
             'ssl'      => config('notices.polaris.ftp.ssl', false),
             'passive'  => config('notices.polaris.ftp.passive', true),
             'timeout'  => config('notices.polaris.ftp.timeout', 30),

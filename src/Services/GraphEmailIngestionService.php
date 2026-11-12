@@ -59,7 +59,7 @@ class GraphEmailIngestionService implements EmailIngestionInterface
             return;
         }
 
-        $folder = $config['folders']['shoutbomb'] ?? 'Shoutbomb_Reports';
+        $folder = $config['folder_shoutbomb'] ?? 'Shoutbomb_Reports';
 
         $emails = $this->fetchEmailsForDate($accessToken, $mailbox, $folder, $dayStart, $dayEnd, (int) ($config['limit'] ?? 100));
 

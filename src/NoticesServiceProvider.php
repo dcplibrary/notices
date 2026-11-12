@@ -51,6 +51,7 @@ class NoticesServiceProvider extends ServiceProvider
 
         // Merge package configuration
         $this->mergeConfigFrom(__DIR__ . '/../config/notices.php', 'notices');
+        $this->adoptLegacyConfigKeys();
 
         $this->registerCoreServiceBindings();
         $this->registerUiServiceBindings();
@@ -61,6 +62,9 @@ class NoticesServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Again here: config set after registration (tests, late overrides) is covered too.
+        $this->adoptLegacyConfigKeys();
+
         // x-dcpl::layouts.staff emits @livewireStyles / @livewireScripts; stubs when Livewire is absent.
         $this->registerLivewireBladeFallbacks();
 
@@ -79,7 +83,7 @@ class NoticesServiceProvider extends ServiceProvider
         // Allow host app to publish the notices config file
         $this->publishes([
             __DIR__ . '/../config/notices.php' => config_path('notices.php'),
-        ], 'config');
+        ], ['config', 'notices-config']);
 
         // Some Laravel 11/12 host apps do not register Sanctum ability aliases by
         // default. Our API routes use ability/abilities middleware strings, so
@@ -113,6 +117,7 @@ class NoticesServiceProvider extends ServiceProvider
         $this->commands([
             Console\ImportCommand::class,
             Console\ImportFtpExportsCommand::class,
+            Console\InstallCommand::class,
             Console\ImportEmailCommand::class,
             Console\ImportConfirmationsCommand::class,
             Console\SyncPolarisLookupTablesCommand::class,
@@ -126,7 +131,7 @@ class NoticesServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/Database/Seeders' => database_path('seeders'),
-            ], 'seeders');
+            ], ['seeders', 'notices-seeders']);
         }
 
         // Register Blade directives for lookup labels
@@ -140,6 +145,47 @@ class NoticesServiceProvider extends ServiceProvider
 
         $this->registerDcplUiCssRoute();
         $this->shareDcplUiCssVersion();
+    }
+
+    /**
+     * Config keys were renamed to mirror their .env names. A host app that
+     * published config/notices.php before the rename still has the old keys,
+     * and its file replaces whole sections of ours. Carry those values over
+     * so nothing silently falls back to a default, and say so in the log.
+     */
+    protected function adoptLegacyConfigKeys(): void
+    {
+        $renamed = [
+            'notices.microsoft.folders.inbox'     => 'notices.microsoft.folder_inbox',
+            'notices.microsoft.folders.shoutbomb' => 'notices.microsoft.folder_shoutbomb',
+            'notices.polaris.ftp.root'            => 'notices.polaris.ftp.path',
+            'notices.import.local_storage'        => 'notices.import.storage',
+            'notices.query_logging_enabled'       => 'notices.query_logging',
+            'notices.query_logging_threshold'     => 'notices.query_threshold_ms',
+            'notices.query_logging_channel'       => 'notices.query_log_channel',
+        ];
+
+        $config = $this->app['config'];
+        $found  = [];
+
+        foreach ($renamed as $old => $new) {
+            if (!$config->has($old)) {
+                continue;
+            }
+
+            $found[] = $old;
+            // The published file wins: it is what the host app was running with.
+            $config->set($new, $config->get($old));
+        }
+
+        if ([] !== $found) {
+            $this->app->booted(static function () use ($found): void {
+                Log::warning(
+                    'notices: config/notices.php uses renamed keys (' . implode(', ', $found) . '). '
+                    . 'Re-publish it with: php artisan vendor:publish --tag=notices-config --force'
+                );
+            });
+        }
     }
 
     /**
@@ -409,12 +455,12 @@ class NoticesServiceProvider extends ServiceProvider
      */
     protected function registerQueryPerformanceLogging(): void
     {
-        if (!config('notices.query_logging_enabled', false)) {
+        if (!config('notices.query_logging', false)) {
             return;
         }
 
-        $threshold = config('notices.query_logging_threshold', 100);
-        $channel   = config('notices.query_logging_channel', 'stack');
+        $threshold = config('notices.query_threshold_ms', 100);
+        $channel   = config('notices.query_log_channel', 'stack');
 
         DB::listen(function ($query) use ($threshold, $channel) {
             // Convert query time to milliseconds (Laravel provides microseconds)

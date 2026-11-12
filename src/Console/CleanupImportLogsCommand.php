@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
  * Delete locally stored import/export files for a date range.
  *
  * This command operates on the directory configured via
- * `notices.import.local_storage` (defaults to storage/app/notices-exports)
+ * `notices.import.storage` (defaults to storage/app/notices-exports)
  * and deletes any matching Polaris/Shoutbomb export files such as:
  * - holds_YYYY-MM-DD_*.txt
  * - renew_YYYY-MM-DD_*.txt
@@ -50,7 +50,7 @@ class CleanupImportLogsCommand extends Command
 
     public function handle(): int
     {
-        $baseDir = (string) config('notices.import.local_storage', storage_path('app/notices-exports'));
+        $baseDir = (string) config('notices.import.storage', storage_path('app/notices-exports'));
         $all     = (bool) $this->option('all');
         $dryRun  = (bool) $this->option('dry-run');
         $force   = (bool) $this->option('force');

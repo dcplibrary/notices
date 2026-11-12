@@ -93,7 +93,7 @@ class FtpNotificationImporter implements NotificationImporterInterface
         // 2) Try FTP if nothing found locally
         $useFtp = (bool) config('notices.polaris.use_ftp');
         if (empty($files) && $useFtp && $this->ftp) {
-            $localBase = rtrim((string) config('notices.import.local_storage', storage_path('app/notices-exports')), '/');
+            $localBase = rtrim((string) config('notices.import.storage', storage_path('app/notices-exports')), '/');
             $localDir  = $localBase . '/phone-notices';
 
             $datePattern = sprintf('PhoneNotices_%s_*.csv', $date->format('Y-m-d'));
@@ -186,7 +186,7 @@ class FtpNotificationImporter implements NotificationImporterInterface
 
         $useFtp = (bool) config('notices.polaris.use_ftp');
         if (empty($files) && $useFtp && $this->ftp) {
-            $localBase = rtrim((string) config('notices.import.local_storage', storage_path('app/notices-exports')), '/');
+            $localBase = rtrim((string) config('notices.import.storage', storage_path('app/notices-exports')), '/');
             $localDir  = $localBase . '/notification-log';
 
             $datePattern = sprintf('notification_log_%s_*.txt', $date->format('Y-m-d'));
@@ -281,7 +281,7 @@ class FtpNotificationImporter implements NotificationImporterInterface
         // 2) Try FTP if nothing found locally
         $useFtp = (bool) config('notices.polaris.use_ftp');
         if (empty($files) && $useFtp && $this->ftp) {
-            $localBase = rtrim((string) config('notices.import.local_storage', storage_path('app/notices-exports')), '/');
+            $localBase = rtrim((string) config('notices.import.storage', storage_path('app/notices-exports')), '/');
             $localDir  = $localBase . '/notification-history';
 
             $datePattern = sprintf('notification_history_%s_*.txt', $date->format('Y-m-d'));
@@ -405,7 +405,7 @@ class FtpNotificationImporter implements NotificationImporterInterface
         ]);
 
         if (empty($files) && $useFtp && $this->ftp) {
-            $localBase = rtrim((string) config('notices.import.local_storage', storage_path('app/notices-exports')), '/');
+            $localBase = rtrim((string) config('notices.import.storage', storage_path('app/notices-exports')), '/');
             $localDir  = $localBase . '/' . $type;
 
             // Constrain to the specific date we are importing, so we do not

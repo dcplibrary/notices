@@ -11,6 +11,7 @@ Complete documentation for all Artisan commands provided by the Notices package.
   - [notices:import-email](#noticesimport-email)
   - [notices:import-confirmations](#noticesimport-confirmations)
 - [Utility Commands](#utility-commands)
+  - [notices:install](#noticesinstall)
   - [notices:sync-lookup-tables](#noticessync-lookup-tables)
   - [notices:cleanup-import-logs](#noticescleanup-import-logs)
 - [Date Options](#date-options)
@@ -144,7 +145,7 @@ The command:
 
 **Configuration required:**
 ```env
-POLARIS_FTP_ENABLED=true
+POLARIS_USE_FTP=true
 POLARIS_FTP_HOST=your-ftp-host
 POLARIS_FTP_USERNAME=your-username
 POLARIS_FTP_PASSWORD=your-ftp-password
@@ -211,11 +212,12 @@ Connects to Microsoft 365 mailbox and ingests Shoutbomb reports:
 
 **Configuration required:**
 ```env
-MICROSOFT_GRAPH_TENANT_ID=your-tenant-id
-MICROSOFT_GRAPH_CLIENT_ID=your-client-id
-MICROSOFT_GRAPH_CLIENT_SECRET=your-client-secret
-MICROSOFT_GRAPH_MAILBOX=shoutbomb@yourlibrary.org
-MICROSOFT_GRAPH_FOLDER_ID=folder-id-for-reports
+MICROSOFT_TENANT_ID=your-tenant-id
+MICROSOFT_CLIENT_ID=your-client-id
+MICROSOFT_CLIENT_SECRET=your-client-secret
+MICROSOFT_MAILBOX=reports@yourlibrary.org
+# Optional: the mail folder holding Shoutbomb reports (default: Shoutbomb_Reports)
+MICROSOFT_FOLDER_SHOUTBOMB=Shoutbomb_Reports
 ```
 
 **Email types processed:**
@@ -283,6 +285,39 @@ Analyzes notification data to detect delivery failures:
 ---
 
 ## Utility Commands
+
+### `notices:install`
+
+Sets the package up in a host application. Run it once after `composer require`, and again whenever you want to change a setting.
+
+```bash
+php artisan notices:install
+```
+
+It asks for the settings the package reads and writes them to the application's `.env` file:
+
+| Group | Settings |
+| --- | --- |
+| Microsoft Graph | `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_MAILBOX`, `MICROSOFT_FOLDER_SHOUTBOMB`, `MICROSOFT_EMAIL_FROM` |
+| Polaris exports | `POLARIS_USE_FTP`, and when FTP is used `POLARIS_FTP_HOST`, `POLARIS_FTP_PORT`, `POLARIS_FTP_USERNAME`, `POLARIS_FTP_PASSWORD`, `POLARIS_FTP_PATH` |
+| General | `NOTICES_TIMEZONE` |
+
+Then it offers to run the database migrations and seed the Polaris lookup tables.
+
+- Only these keys are touched. Every other line in `.env` is left as it was.
+- Existing values are shown as defaults. Press Enter to keep one.
+- Secrets are not echoed, and a secret left blank keeps the value already saved.
+- An optional setting left blank is not added to the file.
+
+**Options:**
+
+| Option | Effect |
+| --- | --- |
+| `--no-migrate` | Do not run migrations |
+| `--no-seed` | Do not seed the lookup tables |
+| `--publish-config` | Also publish `config/notices.php` into the application |
+
+If the application caches its configuration, run `php artisan config:clear` afterwards so the new values are read.
 
 ### `notices:sync-lookup-tables`
 
@@ -361,7 +396,7 @@ php artisan notices:cleanup-import-logs --all --force --no-interaction
 
 **What it does:**
 
-Operates on the directory configured by `notices.import.local_storage` (defaults to `storage/app/notices-exports`) and removes cached Polaris/Shoutbomb export files, including:
+Operates on the directory configured by `notices.import.storage` (`NOTICES_IMPORT_STORAGE`) (defaults to `storage/app/notices-exports`) and removes cached Polaris/Shoutbomb export files, including:
 - `holds_YYYY-MM-DD_*.txt`
 - `renew_YYYY-MM-DD_*.txt`
 - `overdue_YYYY-MM-DD_*.txt`

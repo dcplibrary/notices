@@ -774,7 +774,7 @@ ls -lh storage/app/notices-exports/phone-notices/
 The base storage path can be configured in `config/notices.php`:
 ```php
 'import' => [
-    'local_storage' => env('NOTICES_LOCAL_STORAGE', storage_path('app/notices-exports')),
+    'storage' => env('NOTICES_IMPORT_STORAGE', storage_path('app/notices-exports')),
 ],
 ```
 

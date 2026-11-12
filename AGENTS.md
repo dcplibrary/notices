@@ -284,6 +284,7 @@ Notes on `lx_starter_failure`:
 ## Rules for the code
 
 - **This is a package.** All code lives in the package. Do not copy migrations, views, routes or classes into the host application's `app/` directory; the service provider loads them from the package. Publishing config or views is optional.
+- **Config keys mirror `.env` names.** A key in `config/notices.php` is its `.env` variable lower-cased, with the prefix as the section: `MICROSOFT_MAILBOX` is `notices.microsoft.mailbox`, `POLARIS_FTP_PATH` is `notices.polaris.ftp.path`. A new setting follows the same rule, is added to `notices:install` if a host must supply it, and is named in the docs exactly as the code reads it; tests enforce the last two.
 - **Put logic in services.** Queries and decisions belong in classes such as `NotificationReconciler` and `NotificationService`, not in controllers.
 - **Date options keep the same names.** The import commands (`ImportCommand`, `ImportEmailCommand`, `ImportFtpExportsCommand`) take `--date`, `--from`, `--to` and `--days`. Other commands take a subset. A new command that works on dates should use these names with the same meaning, not invent its own.
 - **Keep PHPDoc current** on public services and controllers, including which statuses a method may change.

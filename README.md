@@ -249,17 +249,18 @@ Package configuration is in `config/notices.php`. Key environment variables:
 
 ```env
 # FTP Configuration
-POLARIS_FTP_ENABLED=true
+POLARIS_USE_FTP=true
 POLARIS_FTP_HOST=your-ftp-host
 POLARIS_FTP_USERNAME=your-username
 POLARIS_FTP_PASSWORD=your-ftp-password
 
 # Microsoft Graph API (for email ingestion)
-MICROSOFT_GRAPH_TENANT_ID=your-tenant-id
-MICROSOFT_GRAPH_CLIENT_ID=your-client-id
-MICROSOFT_GRAPH_CLIENT_SECRET=your-client-secret
-MICROSOFT_GRAPH_MAILBOX=shoutbomb@yourlibrary.org
-MICROSOFT_GRAPH_FOLDER_ID=folder-id-for-reports
+MICROSOFT_TENANT_ID=your-tenant-id
+MICROSOFT_CLIENT_ID=your-client-id
+MICROSOFT_CLIENT_SECRET=your-client-secret
+MICROSOFT_MAILBOX=reports@yourlibrary.org
+# Optional: the mail folder holding Shoutbomb reports (default: Shoutbomb_Reports)
+MICROSOFT_FOLDER_SHOUTBOMB=Shoutbomb_Reports
 ```
 
 ---
@@ -310,22 +311,20 @@ If you're using Laravel 12 and encounter "Class 'Livewire\Mechanisms\ExtendBlade
    }
    ```
 
-**Publish configuration:**
+**Set it up:**
+
+```bash
+php artisan notices:install
+```
+
+This asks for the Microsoft Graph and Polaris FTP settings, writes them to your `.env`, runs the migrations and seeds the lookup tables. It can be run again to change a setting. See [Commands](docs/commands.md) for its options.
+
+To do the same by hand: add the settings under [Configuration](#configuration) to `.env`, then run `php artisan migrate` and `php artisan notices:seed`.
+
+**Publishing the config file is optional.** The package works without it. If you want to change defaults that have no `.env` setting:
 
 ```bash
 php artisan vendor:publish --tag=notices-config
-```
-
-**Run migrations:**
-
-```bash
-php artisan migrate
-```
-
-**Seed lookup tables:**
-
-```bash
-php artisan notices:seed
 ```
 
 ---

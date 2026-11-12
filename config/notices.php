@@ -1,5 +1,10 @@
 <?php
 
+/*
+ * Each key is named after the .env variable it reads, lower-cased and with
+ * the prefix turned into the section: MICROSOFT_MAILBOX is microsoft.mailbox,
+ * POLARIS_FTP_PATH is polaris.ftp.path, NOTICES_TIMEZONE is timezone.
+ */
 return [
     // Whether the notices routes/UI should require authentication. Kept for future use.
     'require_auth' => env('NOTICES_REQUIRE_AUTH', true),
@@ -9,15 +14,15 @@ return [
         'tenant_id' => env('MICROSOFT_TENANT_ID'),
         'client_id' => env('MICROSOFT_CLIENT_ID'),
         'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
-        'mailbox' => env('MICROSOFT_MAILBOX', 'notices@example.org'),
+        // The mailbox to read. No default: when unset, email ingestion is skipped with a log warning.
+        'mailbox' => env('MICROSOFT_MAILBOX'),
 
         // Optional: restrict ingestion to specific sender addresses (comma-separated).
         'email_from' => env('MICROSOFT_EMAIL_FROM'),
 
-        'folders' => [
-            'inbox' => env('MICROSOFT_FOLDER_INBOX', 'Inbox'),
-            'shoutbomb' => env('MICROSOFT_FOLDER_SHOUTBOMB', 'Shoutbomb_Reports'),
-        ],
+        // Mail folders, relative to the mailbox root.
+        'folder_inbox' => env('MICROSOFT_FOLDER_INBOX', 'Inbox'),
+        'folder_shoutbomb' => env('MICROSOFT_FOLDER_SHOUTBOMB', 'Shoutbomb_Reports'),
     ],
 
 'polaris' => [
@@ -27,7 +32,7 @@ return [
         // Optional: path where another process has already placed exported files
         // (for example, a SQL job or external FTP sync). If set, this path is
         // checked first for holds_YYYY-MM-DD_*.txt, etc., before using FTP.
-'import_path' => env('POLARIS_FTP_IMPORT_PATH', 'storage/logs'),
+'import_path' => env('POLARIS_IMPORT_PATH', env('POLARIS_FTP_IMPORT_PATH', 'storage/logs')),
 
         // If true, fetch exports from the Polaris FTP server into export_path before importing.
         'use_ftp' => env('POLARIS_USE_FTP', false),
@@ -37,7 +42,7 @@ return [
             'port' => (int) env('POLARIS_FTP_PORT', 21),
             'username' => env('POLARIS_FTP_USERNAME'),
             'password' => env('POLARIS_FTP_PASSWORD'),
-            'root' => env('POLARIS_FTP_PATH', '/'),
+            'path' => env('POLARIS_FTP_PATH', '/'),
             'ssl' => env('POLARIS_FTP_SSL', false),
             'passive' => env('POLARIS_FTP_PASSIVE', true),
             'timeout' => (int) env('POLARIS_FTP_TIMEOUT', 30),
@@ -56,7 +61,7 @@ return [
 
 'import' => [
         // Where downloaded FTP exports are stored locally before import.
-        'local_storage' => env('NOTICES_IMPORT_STORAGE', storage_path('app/notices-exports')),
+        'storage' => env('NOTICES_IMPORT_STORAGE', storage_path('app/notices-exports')),
         'delimiter' => '|',
         'encoding' => 'UTF-8',
     ],
@@ -123,12 +128,12 @@ return [
     | Enable query performance logging to track slow database queries in
     | application logs. Queries exceeding the threshold will be logged.
     |
-    | - query_logging_enabled: Set to true to enable query logging
-    | - query_logging_threshold: Time threshold in milliseconds (default: 100ms)
-    | - query_logging_channel: Laravel logging channel to use (default: 'stack')
+    | - query_logging: Set to true to enable query logging
+    | - query_threshold_ms: Time threshold in milliseconds (default: 100ms)
+    | - query_log_channel: Laravel logging channel to use (default: 'stack')
     |
     */
-    'query_logging_enabled' => env('NOTICES_QUERY_LOGGING', false),
-    'query_logging_threshold' => env('NOTICES_QUERY_THRESHOLD_MS', 100),
-    'query_logging_channel' => env('NOTICES_QUERY_LOG_CHANNEL', 'stack'),
+    'query_logging' => env('NOTICES_QUERY_LOGGING', false),
+    'query_threshold_ms' => env('NOTICES_QUERY_THRESHOLD_MS', 100),
+    'query_log_channel' => env('NOTICES_QUERY_LOG_CHANNEL', 'stack'),
 ];
