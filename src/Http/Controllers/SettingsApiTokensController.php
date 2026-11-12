@@ -109,6 +109,7 @@ class SettingsApiTokensController extends Controller
 
         return redirect()
             ->route('notices.settings.api-tokens')
-            ->with('success', 'API token revoked successfully.');
+            ->with('success', 'API token revoked successfully.')
+        ;
     }
 }

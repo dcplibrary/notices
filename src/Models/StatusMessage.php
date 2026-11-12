@@ -165,6 +165,7 @@ class StatusMessage extends Model
         return static::where('code', $code)
             ->where('status', $status)
             ->where('is_enabled', true)
-            ->first();
+            ->first()
+        ;
     }
 }
