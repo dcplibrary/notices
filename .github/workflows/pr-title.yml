@@ -1,0 +1,46 @@
+name: PR Title
+
+# semantic-release only publishes when commits use Conventional Commits
+# (feat:/fix:/perf:). Cursor PRs often use plain English titles like
+# "Fix foo", which produce a successful Release workflow with "no release".
+# Fail the PR early if the title is not conventional.
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+# wip: true updates the PR check to stay pending for "[WIP] …" titles,
+# which requires write (read-only → "Resource not accessible by integration").
+permissions:
+  pull-requests: write
+  statuses: write
+
+jobs:
+  lint:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            perf
+            docs
+            refactor
+            test
+            chore
+            ci
+            style
+            build
+            revert
+          requireScope: false
+          subjectPattern: ^.+$
+          wip: true
+          ignoreLabels: |
+            release-skip
+            skip-release

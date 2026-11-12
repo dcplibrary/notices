@@ -1,0 +1,14 @@
+{
+  "name": "dcplibrary-notices",
+  "description": "Stylesheet build for the dcplibrary/notices Laravel package",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tailwindcss -i resources/css/notices.css -o resources/dist/notices.css --minify",
+    "watch": "tailwindcss -i resources/css/notices.css -o resources/dist/notices.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "tailwindcss": "^3.4.0"
+  }
+}

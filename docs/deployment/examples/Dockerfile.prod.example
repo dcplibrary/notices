@@ -1,0 +1,70 @@
+FROM composer:2 AS vendor
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --classmap-authoritative \
+    --no-scripts
+
+FROM php:8.3-apache
+
+ENV TZ=America/Chicago
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY --from=mlocati/php-extension-installer:2 /usr/bin/install-php-extensions /usr/local/bin/
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        unzip \
+        zip \
+        default-mysql-client \
+        libicu-dev \
+        libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
+        freetds-dev \
+        freetds-bin \
+        freetds-common \
+    && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu \
+    && docker-php-ext-install -j"$(nproc)" gd pdo_dblib zip mysqli pdo_mysql intl ftp opcache \
+    && install-php-extensions imap \
+    && a2enmod rewrite headers expires \
+    && sed -ri -e 's!/var/www/html!/var/www/public!g' /etc/apache2/sites-enabled/000-default.conf /etc/apache2/apache2.conf \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /var/www
+
+COPY . /var/www
+COPY --from=vendor /app/vendor /var/www/vendor
+
+RUN { \
+      echo "memory_limit=512M"; \
+      echo "upload_max_filesize=64M"; \
+      echo "post_max_size=64M"; \
+      echo "max_execution_time=120"; \
+      echo "opcache.enable=1"; \
+      echo "opcache.memory_consumption=256"; \
+      echo "opcache.interned_strings_buffer=16"; \
+      echo "opcache.max_accelerated_files=50000"; \
+      echo "opcache.validate_timestamps=0"; \
+      echo "opcache.revalidate_freq=0"; \
+      echo "opcache.save_comments=1"; \
+      echo "realpath_cache_size=4096K"; \
+      echo "realpath_cache_ttl=600"; \
+    } > /usr/local/etc/php/conf.d/zz-notices.ini \
+    && chown -R www-data:www-data /var/www
+
+EXPOSE 80

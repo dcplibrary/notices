@@ -1,0 +1,122 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: notices-web
+    image: "${NOTICES_APP_IMAGE:-ghcr.io/your-org/notices-app:latest}"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      TZ: America/Chicago
+      # Dynamic host discovery by jwilder/nginx-proxy
+      VIRTUAL_HOST: "${VIRTUAL_HOST:-notices.dcplibrary.org}"
+      VIRTUAL_PORT: "${VIRTUAL_PORT:-80}"
+      VIRTUAL_PROTO: "${VIRTUAL_PROTO:-http}"
+      LETSENCRYPT_HOST: "${LETSENCRYPT_HOST:-notices.dcplibrary.org}"
+      LETSENCRYPT_EMAIL: "${LETSENCRYPT_EMAIL:-admin@example.org}"
+    # Keep web internal-only. nginx-proxy handles published 80/443.
+    expose:
+      - "80"
+    volumes:
+      - ./.docker/sites-enabled:/etc/apache2/sites-enabled:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: always
+    networks:
+      - notices-net
+      # Must match the external network used by jwilder/nginx-proxy.
+      - nginx-proxy
+
+  scheduler:
+    container_name: notices-scheduler
+    image: "${NOTICES_APP_IMAGE:-ghcr.io/your-org/notices-app:latest}"
+    command: php /var/www/artisan schedule:work
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      TZ: America/Chicago
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - notices-net
+
+  worker:
+    container_name: notices-worker
+    image: "${NOTICES_APP_IMAGE:-ghcr.io/your-org/notices-app:latest}"
+    command: php /var/www/artisan queue:work --sleep=1 --tries=3 --timeout=120 --max-time=3600
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      TZ: America/Chicago
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - notices-net
+
+  db:
+    image: mysql:8.0
+    container_name: notices-db
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      TZ: America/Chicago
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./.docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./.docker/mysql/logs:/var/log/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: always
+    networks:
+      - notices-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: notices-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: always
+    networks:
+      - notices-net
+
+networks:
+  notices-net:
+    name: notices-net
+  nginx-proxy:
+    external: true
+    name: nginx-proxy
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local

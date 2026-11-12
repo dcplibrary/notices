@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  tests-sqlite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite, sqlite3
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist
+
+      - name: Run SQLite smoke tests
+        run: |
+          vendor/bin/pest --ci \
+            tests/Unit \
+            tests/Feature/IssueDetectionTest.php \
+            tests/Feature/FailedNotificationsRoutingTest.php \
+            tests/Feature/GraphEmailIngestionServiceTest.php \
+            tests/Feature/ImportStatusTest.php \
+            tests/Feature/NotificationLogReconciliationTest.php \
+            tests/Feature/NotificationAccountingTest.php \
+            tests/Feature/NotificationServiceRefactoringTest.php \
+            tests/Feature/NotificationsIndexStatusColumnTest.php \
+            tests/Feature/NotificationsPatronFailureLabelsTest.php \
+            tests/Feature/ScheduledTasksTest.php \
+            tests/Feature/TimezoneClusterTest.php
+
+  tests-percona-smoke:
+    runs-on: ubuntu-latest
+
+    services:
+      percona:
+        image: percona:8.0
+        env:
+          MYSQL_DATABASE: notices_test
+          MYSQL_USER: notices
+          MYSQL_PASSWORD: notices
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite, sqlite3
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist
+
+      - name: Run Percona smoke tests
+        env:
+          NOTICES_TEST_DB: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: notices_test
+          DB_USERNAME: notices
+          DB_PASSWORD: notices
+        run: |
+          vendor/bin/pest --ci \
+            tests/Feature/IssueDetectionTest.php \
+            tests/Feature/ImportStatusTest.php \
+            tests/Feature/NotificationLogReconciliationTest.php \
+            tests/Feature/NotificationAccountingTest.php \
+            tests/Feature/NotificationServiceRefactoringTest.php
+
+  cs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, pdo_mysql, pdo_sqlite, sqlite3
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist
+
+      - name: Run php-cs-fixer (dry run)
+        run: |
+          composer cs-check

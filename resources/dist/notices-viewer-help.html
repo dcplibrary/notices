@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — Viewer Guide</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      color: #1f2937;
+      background: #f3f4f6;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar nav ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: #1e293b;
+      color: #cbd5e1;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 0 40px;
+    }
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      padding: 0 20px 8px;
+    }
+    .sidebar a {
+      display: block;
+      padding: 7px 20px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 13.5px;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .sidebar a:hover { color: #fff; background: rgba(255,255,255,.06); }
+    .sidebar a.active { color: #fff; border-left-color: #0075a3; background: rgba(0,117,163,.15); }
+    .sidebar .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #64748b;
+      padding: 18px 20px 4px;
+    }
+
+    /* ── Main content ── */
+    main {
+      flex: 1;
+      max-width: 860px;
+      padding: 48px 48px 80px;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin-bottom: 64px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #64748b;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #334155;
+      margin: 20px 0 6px;
+    }
+
+    p { margin-bottom: 12px; color: #374151; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol { margin: 10px 0 14px 22px; color: #374151; }
+    li { margin-bottom: 5px; }
+
+    /* ── Screenshot ── */
+    .screenshot {
+      margin: 18px 0 24px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+    .screenshot img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .screenshot figcaption {
+      padding: 8px 14px;
+      background: #f8fafc;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+    .callout.tip    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .callout.warn   { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .callout.danger { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .callout.green  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+    /* ── Step list ── */
+    ol.steps { padding-left: 0; list-style: none; counter-reset: step; }
+    ol.steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    ol.steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: #0075a3;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    /* ── Status badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      vertical-align: middle;
+    }
+    .badge-pending  { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-delivered{ background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .badge-failed   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* ── Field table ── */
+    .field-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
+    .field-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      color: #374151;
+      font-weight: 600;
+    }
+    .field-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      color: #374151;
+    }
+    .field-table tr:last-child td { border-bottom: none; }
+    .field-name { font-weight: 600; color: #0f172a; white-space: nowrap; }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 40px 0; }
+
+    /* ── Method icons row ── */
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .method-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13.5px;
+    }
+    .method-card strong { display: block; margin-bottom: 4px; color: #0f172a; font-size: 14px; }
+    .method-card span { color: #64748b; }
+
+    /* ── Print ── */
+    @media print {
+      .sidebar { display: none; }
+      main { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar" aria-label="Help navigation">
+    <div class="sidebar-title">Notifications</div>
+    <div class="section-label">Getting Started</div>
+    <a href="#overview">Overview</a>
+    <a href="#searching">Searching &amp; Filtering</a>
+    <div class="section-label">Results</div>
+    <a href="#results-table">Reading the Table</a>
+    <a href="#detail-modal">Notification Details</a>
+    <a href="#statuses">Notification Statuses</a>
+    <div class="section-label">Delivery Methods</div>
+    <a href="#delivery-methods">Text, Phone &amp; Email</a>
+    <div class="section-label">Troubleshooting</div>
+    <a href="#failed-notices">Failed Notifications</a>
+    <a href="#tips">Tips &amp; Shortcuts</a>
+  </nav>
+
+  <!-- Main content -->
+  <main>
+
+    <!-- ── Overview ─────────────────────────────── -->
+    <section id="overview">
+      <h1>Notification Status Viewer</h1>
+      <p class="subtitle">Check the delivery status of patron hold and overdue notices sent by the library's automated notification system.</p>
+
+      <p>The Viewer shows every notification the system has attempted to deliver — holds ready for pickup, overdue reminders, and other notices — along with whether they were successfully sent, are pending, or failed. You can look up a specific patron by name or barcode, narrow by date, filter by status, and drill into individual notification details.</p>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div>Results default to <strong>Yesterday</strong>. Switch the Date Range to <strong>All Time</strong> (or pick a custom range) to see older notifications.</div>
+      </div>
+    </section>
+
+    <!-- ── Searching ──────────────────────────────── -->
+    <section id="searching">
+      <h2>Searching &amp; Filtering</h2>
+
+      <h3>Search box</h3>
+      <p>Type any part of a patron name, barcode, item title, or item barcode and press <strong>Enter</strong> or click <strong>Search</strong>. The search is case-insensitive and works across all visible fields.</p>
+
+      <h3>Date Range</h3>
+      <p>Use the quick-range dropdown to pick a preset period — Yesterday, Today, Last 7 Days, This Month, Last Month, or All Time — or enter a custom start and end date. The date applies to the notification's <em>sent</em> timestamp.</p>
+
+      <h3>Status pills</h3>
+      <p>Toggle the <span class="badge badge-delivered">✓ Delivered</span>, <span class="badge badge-pending">⏱ Pending</span>, and <span class="badge badge-failed">✕ Failed</span> pills to include or exclude each status. Click a pill once to activate only that status; click it again to deactivate. Click <strong>Search</strong> after changing pills to refresh the results.</p>
+
+      <h3>Advanced Filters</h3>
+      <p>Click <strong>Show Advanced Filters</strong> to reveal two additional dropdowns:</p>
+      <ul>
+        <li><strong>Notification Type</strong> — filter by Hold, 1st Overdue, 2nd Overdue, etc.</li>
+        <li><strong>Delivery Method</strong> — filter by TXT Messaging, Phone, Email, and other configured methods.</li>
+      </ul>
+      <p>Click <strong>Apply Filters</strong> to run the search, or <strong>Clear Filters</strong> to reset all filters and show all recent notifications.</p>
+    </section>
+
+    <!-- ── Results Table ──────────────────────────── -->
+    <section id="results-table">
+      <h2>Reading the Results Table</h2>
+
+      <p>Results are sorted by <strong>Date Sent</strong> (most recent first) by default. Click any column header to re-sort. The count at the top shows how many notifications match your current filters.</p>
+
+      <table class="field-table">
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>What it shows</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="field-name">Patron</td>
+            <td>Patron name (last, first) and library card barcode.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Item</td>
+            <td>Full title of the item plus its item barcode.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Type</td>
+            <td>Notification type — Hold, 1st Overdue, 2nd Overdue, etc.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Method</td>
+            <td>Delivery method icon — speech bubble (TXT), phone (voice), or envelope (email).</td>
+          </tr>
+          <tr>
+            <td class="field-name">Status</td>
+            <td><span class="badge badge-delivered">✓ Delivered</span>, <span class="badge badge-pending">⏱ Pending</span>, or <span class="badge badge-failed">✕ Failed</span>.</td>
+          </tr>
+          <tr>
+            <td class="field-name">Date Sent</td>
+            <td>Date and time the notification was dispatched.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>Click any row to open the <strong>Notification Details</strong> modal with the full record and, for failed notices, actionable guidance.</p>
+    </section>
+
+    <!-- ── Detail Modal ───────────────────────────── -->
+    <section id="detail-modal">
+      <h2>Notification Details</h2>
+
+      <p>Clicking a row opens a details modal. It shows patron name and barcode, item title and barcode, notification type, contact info (phone number or email used), delivery method, and the current status message.</p>
+
+      <p>The modal header includes a <strong>copy</strong> icon (two overlapping squares) — click it to copy a plain-text summary of the notification to your clipboard, useful for pasting into a patron record or support note.</p>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div>For failed notifications, the <strong>What to do</strong> section tells you exactly what to ask the patron so the issue can be resolved — for example, which number to text to opt in to notifications.</div>
+      </div>
+    </section>
+
+    <!-- ── Statuses ───────────────────────────────── -->
+    <section id="statuses">
+      <h2>Notification Statuses</h2>
+
+      <h3><span class="badge badge-delivered">✓ Delivered</span></h3>
+      <p>The notification was successfully sent to the patron's phone or email. For text messages, delivery is confirmed by the carrier. For email, it means the message was accepted by the receiving mail server.</p>
+
+      <h3><span class="badge badge-pending">⏱ Pending</span></h3>
+      <p>The notification has been dispatched but delivery confirmation has not yet been received. Text message confirmations can take up to 24 hours. If a message stays Pending for more than a day, it may have been silently dropped by the carrier.</p>
+
+      <h3><span class="badge badge-failed">✕ Failed</span></h3>
+      <p>Delivery failed. Common reasons include:</p>
+      <ul>
+        <li><strong>Phone Number Unreachable</strong> — the number is not accepting texts; the patron needs to opt in.</li>
+        <li><strong>Invalid Phone Number</strong> — the number on file is not a valid mobile number.</li>
+        <li><strong>Email Bounced</strong> — the email address on file is undeliverable.</li>
+        <li><strong>No Contact Info</strong> — the patron has no notification preference or contact info configured.</li>
+      </ul>
+      <p>Open the detail modal for the specific remediation steps for each failure type.</p>
+    </section>
+
+    <!-- ── Delivery Methods ───────────────────────── -->
+    <section id="delivery-methods">
+      <h2>Delivery Methods</h2>
+
+      <p>The Viewer supports three delivery channels. The method icon in the results table indicates which channel was used for each notification.</p>
+
+      <div class="method-grid">
+        <div class="method-card">
+          <strong>💬 TXT Messaging</strong>
+          <span>SMS text sent to the patron's mobile number via the library's texting platform. Delivery confirmation typically arrives within minutes, though can take up to 24 hours.</span>
+        </div>
+        <div class="method-card">
+          <strong>📞 Phone (Voice)</strong>
+          <span>Automated phone call placed to the patron's primary phone number. The call plays a recorded message about the hold or overdue item.</span>
+        </div>
+        <div class="method-card">
+          <strong>✉️ Email</strong>
+          <span>Notification sent to the patron's email address on file. Email delivery is generally instant but may be filtered to spam.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Failed Notifications ───────────────────── -->
+    <section id="failed-notices">
+      <h2>Handling Failed Notifications</h2>
+
+      <p>When a notification fails, the detail modal includes a <strong>What to do</strong> section with specific next steps. Here are the most common failure scenarios:</p>
+
+      <h3>Text Message: Phone Number Unreachable</h3>
+      <p>The patron's number is valid but is blocking automated texts. Ask the patron to:</p>
+      <ol class="steps">
+        <li><span>Text <strong>HELP</strong> to <strong>1-555-544-9975</strong> to verify they can receive texts from that number.</span></li>
+        <li><span>Add <strong>1-555-544-9975</strong> to their contacts list so future texts aren't blocked.</span></li>
+        <li><span>If they receive no response, ask them to update their notification preference in their account settings or at the circulation desk.</span></li>
+      </ol>
+
+      <h3>Text Message: Invalid Phone Number</h3>
+      <p>The number on file cannot receive texts (e.g., it's a landline). Ask the patron to update their phone number in their Polaris account or at the desk, and set a notification preference that matches a valid mobile number.</p>
+
+      <h3>No Contact Info on File</h3>
+      <p>The patron has no notification preference configured in Polaris. Ask them to add a phone number or email address and select a preferred notification method.</p>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <div>A failed notification does <strong>not</strong> mean the patron was not notified — check whether the system may have attempted a different method (e.g., also sent email). Review all rows for that patron using the search box.</div>
+      </div>
+    </section>
+
+    <!-- ── Tips ───────────────────────────────────── -->
+    <section id="tips">
+      <h2>Tips &amp; Shortcuts</h2>
+
+      <h3>Search by patron barcode</h3>
+      <p>Type the full patron barcode (e.g., <code>20000448634748</code>) in the search box to instantly pull up all notifications for that patron across all dates.</p>
+
+      <h3>Search by item barcode</h3>
+      <p>Type the item barcode to see all notifications sent for a specific copy — useful if a patron says they never received a notice for a particular item.</p>
+
+      <h3>Check "All Time" first</h3>
+      <p>If a patron says they never received a notification, switch Date Range to <strong>All Time</strong> and search by their barcode before assuming no notice was sent.</p>
+
+      <h3>Copy to clipboard</h3>
+      <p>The copy icon in the detail modal header copies a formatted plain-text summary you can paste directly into a patron record, email, or support ticket.</p>
+
+      <div class="callout green">
+        <span class="callout-icon">✅</span>
+        <div>This viewer is read-only — browsing and searching never changes any data. You can filter, sort, and drill into records freely without affecting patron accounts or notification history.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const links    = document.querySelectorAll('.sidebar a[href^="#"]');
+
+  function setActive() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 100) current = s.id;
+    });
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+</script>
+</body>
+</html>

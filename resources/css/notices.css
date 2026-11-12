@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/*
+ * Utilities + forms only. Base / Preflight come from route('dcpl.ui.css') so staff chrome
+ * (logo, nav tabs, avatar) is not reset or overridden by a second Tailwind preflight.
+ */
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .notices-staff-scope {
+        width: 100%;
+        font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+        color: var(--dcpl-text, #4d6375);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .notices-staff-page {
+        @apply w-full;
+    }
+}

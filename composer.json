@@ -1,0 +1,70 @@
+{
+    "name": "dcplibrary/notices",
+    "description": "Laravel package for monitoring, logging, and validating the lifecycle of library notifications (Mail, Email, Voice, SMS).",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brian Lashbrook",
+            "email": "webmaster@dcplibrary.org"
+        }
+    ],
+    "homepage": "https://github.com/dcplibrary/notices",
+    "require": {
+        "php": ">=8.1",
+        "illuminate/support": "^11.0 || ^12.0",
+        "league/flysystem-ftp": "^3.0",
+        "laravel/sanctum": "^4.2",
+        "dcplibrary/ui": "dev-main"
+    },
+    "suggest": {
+        "livewire/livewire": "^3.0 - Required if using Laravel 12 with Alpine.js to prevent auto-discovery errors"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.68",
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dcplibrary\\Notices\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dcplibrary\\Notices\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Dcplibrary\\Notices\\NoticesServiceProvider"
+            ],
+            "aliases": {
+                "Notices": "Dcplibrary\\Notices\\Facades\\Notices"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest --ci",
+        "test:pest": "vendor/bin/pest",
+        "test:pest:ci": "vendor/bin/pest --ci",
+        "cs-fix": "php-cs-fixer fix",
+        "cs-check": "php-cs-fixer fix --dry-run --diff"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/dcplibrary/ui.git"
+        }
+    ]
+}

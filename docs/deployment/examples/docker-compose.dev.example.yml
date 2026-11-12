@@ -1,0 +1,126 @@
+version: "3.9"
+
+services:
+  web:
+    container_name: notices-web
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      TZ: America/Chicago
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - /usr/share/zoneinfo/America/Chicago:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - notices-net
+
+  scheduler:
+    container_name: notices-scheduler
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    command: php /var/www/artisan schedule:work
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      TZ: America/Chicago
+    volumes:
+      - .:/var/www
+      - /usr/share/zoneinfo/America/Chicago:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - notices-net
+
+  worker:
+    container_name: notices-worker
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    command: php /var/www/artisan queue:work --sleep=1 --tries=3 --timeout=120
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      TZ: America/Chicago
+    volumes:
+      - .:/var/www
+      - /usr/share/zoneinfo/America/Chicago:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - notices-net
+
+  db:
+    image: mysql:8.0
+    container_name: notices-db
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-notices}"
+      MYSQL_USER: "${DB_USERNAME:-notices}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-notices}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root}"
+      TZ: America/Chicago
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./.docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./.docker/mysql/logs:/var/log/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - notices-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: notices-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - notices-net
+
+networks:
+  notices-net:
+    name: notices-net
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
