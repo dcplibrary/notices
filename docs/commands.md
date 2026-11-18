@@ -437,13 +437,14 @@ php artisan notices:archive-activity-logs [options]
 
 **Options:**
 - `--days=N` - Days of logs to keep. Defaults to `notices.activity_log.retention_days` (`NOTICES_ACTIVITY_LOG_RETENTION_DAYS=90`)
+- `--keep-unresolved` - Leave logs whose notification still has an open delivery issue (`resolved_at` is empty)
 - `--dry-run` - Count rows that would be archived without writing a file or deleting
 - `--force` - Skip the confirmation prompt
 
 **Examples:**
 ```bash
 php artisan notices:archive-activity-logs --dry-run
-php artisan notices:archive-activity-logs --days=90 --force
+php artisan notices:archive-activity-logs --days=90 --keep-unresolved --force
 ```
 
 **What it does:**

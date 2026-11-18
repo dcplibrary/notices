@@ -16,6 +16,7 @@ class ArchiveActivityLogsCommand extends Command
 {
     protected $signature = 'notices:archive-activity-logs
         {--days= : Days of activity logs to keep. Defaults to notices.activity_log.retention_days (NOTICES_ACTIVITY_LOG_RETENTION_DAYS).}
+        {--keep-unresolved : Keep logs for notifications that still have an open delivery issue}
         {--dry-run : Count rows that would be archived without writing a file or deleting}
         {--force : Skip the confirmation prompt}';
 
@@ -23,10 +24,11 @@ class ArchiveActivityLogsCommand extends Command
 
     public function handle(ActivityLogArchiver $archiver): int
     {
-        $configured = (int) config('notices.activity_log.retention_days', 90);
-        $days       = max(1, (int) ($this->option('days') ?: $configured));
-        $dryRun     = (bool) $this->option('dry-run');
-        $force      = (bool) $this->option('force');
+        $configured     = (int) config('notices.activity_log.retention_days', 90);
+        $days           = max(1, (int) ($this->option('days') ?: $configured));
+        $dryRun         = (bool) $this->option('dry-run');
+        $force          = (bool) $this->option('force');
+        $keepUnresolved = (bool) $this->option('keep-unresolved');
 
         $this->info('[notices:archive-activity-logs] Keeping the last ' . $days . ' day(s) of notification activity logs.');
 
@@ -36,7 +38,7 @@ class ArchiveActivityLogsCommand extends Command
             return self::SUCCESS;
         }
 
-        $result = $archiver->archive($days, $dryRun);
+        $result = $archiver->archive($days, $dryRun, $keepUnresolved);
 
         if ($dryRun) {
             $this->info('Dry run: ' . $result['eligible'] . ' row(s) would be archived.');

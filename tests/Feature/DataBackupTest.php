@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Tests\Feature;
 
 use Dcplibrary\Notices\Models\Notification;
 use Dcplibrary\Notices\Models\NotificationActivityLog;
+use Dcplibrary\Notices\Models\PatronDeliveryIssue;
 use Dcplibrary\Notices\Services\ActivityLogArchiver;
 use Dcplibrary\Notices\Services\NoticesDataBackup;
 use Dcplibrary\Notices\Tests\TestCase;
@@ -83,6 +84,59 @@ class DataBackupTest extends TestCase
         $archived = gzfile($result['path']);
         $this->assertIsArray($archived);
         $this->assertStringContainsString('archive me', implode('', $archived));
+
+        @unlink($result['path']);
+    }
+
+    #[Test]
+    public function keepUnresolvedLeavesLogsForOpenDeliveryIssues(): void
+    {
+        $open = Notification::create([
+            'patron_id'          => 5101,
+            'patron_barcode'     => '20000005101',
+            'notification_type'  => 'Hold',
+            'delivery_option_id' => 2,
+            'status'             => 'failed',
+            'is_combined'        => false,
+        ]);
+        $closed = Notification::create([
+            'patron_id'          => 5102,
+            'patron_barcode'     => '20000005102',
+            'notification_type'  => 'Hold',
+            'delivery_option_id' => 2,
+            'status'             => 'failed',
+            'is_combined'        => false,
+        ]);
+
+        PatronDeliveryIssue::create([
+            'issue_type'      => 'failed_delivery_string',
+            'notification_id' => $open->id,
+            'detected_at'     => now()->subDays(120),
+        ]);
+        PatronDeliveryIssue::create([
+            'issue_type'      => 'failed_delivery_string',
+            'notification_id' => $closed->id,
+            'detected_at'     => now()->subDays(120),
+            'resolved_at'     => now()->subDays(10),
+        ]);
+
+        NotificationActivityLog::create([
+            'notification_id' => $open->id,
+            'occurred_at'     => now()->subDays(120),
+            'source'          => 'system',
+            'description'     => 'still open',
+        ]);
+        NotificationActivityLog::create([
+            'notification_id' => $closed->id,
+            'occurred_at'     => now()->subDays(120),
+            'source'          => 'system',
+            'description'     => 'already resolved',
+        ]);
+
+        $result = app(ActivityLogArchiver::class)->archive(90, false, true);
+
+        $this->assertSame(1, $result['archived']);
+        $this->assertSame(['still open'], NotificationActivityLog::query()->pluck('description')->all());
 
         @unlink($result['path']);
     }
