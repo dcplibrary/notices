@@ -3,8 +3,6 @@
 [![Version](https://img.shields.io/github/v/release/dcplibrary/notices?label=version&sort=semver)](https://github.com/dcplibrary/notices/releases/latest)
 [![Release](https://github.com/dcplibrary/notices/actions/workflows/release.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/release.yml)
 [![Nightly Percona Full Suite](https://github.com/dcplibrary/notices/actions/workflows/nightly-percona.yml/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/nightly-percona.yml)
-[![CodeQL - Code Quality](https://github.com/dcplibrary/notices/actions/workflows/github-code-quality/codeql/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/github-code-quality/codeql)
-[![Security Risk Assessment](https://github.com/dcplibrary/notices/actions/workflows/github-code-scanning/code-security-risk-assessment/badge.svg)](https://github.com/dcplibrary/notices/actions/workflows/github-code-scanning/code-security-risk-assessment)
 
 Laravel package for monitoring, logging, and validating the entire lifecycle of library notifications (Mail, Email, Voice, SMS) from generation to delivery.
 
