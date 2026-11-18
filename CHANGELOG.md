@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/dcplibrary/notices/compare/v1.2.1...v1.2.2) (2026-11-18)
+
+
+### Bug Fixes
+
+* guard failed-contact legacy payload lookups ([4a34158](https://github.com/dcplibrary/notices/commit/4a34158cdbc2b35d78df77931260bc4749a5aa2c))
+
 ## [1.2.1](https://github.com/dcplibrary/notices/compare/v1.2.0...v1.2.1) (2026-11-18)
 
 
