@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/dcplibrary/notices/compare/v1.2.0...v1.2.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* Update README to remove obsolete badges ([8787673](https://github.com/dcplibrary/notices/commit/87876736eb1602dadd7e9e29d6ff5ae5fbd74199))
+
 # [1.2.0](https://github.com/dcplibrary/notices/compare/v1.1.0...v1.2.0) (2026-11-18)
 
 
