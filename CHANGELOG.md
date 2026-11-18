@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.4.0](https://github.com/dcplibrary/notices/compare/v1.3.0...v1.4.0) (2026-11-18)
+
+
+### Features
+
+* add flag to keep unresolved failures from archiving ([7a83d3b](https://github.com/dcplibrary/notices/commit/7a83d3b897798aff1d17ee0ba7e619af218e2aad))
+
 # [1.3.0](https://github.com/dcplibrary/notices/compare/v1.2.2...v1.3.0) (2026-11-18)
 
 
