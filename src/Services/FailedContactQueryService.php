@@ -901,6 +901,8 @@ class FailedContactQueryService
      *
      * Attaches a lightweight patron object and convenience attributes used by
      * the dashboard cards and failed-contacts table (example_patron_*).
+     * Legacy payload searches run only when unindexed rows exist for the channel.
+     * This enrichment does not change notification statuses.
      */
     protected function enrichFailedDeliveryString(FailedDeliveryString $failedString, ?array $prefetchedPatrons = null): void
     {
@@ -951,8 +953,13 @@ class FailedContactQueryService
                     ->first()
                 ;
 
-                // If not found via index, fall back to LIKE searches for legacy data
-                if (!$notification) {
+                // Avoid scanning large payloads when no unindexed channel rows exist.
+                // Check without ordering so MySQL can use the contact index.
+                if (!$notification && Notification::query()
+                    ->whereIn('delivery_option_id', [3, 8])
+                    ->whereNull('indexed_patron_phone')
+                    ->exists()
+                ) {
                     $notification = Notification::query()
                         ->whereIn('delivery_option_id', [3, 8])
                         ->whereNull('indexed_patron_phone')
@@ -1041,8 +1048,13 @@ class FailedContactQueryService
                     ->first()
                 ;
 
-                // If not found via index, fall back to LIKE searches for legacy data
-                if (!$notification) {
+                // Avoid scanning large payloads when no unindexed channel rows exist.
+                // Check without ordering so MySQL can use the contact index.
+                if (!$notification && Notification::query()
+                    ->where('delivery_option_id', 2)
+                    ->whereNull('indexed_patron_email')
+                    ->exists()
+                ) {
                     $notification = Notification::query()
                         ->where('delivery_option_id', 2)
                         ->whereNull('indexed_patron_email')
