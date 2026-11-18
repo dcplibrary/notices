@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.3.0](https://github.com/dcplibrary/notices/compare/v1.2.2...v1.3.0) (2026-11-18)
+
+
+### Features
+
+* add log archive to free up php memory resources when backing up database.  Archived logs are removed from database after a default of 90 days ([89f3d22](https://github.com/dcplibrary/notices/commit/89f3d22d661f8d66a8bb845b6f94925ced1c3eaf))
+
 ## [1.2.2](https://github.com/dcplibrary/notices/compare/v1.2.1...v1.2.2) (2026-11-18)
 
 
