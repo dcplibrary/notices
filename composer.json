@@ -15,7 +15,7 @@
         "illuminate/support": "^13.0 || ^12.0",
         "league/flysystem-ftp": "^3.0",
         "laravel/sanctum": "^4.2",
-        "dcplibrary/ui": "dev-main"
+        "dcplibrary/ui": "^1.3"
     },
     "suggest": {
         "livewire/livewire": "^3.0 - Required if using Laravel 12 with Alpine.js to prevent auto-discovery errors"
