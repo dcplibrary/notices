@@ -4,6 +4,7 @@ namespace Dcplibrary\Notices\Http\Controllers;
 
 use Dcplibrary\Notices\Models\JobRun;
 use Dcplibrary\Notices\Models\LookupTableOverride;
+use Dcplibrary\Notices\Services\ActivityLogRetentionSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -23,7 +24,7 @@ class SettingsController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(ActivityLogRetentionSettings $activityLogRetention)
     {
         // Get counts for various settings
         $lookupOverrideCount = LookupTableOverride::count();
@@ -55,10 +56,12 @@ class SettingsController extends Controller
         ;
 
         return view('notices::settings.index', [
-            'lookup_override_count' => $lookupOverrideCount,
-            'disabled_lookup_count' => $disabledLookupCount,
-            'api_token_count'       => $apiTokenCount,
-            'active_job_run_count'  => $activeJobRunCount,
+            'lookup_override_count'        => $lookupOverrideCount,
+            'disabled_lookup_count'        => $disabledLookupCount,
+            'api_token_count'              => $apiTokenCount,
+            'active_job_run_count'         => $activeJobRunCount,
+            'activity_log_days'            => $activityLogRetention->days(),
+            'activity_log_keep_unresolved' => $activityLogRetention->keepUnresolved(),
         ]);
     }
 

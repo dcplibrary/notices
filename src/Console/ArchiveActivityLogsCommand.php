@@ -3,6 +3,7 @@
 namespace Dcplibrary\Notices\Console;
 
 use Dcplibrary\Notices\Services\ActivityLogArchiver;
+use Dcplibrary\Notices\Services\ActivityLogRetentionSettings;
 use Illuminate\Console\Command;
 
 /**
@@ -15,20 +16,22 @@ use Illuminate\Console\Command;
 class ArchiveActivityLogsCommand extends Command
 {
     protected $signature = 'notices:archive-activity-logs
-        {--days= : Days of activity logs to keep. Defaults to notices.activity_log.retention_days (NOTICES_ACTIVITY_LOG_RETENTION_DAYS).}
-        {--keep-unresolved : Keep logs for notifications that still have an open delivery issue}
+        {--days= : Days of activity logs to keep. Defaults to the Cleanup setting, then notices.activity_log.retention_days (NOTICES_ACTIVITY_LOG_RETENTION_DAYS).}
+        {--keep-unresolved : Keep logs for notifications that still have an open delivery issue. When omitted, the Cleanup setting is used.}
         {--dry-run : Count rows that would be archived without writing a file or deleting}
         {--force : Skip the confirmation prompt}';
 
     protected $description = 'Archive notification activity logs older than the retention window and delete them from the live table.';
 
-    public function handle(ActivityLogArchiver $archiver): int
+    public function handle(ActivityLogArchiver $archiver, ActivityLogRetentionSettings $settings): int
     {
-        $configured     = (int) config('notices.activity_log.retention_days', 90);
-        $days           = max(1, (int) ($this->option('days') ?: $configured));
+        $daysOption = $this->option('days');
+        $days       = (null === $daysOption || '' === $daysOption)
+            ? $settings->days()
+            : max(1, (int) $daysOption);
         $dryRun         = (bool) $this->option('dry-run');
         $force          = (bool) $this->option('force');
-        $keepUnresolved = (bool) $this->option('keep-unresolved');
+        $keepUnresolved = (bool) $this->option('keep-unresolved') || $settings->keepUnresolved();
 
         $this->info('[notices:archive-activity-logs] Keeping the last ' . $days . ' day(s) of notification activity logs.');
 

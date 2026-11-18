@@ -1,6 +1,6 @@
 @extends('notices::layouts.app')
 
-@section('title', 'Cleanup Import/Export Files')
+@section('title', 'Cleanup')
 
 @section('body')
 <div class="container mx-auto px-4 py-8 max-w-3xl">
@@ -18,9 +18,80 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Clean up cached import/export files</h1>
-            <p class="text-slate-400 text-sm">Delete old cached Polaris/Shoutbomb import/export files from local storage.</p>
+            <h1 class="text-3xl font-bold text-white mb-2">Clean up files and activity logs</h1>
+            <p class="text-slate-400 text-sm">Delete old cached import files, and set how long notification activity logs stay in the live table.</p>
         </div>
+    </div>
+
+    @if(session('success'))
+        <div class="mb-4 rounded-md border border-green-200 dark:border-green-700/50 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-800 dark:text-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-4 rounded-md border border-red-200 dark:border-red-700/50 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    <!-- Activity log retention -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 shadow-sm mb-6">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-1">Activity log retention</h2>
+                <p class="text-slate-600 dark:text-slate-400 text-sm">
+                    The nightly archive at 2:15 AM uses these settings. Older rows are copied to an archive file and removed from the live table.
+                </p>
+            </div>
+        </div>
+
+        <form action="{{ route('notices.settings.maintenance.activity-log-retention') }}" method="POST" class="space-y-4">
+            @csrf
+            <div class="sm:w-40">
+                <label for="activity_log_days" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Days to keep</label>
+                <input
+                    id="activity_log_days"
+                    name="activity_log_days"
+                    type="number"
+                    min="1"
+                    max="3650"
+                    value="{{ old('activity_log_days', $activity_log_days ?? 90) }}"
+                    class="w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm focus:border-dcpl-blue focus:ring-dcpl-blue text-sm"
+                >
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Default is 90 days.</p>
+            </div>
+
+            <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input
+                    type="checkbox"
+                    name="keep_unresolved"
+                    value="1"
+                    class="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-dcpl-blue focus:ring-dcpl-blue"
+                    @checked(old('keep_unresolved', $activity_log_keep_unresolved ?? false))
+                >
+                <span>
+                    Keep unresolved failures
+                    <span class="block text-xs text-slate-500 dark:text-slate-400">Leave activity logs in place when the notification still has an open delivery issue.</span>
+                </span>
+            </label>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <button
+                    type="submit"
+                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-dcpl-blue"
+                >
+                    Save
+                </button>
+                <button
+                    type="submit"
+                    formaction="{{ route('notices.settings.maintenance.activity-log-archive') }}"
+                    class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                >
+                    Run archive now
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- Cleanup Import/Export Logs Card -->

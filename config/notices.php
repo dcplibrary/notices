@@ -123,6 +123,8 @@ return [
     // How long per-notification activity logs stay in the live table.
     // Older rows are copied to storage/app/notices/activity-archives and deleted
     // by notices:archive-activity-logs. They are not included in staff backups.
+    // Default days to keep. Settings → Maintenance → Cleanup stores an override
+    // once someone saves a value there.
     'activity_log' => [
         'retention_days' => (int) env('NOTICES_ACTIVITY_LOG_RETENTION_DAYS', 90),
     ],

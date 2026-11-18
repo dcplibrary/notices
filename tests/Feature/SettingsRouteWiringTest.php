@@ -18,6 +18,9 @@ class SettingsRouteWiringTest extends TestCase
     {
         $this->assertRouteAction('notices.settings.index', SettingsController::class, 'index', ['GET']);
         $this->assertRouteAction('notices.settings.maintenance', SettingsMaintenanceBackupController::class, 'maintenance', ['GET']);
+        $this->assertRouteAction('notices.settings.maintenance.cleanup', SettingsMaintenanceBackupController::class, 'maintenanceCleanup', ['GET']);
+        $this->assertRouteAction('notices.settings.maintenance.activity-log-retention', SettingsMaintenanceBackupController::class, 'saveActivityLogRetention', ['POST']);
+        $this->assertRouteAction('notices.settings.maintenance.activity-log-archive', SettingsMaintenanceBackupController::class, 'runActivityLogArchive', ['POST']);
         $this->assertRouteAction('notices.settings.maintenance.config-backup', SettingsMaintenanceBackupController::class, 'configBackup', ['GET']);
         $this->assertRouteAction('notices.settings.display', SettingsDisplayController::class, 'display', ['GET']);
         $this->assertRouteAction('notices.settings.messages', SettingsDisplayController::class, 'messages', ['GET']);

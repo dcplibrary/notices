@@ -448,6 +448,7 @@ class NoticesServiceProvider extends ServiceProvider
 
             // Move activity logs older than the retention window out of the live table
             // so staff backups are not asked to serialize millions of audit rows.
+            // Days and keep-unresolved come from Settings → Maintenance → Cleanup.
             $schedule->command('notices:archive-activity-logs --force')
                 ->dailyAt('02:15')
                 ->timezone(config('app.timezone', 'UTC'))

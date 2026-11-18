@@ -32,7 +32,7 @@
             <ul class="list-disc list-inside space-y-0.5">
                 <li><strong>Configuration settings</strong>: Display overrides and UI messages.</li>
                 <li><strong>Notices data</strong>: Notifications, delivery issues, failed delivery strings, ingested emails, import batches, activity files, job runs, and user activity logs.</li>
-                <li><strong>Activity logs</strong> are not included. Logs older than {{ (int) config('notices.activity_log.retention_days', 90) }} days are archived by <code>notices:archive-activity-logs</code>.</li>
+                <li><strong>Activity logs</strong> are not included. Logs older than {{ (int) ($activity_log_days ?? 90) }} days are archived by <code>notices:archive-activity-logs</code>.</li>
             </ul>
         </div>
         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-md p-3 text-[11px] text-amber-900 dark:text-amber-100">

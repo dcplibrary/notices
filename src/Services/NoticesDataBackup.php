@@ -53,7 +53,7 @@ class NoticesDataBackup
      */
     public function omittedTables(): array
     {
-        $days = (int) config('notices.activity_log.retention_days', 90);
+        $days = app(ActivityLogRetentionSettings::class)->days();
 
         return [
             'notification_activity_logs' => 'Per-notification activity logs are kept for ' . $days . ' days and archived by notices:archive-activity-logs. They are not included in this backup.',

@@ -11,7 +11,8 @@ use PHPUnit\Framework\Attributes\Test;
  * Test suite for scheduled task registration.
  *
  * Verifies that the NoticesServiceProvider correctly registers all four daily
- * import schedules at the expected times (8:30 AM, 9:30 AM, 1:30 PM, 5:30 PM).
+ * import schedules at the expected times (8:30 AM, 9:30 AM, 1:30 PM, 5:30 PM)
+ * and the 2:15 AM activity-log archive.
  *
  * @package Dcplibrary\Notices\Tests\Feature
  */
@@ -172,5 +173,27 @@ class ScheduledTasksTest extends TestCase
             $this->assertEquals('*', $parts[2] ?? '', 'Should run every day of month');
             $this->assertEquals('*', $parts[3] ?? '', 'Should run every month');
         }
+    }
+
+    #[Test]
+    public function it_schedules_the_activity_log_archive_at_2_15_am()
+    {
+        $schedule = app(Schedule::class);
+        $events = collect($schedule->events());
+
+        $archive = $events->first(function ($event) {
+            return str_contains($event->command ?? '', 'notices:archive-activity-logs');
+        });
+
+        $this->assertNotNull($archive, 'Activity log archive should be scheduled');
+        $this->assertStringContainsString('notices:archive-activity-logs --force', $archive->command);
+        $this->assertStringNotContainsString('--days', $archive->command);
+        $this->assertStringNotContainsString('--keep-unresolved', $archive->command);
+        $this->assertStringContainsString('15 2', $archive->expression);
+        $this->assertTrue($archive->runInBackground);
+
+        $parts = explode(' ', $archive->expression);
+        $this->assertEquals('*', $parts[2] ?? '', 'Should run every day of month');
+        $this->assertEquals('*', $parts[3] ?? '', 'Should run every month');
     }
 }

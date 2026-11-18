@@ -313,12 +313,13 @@ test_checks_schedule_adherence_after_first_import_time() // Behind schedule dete
 - ✅ Edge cases (no imports, very old imports, mixed statuses)
 
 #### ScheduledTasksTest
-**Purpose:** Verify automatic import scheduling registration.
+**Purpose:** Verify automatic import and activity-log archive scheduling.
 
 **What it tests:**
 - All four daily import schedules are registered
 - Correct schedule times (8:30 AM, 9:30 AM, 1:30 PM, 5:30 PM)
 - Proper command usage (`notices:import --date=today`)
+- The 2:15 AM activity-log archive (`notices:archive-activity-logs --force`, with days and keep-unresolved left to the Cleanup setting)
 - Background execution configuration
 - Daily recurrence (not weekly/monthly)
 
@@ -333,6 +334,7 @@ test_scheduled_tasks_are_daily_not_weekly_or_monthly() // Daily recurrence
 **Test Coverage:**
 - ✅ Task registration via NoticesServiceProvider
 - ✅ All four expected schedule times
+- ✅ 2:15 AM activity-log archive, without overriding the Cleanup setting
 - ✅ Command and parameters
 - ✅ Background execution flag
 - ✅ Cron expression validation

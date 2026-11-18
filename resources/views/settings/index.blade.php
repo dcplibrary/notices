@@ -116,12 +116,14 @@
 
                 <h3 class="text-xl font-semibold text-slate-900 dark:text-white mb-2">Maintenance</h3>
                 <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">
-                    Run safe maintenance tasks like cleaning up cached import/export files from the web interface.
+                    Clean cached import files and archive old activity logs, including how long to keep unresolved failures.
                 </p>
 
                 <div class="flex items-center gap-2 text-sm mt-auto">
                     <div class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-500"></div>
-                    <span class="text-slate-700 dark:text-slate-300">Admin-only tools</span>
+                    <span class="text-slate-700 dark:text-slate-300">
+                        Keeps {{ (int) ($activity_log_days ?? 90) }} days of activity logs{{ ($activity_log_keep_unresolved ?? false) ? ', including unresolved failures' : '' }}
+                    </span>
                 </div>
             </div>
         </a>

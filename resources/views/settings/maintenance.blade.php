@@ -24,12 +24,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </div>
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Clean up cached import/export files</h2>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Clean up files and activity logs</h2>
                 <p class="text-slate-600 dark:text-slate-400 text-sm mb-3">
-                    Safely delete old cached Polaris/Shoutbomb import/export files to reclaim disk space.
+                    Delete old cached import/export files, and archive activity logs past the retention window. Unresolved failures can be kept.
                 </p>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-auto">
-                    Opens detailed cleanup tool with date range options and activity log links.
+                    Opens cleanup tools for cached files and activity log retention.
                 </p>
             </div>
         </a>

@@ -26,6 +26,10 @@ Route::prefix('settings')->name('settings.')->group(function () {
         ->name('maintenance.cleanup');
     Route::post('/maintenance/cleanup-import-logs', [\Dcplibrary\Notices\Http\Controllers\SettingsMaintenanceBackupController::class, 'runCleanupImportLogs'])
         ->name('maintenance.cleanup-import-logs');
+    Route::post('/maintenance/activity-log-retention', [\Dcplibrary\Notices\Http\Controllers\SettingsMaintenanceBackupController::class, 'saveActivityLogRetention'])
+        ->name('maintenance.activity-log-retention');
+    Route::post('/maintenance/activity-log-archive', [\Dcplibrary\Notices\Http\Controllers\SettingsMaintenanceBackupController::class, 'runActivityLogArchive'])
+        ->name('maintenance.activity-log-archive');
 
     // Configuration backup & restore
     Route::get('/maintenance/config-backup', [\Dcplibrary\Notices\Http\Controllers\SettingsMaintenanceBackupController::class, 'configBackup'])

@@ -788,7 +788,7 @@ The base storage path can be configured in `config/notices.php`:
 
 1. **Archive old notification activity logs:**
 
-   Per-notification activity logs are not part of a staff backup. The live table keeps `NOTICES_ACTIVITY_LOG_RETENTION_DAYS` days (default 90). Older rows are copied to `storage/app/notices/activity-archives` and then deleted:
+   Per-notification activity logs are not part of a staff backup. The live table keeps the days saved under Settings → Maintenance → Cleanup (default 90, or `NOTICES_ACTIVITY_LOG_RETENTION_DAYS` until a value is saved). Older rows are copied to `storage/app/notices/activity-archives` and then deleted. The same page can keep logs for unresolved failures:
 
    ```bash
    php artisan notices:archive-activity-logs --dry-run

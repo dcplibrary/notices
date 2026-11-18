@@ -9,12 +9,14 @@ use Dcplibrary\Notices\Models\FailedDeliveryString;
 use Dcplibrary\Notices\Models\IngestedEmail;
 use Dcplibrary\Notices\Models\JobRun;
 use Dcplibrary\Notices\Models\LookupTableOverride;
+use Dcplibrary\Notices\Models\NoticesSetting;
 use Dcplibrary\Notices\Models\Notification;
 use Dcplibrary\Notices\Models\NotificationActivityLog;
 use Dcplibrary\Notices\Models\NotificationImportBatch;
 use Dcplibrary\Notices\Models\PatronDeliveryIssue;
 use Dcplibrary\Notices\Models\UiMessage;
 use Dcplibrary\Notices\Models\UserActivityLog;
+use Dcplibrary\Notices\Services\ActivityLogRetentionSettings;
 use Dcplibrary\Notices\Services\NoticesDataBackup;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -41,10 +43,60 @@ class SettingsMaintenanceBackupController extends Controller
 
     /**
      * Detailed cleanup tool view with full form.
+     *
+     * Shows the saved activity-log retention days (default 90) and whether
+     * unresolved failures are kept. Does not change any status or delete rows.
      */
-    public function maintenanceCleanup()
+    public function maintenanceCleanup(ActivityLogRetentionSettings $settings)
     {
-        return view('notices::settings.maintenance-cleanup');
+        return view('notices::settings.maintenance-cleanup', [
+            'activity_log_days'            => $settings->days(),
+            'activity_log_keep_unresolved' => $settings->keepUnresolved(),
+        ]);
+    }
+
+    /**
+     * Save activity-log retention days and the keep-unresolved choice.
+     *
+     * Does not archive or delete any rows.
+     */
+    public function saveActivityLogRetention(Request $request, ActivityLogRetentionSettings $settings)
+    {
+        $saved = $this->storeActivityLogRetention($request, $settings);
+
+        $kept = $saved['keep'] ? ', and keep logs for unresolved failures.' : '.';
+
+        return redirect()
+            ->route('notices.settings.maintenance.cleanup')
+            ->with('success', 'Saved activity log retention: keep the last ' . $saved['days'] . ' day(s)' . $kept)
+        ;
+    }
+
+    /**
+     * Save the retention settings, then run notices:archive-activity-logs.
+     *
+     * Deletes archived activity-log rows. Does not change notification status.
+     */
+    public function runActivityLogArchive(Request $request, ActivityLogRetentionSettings $settings)
+    {
+        $saved = $this->storeActivityLogRetention($request, $settings);
+
+        $options = [
+            '--days'           => $saved['days'],
+            '--force'          => true,
+            '--no-interaction' => true,
+        ];
+
+        if ($saved['keep']) {
+            $options['--keep-unresolved'] = true;
+        }
+
+        Artisan::call('notices:archive-activity-logs', $options);
+
+        return redirect()
+            ->route('notices.settings.maintenance.cleanup')
+            ->with('success', 'Archived activity logs older than ' . $saved['days'] . ' day(s). Check the Activity Log for details.')
+        ;
     }
 
     /**
@@ -396,6 +448,26 @@ class SettingsMaintenanceBackupController extends Controller
     }
 
     /**
+     * @return array{days: int, keep: bool}
+     */
+    protected function storeActivityLogRetention(Request $request, ActivityLogRetentionSettings $settings): array
+    {
+        $data = $request->validate([
+            'activity_log_days' => 'required|integer|min:1|max:3650',
+            'keep_unresolved'   => 'nullable|boolean',
+        ]);
+
+        $days = (int) $data['activity_log_days'];
+        $keep = $request->boolean('keep_unresolved');
+        $settings->save($days, $keep);
+
+        return [
+            'days' => $days,
+            'keep' => $keep,
+        ];
+    }
+
+    /**
      * Write a backup to the local disk and return once the file is closed.
      */
     protected function writeBackupFile(string $relativePath, callable $write): void
@@ -499,6 +571,7 @@ class SettingsMaintenanceBackupController extends Controller
             'data'         => [
                 'lookup_table_overrides' => LookupTableOverride::all()->toArray(),
                 'ui_messages'            => UiMessage::all()->toArray(),
+                'notices_settings'       => NoticesSetting::all()->toArray(),
             ],
         ];
     }
@@ -558,6 +631,16 @@ class SettingsMaintenanceBackupController extends Controller
                     ]);
                 }
             }
+
+            if (isset($data['notices_settings']) && is_array($data['notices_settings'])) {
+                NoticesSetting::truncate();
+                foreach ($data['notices_settings'] as $row) {
+                    NoticesSetting::create([
+                        'key'   => $row['key']   ?? null,
+                        'value' => $row['value'] ?? null,
+                    ]);
+                }
+            }
         });
     }
 
@@ -591,6 +674,7 @@ class SettingsMaintenanceBackupController extends Controller
             'config_backup_files'   => $configFiles,
             'data_backup_files'     => $dataFiles,
             'combined_backup_files' => $combinedFiles,
+            'activity_log_days'     => app(ActivityLogRetentionSettings::class)->days(),
         ]);
     }
 

@@ -334,7 +334,7 @@ Configure display preferences, maintenance tools, and customize lookup table lab
 
 #### Maintenance Tools (optional)
 
-Instances may add an admin-only "Maintenance" card on the Settings page that exposes safe, one-click maintenance operations. A common example is a **"Clean up cached import/export files"** button that:
+Settings → Maintenance → **Clean up files and activity logs** deletes old cached import/export files and archives notification activity logs. The activity log form saves how many days to keep (default 90) and whether unresolved failures stay in the live table. **Run archive now** uses those values. The cached-file cleanup:
 
 1. Calls the `notices:cleanup-import-logs` command from a controller using `Artisan::call()`.
 2. Uses consistent flags (e.g., `--days=30 --force --no-interaction`) so behavior is predictable.
