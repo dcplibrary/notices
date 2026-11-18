@@ -14,6 +14,7 @@ Complete documentation for all Artisan commands provided by the Notices package.
   - [notices:install](#noticesinstall)
   - [notices:sync-lookup-tables](#noticessync-lookup-tables)
   - [notices:cleanup-import-logs](#noticescleanup-import-logs)
+  - [notices:archive-activity-logs](#noticesarchive-activity-logs)
 - [Date Options](#date-options)
 
 ---
@@ -422,6 +423,36 @@ The command:
 - If an invalid date range is provided, the command aborts without deleting files
 - `--all` should typically be paired with `--force` to avoid accidental bulk deletion
 - All runs (including dry-runs and no-op runs) are recorded in `activity_log` for auditing
+
+---
+
+### `notices:archive-activity-logs`
+
+Copy notification activity logs older than the retention window to a gzipped archive, then delete them from the live table.
+
+**Signature:**
+```bash
+php artisan notices:archive-activity-logs [options]
+```
+
+**Options:**
+- `--days=N` - Days of logs to keep. Defaults to `notices.activity_log.retention_days` (`NOTICES_ACTIVITY_LOG_RETENTION_DAYS=90`)
+- `--dry-run` - Count rows that would be archived without writing a file or deleting
+- `--force` - Skip the confirmation prompt
+
+**Examples:**
+```bash
+php artisan notices:archive-activity-logs --dry-run
+php artisan notices:archive-activity-logs --days=90 --force
+```
+
+**What it does:**
+
+Staff backups do not include `notification_activity_logs`. This command keeps the recent rows that the activity screens read, and writes older rows to `storage/app/notices/activity-archives/notification-activity-logs-*.ndjson.gz` before deleting them. It runs daily at 2:15 AM.
+
+**Important notes:**
+- `--dry-run` never writes an archive and never deletes rows
+- The archive files are the copy of the old log rows. They are not restored by a staff backup
 
 ---
 

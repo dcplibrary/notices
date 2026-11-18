@@ -125,6 +125,7 @@ class NoticesServiceProvider extends ServiceProvider
             Console\SeedCommand::class,
             Console\IntegrityCheckCommand::class,
             Console\CleanupImportLogsCommand::class,
+            Console\ArchiveActivityLogsCommand::class,
         ]);
 
         // Allow publishing seeders (optional - seeders can be run directly from package)
@@ -442,6 +443,17 @@ class NoticesServiceProvider extends ServiceProvider
                 })
                 ->onFailure(function () {
                     \Log::error('[Notices] Evening import failed');
+                })
+            ;
+
+            // Move activity logs older than the retention window out of the live table
+            // so staff backups are not asked to serialize millions of audit rows.
+            $schedule->command('notices:archive-activity-logs --force')
+                ->dailyAt('02:15')
+                ->timezone(config('app.timezone', 'UTC'))
+                ->runInBackground()
+                ->onFailure(function () {
+                    \Log::error('[Notices] Activity log archive failed');
                 })
             ;
         });

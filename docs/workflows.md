@@ -786,11 +786,16 @@ The base storage path can be configured in `config/notices.php`:
 
 **Steps:**
 
-1. **Archive old resolved issues:**
-   ```sql
-   -- Archive issues older than 90 days
-   -- (Check with your retention policy first)
+1. **Archive old notification activity logs:**
+
+   Per-notification activity logs are not part of a staff backup. The live table keeps `NOTICES_ACTIVITY_LOG_RETENTION_DAYS` days (default 90). Older rows are copied to `storage/app/notices/activity-archives` and then deleted:
+
+   ```bash
+   php artisan notices:archive-activity-logs --dry-run
+   php artisan notices:archive-activity-logs --force
    ```
+
+   This command also runs daily at 2:15 AM.
 
 2. **Optimize tables:**
    ```bash
@@ -815,6 +820,7 @@ The base storage path can be configured in `config/notices.php`:
 
 **Recommended retention:**
 - Raw imports: 90 days
+- Notification activity logs: 90 days in the live table (`NOTICES_ACTIVITY_LOG_RETENTION_DAYS=90`), then a gzipped archive
 - Notifications: 1 year
 - Resolved issues: 6 months
 - Active issues: Indefinite

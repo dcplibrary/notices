@@ -120,6 +120,13 @@ return [
     // Export filenames use this timezone (e.g., holds_2026-01-04_09-05-01.txt)
     'timezone' => env('NOTICES_TIMEZONE', 'America/Chicago'),
 
+    // How long per-notification activity logs stay in the live table.
+    // Older rows are copied to storage/app/notices/activity-archives and deleted
+    // by notices:archive-activity-logs. They are not included in staff backups.
+    'activity_log' => [
+        'retention_days' => (int) env('NOTICES_ACTIVITY_LOG_RETENTION_DAYS', 90),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Query Performance Logging

@@ -15,6 +15,7 @@ use Dcplibrary\Notices\Models\NotificationImportBatch;
 use Dcplibrary\Notices\Models\PatronDeliveryIssue;
 use Dcplibrary\Notices\Models\UiMessage;
 use Dcplibrary\Notices\Models\UserActivityLog;
+use Dcplibrary\Notices\Services\NoticesDataBackup;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Artisan;
@@ -28,6 +29,8 @@ use Illuminate\Support\Str;
  */
 class SettingsMaintenanceBackupController extends Controller
 {
+    public function __construct(protected NoticesDataBackup $backups) {}
+
     /**
      * Maintenance tools dashboard (e.g. cleanup import/export logs).
      */
@@ -206,20 +209,15 @@ class SettingsMaintenanceBackupController extends Controller
             'description' => 'nullable|string|max:255',
         ]);
 
-        $payload      = $this->buildDataBackupPayload($data['description'] ?? null);
-        $json         = json_encode($payload, JSON_PRETTY_PRINT);
         $fileName     = 'notices-data-' . now()->format('Ymd_His') . '-' . Str::random(6) . '.json';
         $relativePath = 'notices/data-backups/' . $fileName;
+        $this->writeBackupFile($relativePath, function (string $absolute) use ($data): void {
+            $this->backups->writeData($absolute, $data['description'] ?? null);
+        });
 
         if ('download' === $data['mode']) {
-            return response()->streamDownload(function () use ($json): void {
-                echo $json;
-            }, $fileName, [
-                'Content-Type' => 'application/json',
-            ]);
+            return $this->downloadBackup($relativePath, $fileName);
         }
-
-        Storage::put($relativePath, $json);
 
         if ('email' === $data['mode']) {
             $to = $data['email'] ?? config('mail.from.address');
@@ -243,13 +241,13 @@ class SettingsMaintenanceBackupController extends Controller
 
             return redirect()
                 ->route('notices.settings.maintenance.data-backup')
-                ->with('success', 'Notices data backup generated and emailed successfully.')
+                ->with('success', 'Notices data backup generated and emailed successfully. Activity logs were not included.')
             ;
         }
 
         return redirect()
             ->route('notices.settings.maintenance.data-backup')
-            ->with('success', 'Notices data backup saved to server at ' . $relativePath . '.')
+            ->with('success', 'Notices data backup saved to server at ' . $relativePath . '. Activity logs were not included.')
         ;
     }
 
@@ -262,9 +260,7 @@ class SettingsMaintenanceBackupController extends Controller
             'backup_file' => 'required|file|mimetypes:application/json,text/plain',
         ]);
 
-        $json = file_get_contents($data['backup_file']->getRealPath());
-
-        return $this->restoreDataFromJson($json, 'Uploaded Notices data backup restored successfully.');
+        return $this->restoreDataFile($data['backup_file']->getRealPath(), 'Uploaded Notices data backup restored successfully.');
     }
 
     /**
@@ -283,9 +279,7 @@ class SettingsMaintenanceBackupController extends Controller
             ;
         }
 
-        $json = Storage::get($data['path']);
-
-        return $this->restoreDataFromJson($json, 'Notices data restored from local backup.');
+        return $this->restoreDataFile(Storage::path($data['path']), 'Notices data restored from local backup.');
     }
 
     /**
@@ -297,9 +291,7 @@ class SettingsMaintenanceBackupController extends Controller
             'backup_file' => 'required|file|mimetypes:application/json,text/plain',
         ]);
 
-        $json = file_get_contents($data['backup_file']->getRealPath());
-
-        return $this->restoreCombinedFromJson($json, 'Full backup restored (configuration and Notices data).');
+        return $this->restoreCombinedFile($data['backup_file']->getRealPath(), 'Full backup restored (configuration and Notices data).');
     }
 
     /**
@@ -318,9 +310,7 @@ class SettingsMaintenanceBackupController extends Controller
             ;
         }
 
-        $json = Storage::get($data['path']);
-
-        return $this->restoreCombinedFromJson($json, 'Full backup restored (configuration and Notices data).');
+        return $this->restoreCombinedFile(Storage::path($data['path']), 'Full backup restored (configuration and Notices data).');
     }
 
     /**
@@ -363,30 +353,15 @@ class SettingsMaintenanceBackupController extends Controller
         ]);
 
         $configPayload = $this->buildConfigBackupPayload($data['description'] ?? null);
-        $dataPayload   = $this->buildDataBackupPayload($data['description'] ?? null);
-
-        $bundle = [
-            'type'         => 'notices-combined-backup',
-            'version'      => 1,
-            'generated_at' => now()->toIso8601String(),
-            'description'  => $data['description'] ?? null,
-            'config'       => $configPayload,
-            'data'         => $dataPayload,
-        ];
-
-        $json         = json_encode($bundle, JSON_PRETTY_PRINT);
-        $fileName     = 'notices-combined-' . now()->format('Ymd_His') . '-' . Str::random(6) . '.json';
-        $relativePath = 'notices/combined-backups/' . $fileName;
+        $fileName      = 'notices-combined-' . now()->format('Ymd_His') . '-' . Str::random(6) . '.json';
+        $relativePath  = 'notices/combined-backups/' . $fileName;
+        $this->writeBackupFile($relativePath, function (string $absolute) use ($configPayload, $data): void {
+            $this->backups->writeCombined($absolute, $configPayload, $data['description'] ?? null);
+        });
 
         if ('download' === $data['mode']) {
-            return response()->streamDownload(function () use ($json): void {
-                echo $json;
-            }, $fileName, [
-                'Content-Type' => 'application/json',
-            ]);
+            return $this->downloadBackup($relativePath, $fileName);
         }
-
-        Storage::put($relativePath, $json);
 
         if ('email' === $data['mode']) {
             $to = $data['email'] ?? config('mail.from.address');
@@ -410,13 +385,104 @@ class SettingsMaintenanceBackupController extends Controller
 
             return redirect()
                 ->route('notices.settings.maintenance.config-backup')
-                ->with('success', 'Combined configuration + data backup generated and emailed successfully.')
+                ->with('success', 'Combined configuration + data backup generated and emailed successfully. Activity logs were not included.')
             ;
         }
 
         return redirect()
             ->route('notices.settings.maintenance.config-backup')
-            ->with('success', 'Combined configuration + data backup saved to server at ' . $relativePath . '.')
+            ->with('success', 'Combined configuration + data backup saved to server at ' . $relativePath . '. Activity logs were not included.')
+        ;
+    }
+
+    /**
+     * Write a backup to the local disk and return once the file is closed.
+     */
+    protected function writeBackupFile(string $relativePath, callable $write): void
+    {
+        Storage::makeDirectory(dirname($relativePath));
+        $write(Storage::path($relativePath));
+    }
+
+    /**
+     * Stream a backup file to the browser, then delete the server copy.
+     */
+    protected function downloadBackup(string $relativePath, string $fileName)
+    {
+        $absolute = Storage::path($relativePath);
+
+        return response()->streamDownload(function () use ($absolute, $relativePath): void {
+            $input = fopen($absolute, 'rb');
+            if (false !== $input) {
+                fpassthru($input);
+                fclose($input);
+            }
+            Storage::delete($relativePath);
+        }, $fileName, [
+            'Content-Type' => 'application/x-ndjson',
+        ]);
+    }
+
+    /**
+     * Restore a data backup, using the streamed format when the file is version 2.
+     */
+    protected function restoreDataFile(string $absolutePath, string $successMessage)
+    {
+        try {
+            $header = $this->backups->readHeader($absolutePath);
+            if (is_array($header) && ($header['type'] ?? null) === 'notices-data-backup') {
+                $this->backups->restoreDataTables($absolutePath, $header);
+            } else {
+                $json = file_get_contents($absolutePath);
+                if (false === $json) {
+                    throw new \InvalidArgumentException('The selected backup file could not be read.');
+                }
+
+                return $this->restoreDataFromJson($json, $successMessage);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('notices.settings.maintenance.data-backup')
+                ->with('error', $e->getMessage())
+            ;
+        }
+
+        return redirect()
+            ->route('notices.settings.maintenance.data-backup')
+            ->with('success', $successMessage)
+        ;
+    }
+
+    /**
+     * Restore a combined backup, using the streamed format when the file is version 2.
+     */
+    protected function restoreCombinedFile(string $absolutePath, string $successMessage)
+    {
+        try {
+            $header = $this->backups->readHeader($absolutePath);
+            if (is_array($header) && ($header['type'] ?? null) === 'notices-combined-backup') {
+                if (isset($header['config']) && is_array($header['config'])) {
+                    $this->applyConfigBackupPayload($header['config']);
+                }
+                $this->backups->restoreDataTables($absolutePath, $header);
+            } else {
+                $json = file_get_contents($absolutePath);
+                if (false === $json) {
+                    throw new \InvalidArgumentException('The selected backup file could not be read.');
+                }
+
+                return $this->restoreCombinedFromJson($json, $successMessage);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return redirect()
+                ->route('notices.settings.maintenance.config-backup')
+                ->with('error', $e->getMessage())
+            ;
+        }
+
+        return redirect()
+            ->route('notices.settings.maintenance.config-backup')
+            ->with('success', $successMessage)
         ;
     }
 
