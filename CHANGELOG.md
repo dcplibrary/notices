@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.5.0](https://github.com/dcplibrary/notices/compare/v1.4.0...v1.5.0) (2026-11-18)
+
+
+### Features
+
+* add ui for activity log archive scheduling ([10717a5](https://github.com/dcplibrary/notices/commit/10717a536d9478a00945ab1d392ea2093499ce58))
+
 # [1.4.0](https://github.com/dcplibrary/notices/compare/v1.3.0...v1.4.0) (2026-11-18)
 
 
