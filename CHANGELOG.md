@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/dcplibrary/notices/compare/v1.5.0...v1.5.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* standardize clean up ui ([9129a5d](https://github.com/dcplibrary/notices/commit/9129a5daea0fc6acb419b66c34f274aa8b7678e1))
+
 # [1.5.0](https://github.com/dcplibrary/notices/compare/v1.4.0...v1.5.0) (2026-11-18)
 
 
