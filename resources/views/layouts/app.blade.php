@@ -74,8 +74,7 @@
 
     <footer class="mt-16 border-t border-gray-200 py-8">
         <div class="container mx-auto px-4 text-center text-dcpl-text text-sm">
-            <p>DC Public Library &mdash; {{ config('app.name', 'Laravel') }}</p>
-            <p class="mt-1 text-gray-400">Powered by Laravel {{ app()->version() }}</p>
+            <p>Daviess County Public Library &mdash; {{ config('app.name', 'Laravel') }}</p>
         </div>
     </footer>
 
