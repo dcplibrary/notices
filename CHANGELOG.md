@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/dcplibrary/notices/compare/v1.5.1...v1.5.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* change font color on maintenance page ([d41f2ae](https://github.com/dcplibrary/notices/commit/d41f2ae4a8991b51eb9ee9e889e88bf3bdec2f2b))
+
 ## [1.5.1](https://github.com/dcplibrary/notices/compare/v1.5.0...v1.5.1) (2026-11-18)
 
 
