@@ -16,24 +16,10 @@
     </div>
 
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Clean up files and activity logs</h1>
-            <p class="text-slate-400 text-sm">Delete old cached import files, and set how long notification activity logs stay in the live table.</p>
-        </div>
+    <div class="mb-6">
+        <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">Clean up files and activity logs</h1>
+        <p class="text-sm text-gray-600">Delete old cached import files, and set how long notification activity logs stay in the live table.</p>
     </div>
-
-    @if(session('success'))
-        <div class="mb-4 rounded-md border border-green-200 dark:border-green-700/50 bg-green-50 dark:bg-green-900/20 px-4 py-3 text-sm text-green-800 dark:text-green-200">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="mb-4 rounded-md border border-red-200 dark:border-red-700/50 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-800 dark:text-red-200">
-            {{ $errors->first() }}
-        </div>
-    @endif
 
     <!-- Activity log retention -->
     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-6 shadow-sm mb-6">
