@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/dcplibrary/notices/compare/v1.5.2...v1.5.3) (2026-11-19)
+
+
+### Bug Fixes
+
+* change light dark mode for maintainance header ([03ed2fa](https://github.com/dcplibrary/notices/commit/03ed2fae7133b79baa2c39f232c7187eed31d979))
+
 ## [1.5.2](https://github.com/dcplibrary/notices/compare/v1.5.1...v1.5.2) (2026-11-19)
 
 
