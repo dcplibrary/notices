@@ -18,8 +18,8 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Configuration backup & restore</h1>
-            <p class="text-slate-400 text-sm">
+            <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">Configuration backup & restore</h1>
+            <p class="text-sm text-gray-600">
                 Back up display and UI message settings, download or email backups, and restore from a saved file.
             </p>
         </div>

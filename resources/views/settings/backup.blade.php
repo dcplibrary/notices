@@ -18,8 +18,8 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Backups & restore</h1>
-            <p class="text-slate-400 text-sm">
+            <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">Backups & restore</h1>
+            <p class="text-sm text-gray-600">
                 Create and restore backups for Notices configuration and core data. Choose configuration settings, Notices data, or both.
             </p>
         </div>

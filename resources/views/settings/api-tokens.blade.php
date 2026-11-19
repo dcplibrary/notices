@@ -8,8 +8,8 @@
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-3xl font-bold text-white mb-2">API Tokens</h1>
-                <p class="text-slate-400">Generate and manage API tokens for accessing the Notices API</p>
+                <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">API Tokens</h1>
+                <p class="text-sm text-gray-600">Generate and manage API tokens for accessing the Notices API</p>
             </div>
             <a href="{{ route('notices.api-docs') }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-dcpl-blue hover:brightness-95 text-white rounded-lg transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

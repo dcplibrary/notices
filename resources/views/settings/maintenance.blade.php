@@ -6,8 +6,8 @@
 <div class="container mx-auto px-4 py-8 max-w-5xl">
     <!-- Header -->
     <div class="mb-6">
-        <h1 class="text-3xl font-bold text-white mb-2">Maintenance</h1>
-        <p class="text-slate-400 text-sm">Run safe maintenance tasks and backups from the web interface.</p>
+        <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">Maintenance</h1>
+        <p class="text-sm text-gray-600">Run safe maintenance tasks and backups from the web interface.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

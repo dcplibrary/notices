@@ -18,8 +18,8 @@
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-white mb-2">Notices data backup & restore</h1>
-            <p class="text-slate-400 text-sm">
+            <h1 class="font-outfit text-3xl font-semibold tracking-tight text-dcpl-text mb-1">Notices data backup & restore</h1>
+            <p class="text-sm text-gray-600">
                 Create full backups of core Notices data tables (notifications, issues, logs) and restore them for disaster recovery.
             </p>
         </div>
