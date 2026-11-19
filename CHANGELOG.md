@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/dcplibrary/notices/compare/v1.5.3...v1.5.4) (2026-11-19)
+
+
+### Bug Fixes
+
+* change footer text ([4e5bef1](https://github.com/dcplibrary/notices/commit/4e5bef1f678015e7a832aa62b469f37841a7676b))
+
 ## [1.5.3](https://github.com/dcplibrary/notices/compare/v1.5.2...v1.5.3) (2026-11-19)
 
 
